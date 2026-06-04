@@ -77,6 +77,33 @@ export default function AdminTournamentPage() {
         </div>
       </div>
 
+      {/* Winner & Runner-up */}
+      {tournament?.winner && (
+        <div className="card overflow-hidden mb-6">
+          <div className="px-5 py-3.5 border-b border-hairline">
+            <span className="seclabel text-felt">Tournament result</span>
+          </div>
+          <div className="p-5 grid sm:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#FFD700]/20 flex items-center justify-center text-[13px] font-bold text-[#B8860B]">1</div>
+              <div>
+                <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Winner</div>
+                <div className="font-semibold text-[14px]">{tournament.winner.name}</div>
+              </div>
+            </div>
+            {tournament?.runner_up && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-ink-100 flex items-center justify-center text-[13px] font-bold text-ink-500">2</div>
+                <div>
+                  <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Runner-up</div>
+                  <div className="font-semibold text-[14px]">{tournament.runner_up.name}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6 items-start">
         {/* Left column — Tournament info */}
         <div className="space-y-6">
@@ -136,8 +163,24 @@ export default function AdminTournamentPage() {
               <div className="divide-y divide-hairline">
                 {sortedRounds.map(round => {
                   const roundDraw = drawRounds.find(r => r.id === round.id);
-                  const matchCount = roundDraw?.matches?.length || 0;
-                  const completedCount = roundDraw?.matches?.filter(m => m.status === 'completed').length || 0;
+                  const matches = roundDraw?.matches || [];
+                  const matchCount = matches.length;
+                  const completedCount = matches.filter(m => m.status === 'completed' || m.status === 'walkover').length;
+                  const hasPlayers = matches.some(m => m.player1_id || m.player2_id);
+
+                  let statusBadge;
+                  if (matchCount > 0 && completedCount === matchCount) {
+                    statusBadge = <span className="badge bg-ink-100 text-ink-600">Completed</span>;
+                  } else if (completedCount > 0) {
+                    statusBadge = <span className="badge bg-ok-tint text-[#0C6B3C]">{completedCount}/{matchCount}</span>;
+                  } else if (hasPlayers) {
+                    statusBadge = <span className="badge bg-ok-tint text-[#0C6B3C]">In progress</span>;
+                  } else if (round.generated_at) {
+                    statusBadge = <span className="badge bg-ok-tint text-[#0C6B3C]">Draw ready</span>;
+                  } else {
+                    statusBadge = <span className="badge bg-ink-100 text-ink-400">Pending</span>;
+                  }
+
                   return (
                     <div key={round.id} className="flex items-center gap-3 px-5 py-3.5">
                       <div className="min-w-0 flex-1">
@@ -147,19 +190,7 @@ export default function AdminTournamentPage() {
                           {matchCount > 0 && ` · ${matchCount} matches`}
                         </div>
                       </div>
-                      {round.generated_at ? (
-                        <div className="flex items-center gap-1.5">
-                          {matchCount > 0 && completedCount === matchCount ? (
-                            <span className="badge bg-ink-100 text-ink-600">Completed</span>
-                          ) : completedCount > 0 ? (
-                            <span className="badge bg-ok-tint text-[#0C6B3C]">{completedCount}/{matchCount}</span>
-                          ) : (
-                            <span className="badge bg-ok-tint text-[#0C6B3C]">Draw ready</span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="badge bg-ink-100 text-ink-400">Pending</span>
-                      )}
+                      {statusBadge}
                     </div>
                   );
                 })}

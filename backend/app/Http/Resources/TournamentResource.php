@@ -30,6 +30,10 @@ class TournamentResource extends JsonResource
             'entry_status' => $this->entry_status,
             'max_players' => $this->max_players,
             'draw_size' => $this->draw_size,
+            'winner_id' => $this->winner_id,
+            'runner_up_id' => $this->runner_up_id,
+            'winner' => new PlayerResource($this->whenLoaded('winner')),
+            'runner_up' => new PlayerResource($this->whenLoaded('runnerUp')),
             'created_at' => $this->created_at,
         ];
     }

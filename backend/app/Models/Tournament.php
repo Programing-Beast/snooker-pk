@@ -17,6 +17,7 @@ class Tournament extends Model
         'cover_path', 'banner_path', 'description', 'qualifier_info',
         'presented_by', 'prize_pool',
         'status', 'entry_status', 'max_players', 'draw_size',
+        'winner_id', 'runner_up_id',
     ];
 
     protected function casts(): array
@@ -28,6 +29,16 @@ class Tournament extends Model
             'max_players' => 'integer',
             'draw_size' => 'integer',
         ];
+    }
+
+    public function winner()
+    {
+        return $this->belongsTo(Player::class, 'winner_id');
+    }
+
+    public function runnerUp()
+    {
+        return $this->belongsTo(Player::class, 'runner_up_id');
     }
 
     public function prizes()

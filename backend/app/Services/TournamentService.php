@@ -35,7 +35,7 @@ class TournamentService
 
     public function showBySlug(string $slug): Tournament
     {
-        $query = Tournament::with(['prizes', 'organizers.user.player.phones', 'rounds']);
+        $query = Tournament::with(['prizes', 'organizers.user.player.phones', 'rounds', 'winner', 'runnerUp']);
 
         if (ctype_digit($slug)) {
             return $query->findOrFail($slug);
