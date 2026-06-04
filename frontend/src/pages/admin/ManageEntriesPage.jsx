@@ -124,6 +124,24 @@ export default function ManageEntriesPage() {
             onChange={e => setSearch(e.target.value)}
             className="mb-3"
           />
+          {filteredPlayers.length > 0 && (
+            <label className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-ink-50 transition-colors">
+              <input
+                type="checkbox"
+                checked={filteredPlayers.length > 0 && filteredPlayers.every(p => checkedIds.has(p.id))}
+                onChange={() => {
+                  const allChecked = filteredPlayers.every(p => checkedIds.has(p.id));
+                  setCheckedIds(prev => {
+                    const next = new Set(prev);
+                    filteredPlayers.forEach(p => allChecked ? next.delete(p.id) : next.add(p.id));
+                    return next;
+                  });
+                }}
+                className="accent-felt w-4 h-4 shrink-0"
+              />
+              <span className="text-[13px] font-semibold text-ink-600">Select all ({filteredPlayers.length})</span>
+            </label>
+          )}
           <div className="max-h-72 overflow-y-auto divide-y divide-hairline border border-hairline rounded-lg">
             {filteredPlayers.length === 0 && (
               <div className="p-5 text-center text-ink-400 text-[14px]">No players available.</div>
