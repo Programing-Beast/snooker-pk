@@ -12,6 +12,8 @@ class DrawTest extends ApiTestCase
 {
     private Tournament $tournament;
 
+    private Round $firstRound;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -20,7 +22,7 @@ class DrawTest extends ApiTestCase
             'start_date' => '2026-07-01', 'end_date' => '2026-07-05',
             'entry_status' => 'closed', 'max_players' => 8,
         ]);
-        Round::create([
+        $this->firstRound = Round::create([
             'tournament_id' => $this->tournament->id,
             'name' => 'Quarter Final', 'sort_order' => 1, 'frames_to_win' => 3,
         ]);
@@ -34,8 +36,9 @@ class DrawTest extends ApiTestCase
         ]);
     }
 
-    private function seedPlayers(int $count, int $seededCount = 0): void
+    private function seedPlayers(int $count, int $seededCount = 0): array
     {
+        $players = [];
         for ($i = 0; $i < $count; $i++) {
             $user = User::factory()->create();
             $user->assignRole('player');
@@ -52,7 +55,11 @@ class DrawTest extends ApiTestCase
                 'seed' => $i < $seededCount ? $i + 1 : null,
                 'requested_at' => now(),
             ]);
+
+            $players[] = $player;
         }
+
+        return $players;
     }
 
     public function test_preview_draw(): void
@@ -86,12 +93,13 @@ class DrawTest extends ApiTestCase
         $response = $this->actingAs($this->admin)
             ->postJson('/api/draw/generate', [
                 'tournament_id' => $this->tournament->id,
+                'round_id' => $this->firstRound->id,
             ]);
 
         $response->assertOk()
             ->assertJsonPath('message', 'Draw generated successfully.');
 
-        // 4 players => draw_size 4 => 2 first-round matches + 1 final = 3
+        // 4 players => draw_size 4 => 2 first-round matches + 1 semi = 3
         $this->assertEquals(3, $this->tournament->matches()->count());
     }
 
@@ -103,6 +111,7 @@ class DrawTest extends ApiTestCase
         $response = $this->actingAs($this->admin)
             ->postJson('/api/draw/generate', [
                 'tournament_id' => $this->tournament->id,
+                'round_id' => $this->firstRound->id,
             ]);
 
         $response->assertOk();
@@ -117,6 +126,7 @@ class DrawTest extends ApiTestCase
         $response = $this->actingAs($this->playerUser)
             ->postJson('/api/draw/generate', [
                 'tournament_id' => $this->tournament->id,
+                'round_id' => $this->firstRound->id,
             ]);
 
         $response->assertStatus(403);
@@ -139,18 +149,19 @@ class DrawTest extends ApiTestCase
         $this->actingAs($this->admin)
             ->postJson('/api/draw/generate', [
                 'tournament_id' => $this->tournament->id,
+                'round_id' => $this->firstRound->id,
             ]);
 
         $response = $this->actingAs($this->admin)
             ->postJson('/api/draw/confirm', [
                 'tournament_id' => $this->tournament->id,
+                'round_id' => $this->firstRound->id,
             ]);
 
         $response->assertOk()
             ->assertJsonPath('message', 'Draw confirmed.');
 
-        $firstRound = $this->tournament->rounds()->orderBy('sort_order')->first();
-        $this->assertNotNull($firstRound->fresh()->generated_at);
+        $this->assertNotNull($this->firstRound->fresh()->generated_at);
     }
 
     public function test_reroll_draw(): void
@@ -161,45 +172,28 @@ class DrawTest extends ApiTestCase
         $this->actingAs($this->admin)
             ->postJson('/api/draw/generate', [
                 'tournament_id' => $this->tournament->id,
+                'round_id' => $this->firstRound->id,
             ]);
 
         $response = $this->actingAs($this->admin)
             ->postJson('/api/draw/reroll', [
                 'tournament_id' => $this->tournament->id,
+                'round_id' => $this->firstRound->id,
             ]);
 
         $response->assertOk()
             ->assertJsonPath('message', 'Draw re-rolled successfully.');
     }
 
-    public function test_generate_draw_no_rounds_fails(): void
+    public function test_generate_draw_validates_round_id(): void
     {
-        $noRoundTourney = Tournament::create([
-            'name' => 'T2', 'slug' => 't2',
-            'start_date' => '2026-08-01', 'end_date' => '2026-08-05',
-            'draw_size' => 4,
-        ]);
-
-        // Add players to the no-round tournament
-        for ($i = 0; $i < 4; $i++) {
-            $user = User::factory()->create();
-            $user->assignRole('player');
-            $player = Player::create([
-                'user_id' => $user->id, 'name' => "NR $i", 'country_code' => 'PAK',
-            ]);
-            TournamentEntry::create([
-                'tournament_id' => $noRoundTourney->id,
-                'player_id' => $player->id,
-                'status' => 'approved', 'requested_at' => now(),
-            ]);
-        }
-
         $response = $this->actingAs($this->admin)
             ->postJson('/api/draw/generate', [
-                'tournament_id' => $noRoundTourney->id,
+                'tournament_id' => $this->tournament->id,
             ]);
 
-        $response->assertStatus(422);
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['round_id']);
     }
 
     public function test_bye_winners_advance_to_next_round(): void
@@ -211,6 +205,7 @@ class DrawTest extends ApiTestCase
         $this->actingAs($this->admin)
             ->postJson('/api/draw/generate', [
                 'tournament_id' => $this->tournament->id,
+                'round_id' => $this->firstRound->id,
             ]);
 
         $rounds = $this->tournament->rounds()->orderBy('sort_order')->get();
@@ -223,5 +218,31 @@ class DrawTest extends ApiTestCase
         );
 
         $this->assertTrue($hasAdvancedPlayer);
+    }
+
+    public function test_generate_draw_with_explicit_pairings(): void
+    {
+        $players = $this->seedPlayers(4);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson('/api/draw/generate', [
+                'tournament_id' => $this->tournament->id,
+                'round_id' => $this->firstRound->id,
+                'pairings' => [
+                    ['player1_id' => $players[0]->id, 'player2_id' => $players[3]->id],
+                    ['player1_id' => $players[1]->id, 'player2_id' => $players[2]->id],
+                ],
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Draw generated successfully.');
+
+        // Verify the pairings were saved in the order specified
+        $matches = $this->firstRound->matches()->orderBy('position')->get();
+        $this->assertEquals(2, $matches->count());
+        $this->assertEquals($players[0]->id, $matches[0]->player1_id);
+        $this->assertEquals($players[3]->id, $matches[0]->player2_id);
+        $this->assertEquals($players[1]->id, $matches[1]->player1_id);
+        $this->assertEquals($players[2]->id, $matches[1]->player2_id);
     }
 }

@@ -8,6 +8,7 @@ import PlayerListItem from '../../components/ui/PlayerListItem';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import TournamentSubNav from '../../components/admin/TournamentSubNav';
 
 export default function ManageEntriesPage() {
   const { id } = useParams();
@@ -103,11 +104,10 @@ export default function ManageEntriesPage() {
 
   return (
     <div>
+      <TournamentSubNav tournament={tournament} />
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="seclabel text-felt mb-1.5">Admin</div>
           <h1 className="font-display font-bold text-[1.5rem]">Manage entries</h1>
-          {tournament && <p className="text-ink-500 text-[14px] mt-1">{tournament.name}</p>}
         </div>
         <Button onClick={() => setShowAddSection(v => !v)}>
           {showAddSection ? 'Close' : '+ Add players'}
