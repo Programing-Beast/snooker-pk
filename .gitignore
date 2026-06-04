@@ -18,6 +18,3 @@ vendor/
 .env.*
 !.env.example
 !.env.production
-
-# Build artifacts
-dist/
