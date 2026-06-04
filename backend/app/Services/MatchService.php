@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Events\MatchCompleted;
 use App\Models\Break_;
 use App\Models\Frame;
 use App\Models\Match_;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class MatchService
@@ -45,7 +45,7 @@ class MatchService
             'status' => 'walkover',
         ]);
 
-        $this->advanceWinner($match->fresh());
+        event(new MatchCompleted($match->fresh()));
 
         return $match->fresh()->load(['player1', 'player2', 'winner']);
     }
@@ -69,7 +69,7 @@ class MatchService
             'status' => 'completed',
         ]);
 
-        $this->advanceWinner($match->fresh());
+        event(new MatchCompleted($match->fresh()));
 
         return $match->fresh()->load(['player1', 'player2', 'winner']);
     }
@@ -96,7 +96,7 @@ class MatchService
 
         $match->update($data);
 
-        $this->advanceWinner($match->fresh());
+        event(new MatchCompleted($match->fresh()));
 
         return $match->fresh()->load(['player1', 'player2', 'winner']);
     }
@@ -220,33 +220,4 @@ class MatchService
         ]);
     }
 
-    private function advanceWinner(Match_ $match): void
-    {
-        if (! $match->winner_id) {
-            return;
-        }
-
-        $tournament = $match->tournament;
-        $rounds = $tournament->rounds()->orderBy('sort_order')->get();
-        $currentRoundIndex = $rounds->search(fn ($r) => $r->id === $match->round_id);
-
-        if ($currentRoundIndex === false || $currentRoundIndex >= $rounds->count() - 1) {
-            return;
-        }
-
-        $nextRound = $rounds[$currentRoundIndex + 1];
-        $nextPosition = intdiv($match->position - 1, 2) + 1;
-        $isPlayer1 = ($match->position % 2) === 1;
-
-        $nextMatch = Match_::where('tournament_id', $tournament->id)
-            ->where('round_id', $nextRound->id)
-            ->where('position', $nextPosition)
-            ->first();
-
-        if ($nextMatch) {
-            $nextMatch->update([
-                $isPlayer1 ? 'player1_id' : 'player2_id' => $match->winner_id,
-            ]);
-        }
-    }
 }
