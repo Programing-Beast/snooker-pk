@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Modal, { ModalBody, ModalFooter } from '../../components/ui/Modal';
+import TournamentSubNav from '../../components/admin/TournamentSubNav';
 
 export default function ManageMatchesPage() {
   const { id } = useParams();
@@ -61,10 +62,9 @@ export default function ManageMatchesPage() {
 
   return (
     <div>
+      <TournamentSubNav tournament={tournament} />
       <div className="mb-6">
-        <div className="seclabel text-felt mb-1.5">Admin</div>
         <h1 className="font-display font-bold text-[1.5rem]">Manage matches</h1>
-        {tournament && <p className="text-ink-500 text-[14px] mt-1">{tournament.name}</p>}
       </div>
 
       {loading ? (

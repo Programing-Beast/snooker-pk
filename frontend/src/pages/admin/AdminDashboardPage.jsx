@@ -139,10 +139,10 @@ export default function AdminDashboardPage() {
           ) : tournaments.length > 0 ? (
             tournaments.slice(0, 10).map(t => (
               <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-hairline last:border-0 hover:bg-surface2 transition">
-                <div className="min-w-0 flex-1">
-                  <div className="font-semibold text-[14px] truncate">{t.name}</div>
+                <Link to={`/admin/tournaments/${t.id}`} className="min-w-0 flex-1">
+                  <div className="font-semibold text-[14px] truncate hover:text-felt transition">{t.name}</div>
                   <div className="text-[11px] text-ink-400">{t.city || '—'} · {t.max_players || '—'} players</div>
-                </div>
+                </Link>
                 <StatusBadge status={t.status || 'upcoming'} />
                 <div className="flex gap-1.5 shrink-0">
                   <Link to={`/admin/tournaments/${t.id}/entries`} className="btn btn-ghost btn-sm text-[11px]">Entries</Link>

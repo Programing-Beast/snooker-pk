@@ -29,6 +29,7 @@ import PlayerFormPage from './pages/admin/PlayerFormPage';
 import DrawGeneratePage from './pages/admin/DrawGeneratePage';
 import DrawRevealPage from './pages/admin/DrawRevealPage';
 import ManageMatchesPage from './pages/admin/ManageMatchesPage';
+import AdminTournamentPage from './pages/admin/AdminTournamentPage';
 
 // Umpire
 import UmpireBoardPage from './pages/umpire/UmpireBoardPage';
@@ -69,6 +70,7 @@ export default function App() {
                 <Route path="/admin" element={<AdminDashboardPage />} />
                 <Route path="/admin/tournaments/new" element={<TournamentFormPage />} />
                 <Route path="/admin/tournaments/:id/edit" element={<TournamentFormPage />} />
+                <Route path="/admin/tournaments/:id" element={<AdminTournamentPage />} />
                 <Route path="/admin/tournaments/:id/entries" element={<ManageEntriesPage />} />
                 <Route path="/admin/tournaments/:id/draw" element={<DrawGeneratePage />} />
                 <Route path="/admin/tournaments/:id/reveal" element={<DrawRevealPage />} />

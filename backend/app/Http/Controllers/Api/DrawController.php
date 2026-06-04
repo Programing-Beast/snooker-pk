@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ConfirmDrawRequest;
 use App\Http\Requests\GenerateDrawRequest;
 use App\Http\Resources\MatchResource;
+use App\Models\Round;
 use App\Models\Tournament;
 use App\Services\DrawService;
 use Illuminate\Http\JsonResponse;
@@ -30,24 +31,40 @@ class DrawController extends Controller
 
     public function generate(GenerateDrawRequest $request): JsonResponse
     {
-        $tournament = Tournament::findOrFail($request->validated()['tournament_id']);
-        $this->drawService->generateDraw($tournament);
+        $validated = $request->validated();
+        $tournament = Tournament::findOrFail($validated['tournament_id']);
+        $round = Round::findOrFail($validated['round_id']);
 
-        $firstRound = $tournament->rounds()->orderBy('sort_order')->first();
+        $pairings = $validated['pairings'] ?? null;
+
+        $this->drawService->generateDraw($tournament, $round, $pairings);
+
         $matches = MatchResource::collection(
-            $firstRound->matches()->with(['player1', 'player2'])->orderBy('position')->get()
+            $round->matches()->with(['player1', 'player2'])
+                ->where('status', '!=', 'bye')->orderBy('position')->get()
+        );
+
+        $byes = MatchResource::collection(
+            $round->matches()->with(['player1', 'player2'])
+                ->where('status', 'bye')->orderBy('position')->get()
         );
 
         return response()->json([
             'message' => 'Draw generated successfully.',
-            'data' => ['matches' => $matches],
+            'data' => [
+                'matches' => $matches,
+                'byes' => $byes,
+            ],
         ]);
     }
 
     public function confirm(ConfirmDrawRequest $request): JsonResponse
     {
-        $tournament = Tournament::findOrFail($request->validated()['tournament_id']);
-        $this->drawService->confirmDraw($tournament);
+        $validated = $request->validated();
+        $tournament = Tournament::findOrFail($validated['tournament_id']);
+        $round = Round::findOrFail($validated['round_id']);
+
+        $this->drawService->confirmDraw($tournament, $round);
 
         return response()->json([
             'message' => 'Draw confirmed.',
@@ -56,12 +73,14 @@ class DrawController extends Controller
 
     public function reroll(GenerateDrawRequest $request): JsonResponse
     {
-        $tournament = Tournament::findOrFail($request->validated()['tournament_id']);
-        $this->drawService->rerollDraw($tournament);
+        $validated = $request->validated();
+        $tournament = Tournament::findOrFail($validated['tournament_id']);
+        $round = Round::findOrFail($validated['round_id']);
 
-        $firstRound = $tournament->rounds()->orderBy('sort_order')->first();
+        $this->drawService->rerollDraw($tournament, $round);
+
         $matches = MatchResource::collection(
-            $firstRound->matches()->with(['player1', 'player2'])->orderBy('position')->get()
+            $round->matches()->with(['player1', 'player2'])->orderBy('position')->get()
         );
 
         return response()->json([

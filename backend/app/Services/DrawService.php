@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Match_;
+use App\Models\Round;
 use App\Models\Tournament;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -38,7 +39,75 @@ class DrawService
         ];
     }
 
-    public function generateDraw(Tournament $tournament): Tournament
+    public function generateDraw(Tournament $tournament, Round $round, ?array $pairings = null): Tournament
+    {
+        if ($pairings) {
+            return $this->generateFromPairings($tournament, $round, $pairings);
+        }
+
+        return $this->generateFromSeeds($tournament, $round);
+    }
+
+    /**
+     * Generate draw from explicit pairings (random reveal mode).
+     * The frontend sends the confirmed pairings after the live reveal.
+     */
+    private function generateFromPairings(Tournament $tournament, Round $round, array $pairings): Tournament
+    {
+        DB::transaction(function () use ($tournament, $round, $pairings) {
+            // Clear existing matches for this round and subsequent rounds
+            Match_::where('tournament_id', $tournament->id)
+                ->where('round_id', $round->id)
+                ->forceDelete();
+
+            foreach ($pairings as $i => $pairing) {
+                Match_::create([
+                    'tournament_id' => $tournament->id,
+                    'round_id' => $round->id,
+                    'position' => $i + 1,
+                    'player1_id' => $pairing['player1_id'],
+                    'player2_id' => $pairing['player2_id'],
+                    'status' => 'scheduled',
+                ]);
+            }
+
+            $matchCount = count($pairings);
+
+            // Create placeholder matches for subsequent rounds
+            $rounds = $tournament->rounds()->where('sort_order', '>', $round->sort_order)
+                ->orderBy('sort_order')->get();
+            $prevMatchCount = $matchCount;
+
+            foreach ($rounds as $nextRound) {
+                $currentMatchCount = intdiv($prevMatchCount, 2);
+                if ($currentMatchCount < 1) {
+                    break;
+                }
+
+                Match_::where('tournament_id', $tournament->id)
+                    ->where('round_id', $nextRound->id)
+                    ->forceDelete();
+
+                for ($i = 0; $i < $currentMatchCount; $i++) {
+                    Match_::create([
+                        'tournament_id' => $tournament->id,
+                        'round_id' => $nextRound->id,
+                        'position' => $i + 1,
+                        'status' => 'scheduled',
+                    ]);
+                }
+
+                $prevMatchCount = $currentMatchCount;
+            }
+        });
+
+        return $tournament->fresh()->load(['rounds.matches.player1', 'rounds.matches.player2']);
+    }
+
+    /**
+     * Generate draw from seeded bracket placement (fixed mode).
+     */
+    private function generateFromSeeds(Tournament $tournament, Round $round): Tournament
     {
         $approvedEntries = $tournament->approvedEntries()->with('player')->get();
         $playerCount = $approvedEntries->count();
@@ -50,7 +119,6 @@ class DrawService
         }
 
         $drawSize = $tournament->draw_size ?? $this->nextPowerOfTwo($playerCount);
-        $byeCount = $drawSize - $playerCount;
 
         $seeded = $approvedEntries->whereNotNull('seed')->sortBy('seed')->values();
         $unseeded = $approvedEntries->whereNull('seed')->shuffle();
@@ -65,7 +133,6 @@ class DrawService
             if (isset($seedPositions[$i])) {
                 $slots[$seedPositions[$i]] = $entry->player_id;
             } else {
-                // Seeds beyond the bracket-positioned slots go into the fill pool
                 $overflow->push($entry);
             }
         }
@@ -80,18 +147,11 @@ class DrawService
             }
         }
 
-        // Remaining nulls are byes
-
-        DB::transaction(function () use ($tournament, $slots, $drawSize) {
-            // Clear existing matches
-            $tournament->matches()->forceDelete();
-
-            $firstRound = $tournament->rounds()->orderBy('sort_order')->first();
-            if (! $firstRound) {
-                throw ValidationException::withMessages([
-                    'tournament' => ['Tournament must have at least one round defined.'],
-                ]);
-            }
+        DB::transaction(function () use ($tournament, $round, $slots, $drawSize) {
+            // Clear existing matches for this round
+            Match_::where('tournament_id', $tournament->id)
+                ->where('round_id', $round->id)
+                ->forceDelete();
 
             $matchCount = $drawSize / 2;
             for ($i = 0; $i < $matchCount; $i++) {
@@ -109,7 +169,7 @@ class DrawService
 
                 Match_::create([
                     'tournament_id' => $tournament->id,
-                    'round_id' => $firstRound->id,
+                    'round_id' => $round->id,
                     'position' => $i + 1,
                     'player1_id' => $player1Id,
                     'player2_id' => $player2Id,
@@ -119,19 +179,24 @@ class DrawService
             }
 
             // Create placeholder matches for subsequent rounds
-            $rounds = $tournament->rounds()->orderBy('sort_order')->get();
+            $rounds = $tournament->rounds()->where('sort_order', '>', $round->sort_order)
+                ->orderBy('sort_order')->get();
             $prevMatchCount = $matchCount;
 
-            for ($r = 1; $r < $rounds->count(); $r++) {
+            foreach ($rounds as $nextRound) {
                 $currentMatchCount = intdiv($prevMatchCount, 2);
                 if ($currentMatchCount < 1) {
                     break;
                 }
 
+                Match_::where('tournament_id', $tournament->id)
+                    ->where('round_id', $nextRound->id)
+                    ->forceDelete();
+
                 for ($i = 0; $i < $currentMatchCount; $i++) {
                     Match_::create([
                         'tournament_id' => $tournament->id,
-                        'round_id' => $rounds[$r]->id,
+                        'round_id' => $nextRound->id,
                         'position' => $i + 1,
                         'status' => 'scheduled',
                     ]);
@@ -141,25 +206,22 @@ class DrawService
             }
 
             // Advance bye winners to the next round
-            $this->advanceByeWinners($tournament);
+            $this->advanceByeWinners($tournament, $round);
         });
 
         return $tournament->fresh()->load(['rounds.matches.player1', 'rounds.matches.player2']);
     }
 
-    public function confirmDraw(Tournament $tournament): Tournament
+    public function confirmDraw(Tournament $tournament, Round $round): Tournament
     {
-        $firstRound = $tournament->rounds()->orderBy('sort_order')->first();
-        if ($firstRound) {
-            $firstRound->update(['generated_at' => now()]);
-        }
+        $round->update(['generated_at' => now()]);
 
         return $tournament->fresh()->load('rounds');
     }
 
-    public function rerollDraw(Tournament $tournament): Tournament
+    public function rerollDraw(Tournament $tournament, Round $round): Tournament
     {
-        return $this->generateDraw($tournament);
+        return $this->generateDraw($tournament, $round);
     }
 
     private function nextPowerOfTwo(int $n): int
@@ -218,18 +280,19 @@ class DrawService
         return $positions;
     }
 
-    private function advanceByeWinners(Tournament $tournament): void
+    private function advanceByeWinners(Tournament $tournament, Round $round): void
     {
-        $rounds = $tournament->rounds()->orderBy('sort_order')->get();
-        if ($rounds->count() < 2) {
+        $nextRound = $tournament->rounds()
+            ->where('sort_order', '>', $round->sort_order)
+            ->orderBy('sort_order')
+            ->first();
+
+        if (! $nextRound) {
             return;
         }
 
-        $firstRound = $rounds[0];
-        $secondRound = $rounds[1];
-
         $byeMatches = Match_::where('tournament_id', $tournament->id)
-            ->where('round_id', $firstRound->id)
+            ->where('round_id', $round->id)
             ->where('status', 'bye')
             ->whereNotNull('winner_id')
             ->orderBy('position')
@@ -240,7 +303,7 @@ class DrawService
             $isPlayer1 = ($byeMatch->position % 2) === 1;
 
             $nextMatch = Match_::where('tournament_id', $tournament->id)
-                ->where('round_id', $secondRound->id)
+                ->where('round_id', $nextRound->id)
                 ->where('position', $nextPosition)
                 ->first();
 

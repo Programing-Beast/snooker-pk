@@ -15,6 +15,7 @@ class ConfirmDrawRequest extends FormRequest
     {
         return [
             'tournament_id' => ['required', 'exists:tournaments,id'],
+            'round_id' => ['required', 'exists:rounds,id'],
         ];
     }
 }
