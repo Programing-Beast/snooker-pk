@@ -134,6 +134,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/matches/{match}/assign-umpire', [MatchController::class, 'assignUmpire']);
         Route::post('/matches/{match}/walkover', [MatchController::class, 'walkover']);
         Route::post('/matches/{match}/complete', [MatchController::class, 'complete']);
+        Route::post('/matches/{match}/declare-winner', [MatchController::class, 'declareWinner']);
 
         // Rankings
         Route::post('/rankings/adjust', [RankingController::class, 'adjust']);

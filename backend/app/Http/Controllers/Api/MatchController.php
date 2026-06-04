@@ -46,6 +46,20 @@ class MatchController extends Controller
         return new MatchResource($this->matchService->complete($match));
     }
 
+    public function declareWinner(WalkoverRequest $request, Match_ $match): MatchResource
+    {
+        $data = $request->validated();
+
+        return new MatchResource(
+            $this->matchService->declareWinner(
+                $match,
+                $data['winner_id'],
+                $data['score1'] ?? null,
+                $data['score2'] ?? null,
+            )
+        );
+    }
+
     public function board(Match_ $match): MatchResource
     {
         return new MatchResource($this->matchService->board($match));

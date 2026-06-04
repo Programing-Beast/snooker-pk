@@ -15,6 +15,8 @@ class WalkoverRequest extends FormRequest
     {
         return [
             'winner_id' => ['required', 'exists:players,id'],
+            'score1' => ['sometimes', 'integer', 'min:0'],
+            'score2' => ['sometimes', 'integer', 'min:0'],
         ];
     }
 }

@@ -229,6 +229,7 @@ Base: `/api`. Auth: Sanctum bearer token. Roles enforced via middleware.
 - `PUT  /matches/{id}`                         [ADMIN] schedule, table_no, scheduled_at, video_url
 - `PUT  /matches/{id}/assign-umpire`           [ADMIN] set umpire_id
 - `PUT  /matches/{id}/walkover`                [ADMIN] set walkover winner
+- `POST /matches/{id}/declare-winner`          [ADMIN] pick winner directly (status=completed, optional scores, advances bracket)
 - `GET  /matches/{id}/board`                   [UMP] umpire board state (frames, current break) — PRIVATE
 - `POST /matches/{id}/frames`                  [UMP] start a frame (set breaker)
 - `POST /frames/{id}/breaks`                   [UMP] persist a completed visit/turn:
@@ -413,7 +414,7 @@ One Vite project. `tailwind.config.js` = the Baize tokens (already in your Desig
 | Manage players | `GET/POST/PUT /players` | players |
 | Generate draw | preview-draw, generate-draw | rounds, matches |
 | Live draw reveal | generate-draw(random), confirm, reroll | matches |
-| Manage matches | `PUT /matches/{id}`, assign-umpire, walkover | matches |
+| Manage matches | `PUT /matches/{id}`, assign-umpire, walkover, declare-winner, complete | matches |
 | Umpire board | `GET /matches/{id}/board`, frames, breaks, complete | matches, frames, breaks |
 
 ---
@@ -491,3 +492,24 @@ One Vite project. `tailwind.config.js` = the Baize tokens (already in your Desig
 - **Design system CSS** — Full Baize design tokens in `index.css`. Component classes: btn (primary, secondary, ghost, danger, brass, live, onfelt, outline), input, badge, card, seclabel, fg. Utilities: ball, felt-grain, on-felt, text-caption. Animations: pulse, bump, activeglow, dropin.
 - **Pakistan flag** — PAK.png added to `public/flags/` for CountryFlagChip component.
 - **Vite proxy** — Added `/storage` proxy alongside `/api` so dev server serves uploaded photos from Laravel backend.
+
+### 5th June 2026
+
+**Backend — Admin Match Winner Management:**
+
+- **Declare Winner endpoint** — New `POST /matches/{match}/declare-winner` admin endpoint. Accepts `winner_id` + optional `score1`/`score2`. Sets status to `completed`, advances winner to next round bracket. Distinct from `walkover` (status=walkover) and `complete` (requires frames_to_win reached). This is a flexible admin override for picking match winners directly.
+- **Score fields on UpdateMatchRequest** — `score1` and `score2` added as optional integer fields to `UpdateMatchRequest`, allowing admin to set frame scores via `PUT /matches/{match}`.
+- **WalkoverRequest extended** — Optional `score1`/`score2` fields added (reused by declareWinner endpoint).
+- **Draw regeneration guard** — `DrawService::generateDraw()` now rejects generation when the tournament already has matches with results (completed/walkover/live status). Prevents accidental bracket destruction when an admin mistakenly tries to regenerate a later round.
+- **6 new tests** — `test_update_match_scores`, `test_declare_winner`, `test_declare_winner_with_scores`, `test_declare_winner_invalid_player`, `test_declare_winner_advances_to_next_round`, `test_declare_winner_forbidden_for_player`. Total: 143 tests, 364 assertions, all passing.
+
+**Frontend — Manage Matches enhancements:**
+
+- **Set Score & Complete modal** — Admin can enter frame scores for both players directly from the manage matches page. Validates that at least one player reaches `frames_to_win` before completing. Calls `update()` then `complete()`.
+- **Declare Winner modal** — Admin can pick a winner with one click per player, with optional score inputs. Calls the new `declareWinner` API endpoint.
+- **matches.js API** — Added `declareWinner(id, data)` method.
+- **Match loading fix** — Fixed `ManageMatchesPage` not displaying matches. The `draw()` endpoint returns rounds as a flat array, but the page was accessing `drawData.rounds` (undefined on an array). Now handles both array and object formats.
+
+**Bug fixes:**
+
+- **Tournament 2 Final round data** — Cleaned up 16 bogus matches in the Final round that were created by accidental draw regeneration. Restored correct single placeholder match with semifinal winner advanced.

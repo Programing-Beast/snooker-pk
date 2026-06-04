@@ -60,16 +60,18 @@
 
 ## Phase 7 — Draw Generation
 - [x] DrawService (previewDraw, generateDraw with seeded bracket placement + bye calculation, confirmDraw, rerollDraw, winner advancement)
+- [x] Regeneration guard — draw generation blocked when tournament has completed/walkover/live matches (prevents accidental bracket destruction)
 - [x] GenerateDrawRequest, ConfirmDrawRequest
 - [x] DrawController (GET /draw/{id}/preview, POST /draw/generate, /draw/confirm, /draw/reroll)
 - [x] Feature tests (9 tests — preview, generate, byes, confirm, reroll, no-rounds edge case, bye advancement)
 
 ## Phase 8 — Matches + Live Scoring
-- [x] MatchService (show, update, assignUmpire, walkover, complete with winner advancement, board, createFrame, updateFrame, createBreak, updateBreak, deleteBreak, score cascade: breaks → frame scores → match scores)
-- [x] UpdateMatchRequest, AssignUmpireRequest, WalkoverRequest, StoreFrameRequest, UpdateFrameRequest, StoreBreakRequest, UpdateBreakRequest
+- [x] MatchService (show, update, assignUmpire, walkover, complete with winner advancement, declareWinner, board, createFrame, updateFrame, createBreak, updateBreak, deleteBreak, score cascade: breaks → frame scores → match scores)
+- [x] UpdateMatchRequest (includes score1/score2), AssignUmpireRequest, WalkoverRequest (includes optional score1/score2), StoreFrameRequest, UpdateFrameRequest, StoreBreakRequest, UpdateBreakRequest
 - [x] MatchResource, FrameResource, BreakResource
-- [x] MatchController, FrameController, BreakController
-- [x] Feature tests (30 tests — match CRUD, umpire assignment, walkover, complete, board, frames, breaks, score recalculation, high-break tracking, foul scoring, auth/role guards)
+- [x] MatchController (show, update, assignUmpire, walkover, complete, declareWinner, board), FrameController, BreakController
+- [x] `POST /matches/{match}/declare-winner` — admin endpoint to directly pick a winner (sets status=completed, optional scores, advances bracket)
+- [x] Feature tests (36 tests — match CRUD, umpire assignment, walkover, complete, declare winner, score update, board, frames, breaks, score recalculation, high-break tracking, foul scoring, auth/role guards)
 
 ## Phase 9 — Rankings
 - [x] RankingService (list ordered by points, manualAdjust with positive/negative points)
@@ -92,7 +94,7 @@
 | Resources    | 14    |
 | Routes       | 58+   |
 | Models       | 11    |
-| Feature Tests| 136 (339 assertions, all passing) |
+| Feature Tests| 143 (364 assertions, all passing) |
 
 ### Remaining
 - [ ] Factories for all models

@@ -74,6 +74,33 @@ class MatchService
         return $match->fresh()->load(['player1', 'player2', 'winner']);
     }
 
+    public function declareWinner(Match_ $match, int $winnerId, ?int $score1 = null, ?int $score2 = null): Match_
+    {
+        if (! in_array($winnerId, [$match->player1_id, $match->player2_id])) {
+            throw ValidationException::withMessages([
+                'winner_id' => ['Winner must be one of the match players.'],
+            ]);
+        }
+
+        $data = [
+            'winner_id' => $winnerId,
+            'status' => 'completed',
+        ];
+
+        if (! is_null($score1)) {
+            $data['score1'] = $score1;
+        }
+        if (! is_null($score2)) {
+            $data['score2'] = $score2;
+        }
+
+        $match->update($data);
+
+        $this->advanceWinner($match->fresh());
+
+        return $match->fresh()->load(['player1', 'player2', 'winner']);
+    }
+
     public function board(Match_ $match): Match_
     {
         return $match->load([

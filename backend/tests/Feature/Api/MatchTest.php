@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api;
 
 use App\Models\Match_;
+use App\Models\Player;
 use App\Models\Round;
 use App\Models\Tournament;
 
@@ -12,6 +13,7 @@ class MatchTest extends ApiTestCase
     private Round $round1;
     private Round $round2;
     private Match_ $match;
+    private Player $player2;
 
     protected function setUp(): void
     {
@@ -175,6 +177,81 @@ class MatchTest extends ApiTestCase
 
         $finalMatch = Match_::where('round_id', $this->round2->id)->first();
         $this->assertEquals($this->player->id, $finalMatch->player1_id);
+    }
+
+    public function test_update_match_scores(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/matches/{$this->match->id}", [
+                'score1' => 2,
+                'score2' => 3,
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.score1', 2)
+            ->assertJsonPath('data.score2', 3);
+    }
+
+    public function test_declare_winner(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/matches/{$this->match->id}/declare-winner", [
+                'winner_id' => $this->player->id,
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.status', 'completed')
+            ->assertJsonPath('data.winner.id', $this->player->id);
+    }
+
+    public function test_declare_winner_with_scores(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/matches/{$this->match->id}/declare-winner", [
+                'winner_id' => $this->player2->id,
+                'score1' => 1,
+                'score2' => 3,
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.status', 'completed')
+            ->assertJsonPath('data.winner.id', $this->player2->id)
+            ->assertJsonPath('data.score1', 1)
+            ->assertJsonPath('data.score2', 3);
+    }
+
+    public function test_declare_winner_invalid_player(): void
+    {
+        [$u3, $p3] = $this->createPlayerUser('Outsider');
+
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/matches/{$this->match->id}/declare-winner", [
+                'winner_id' => $p3->id,
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['winner_id']);
+    }
+
+    public function test_declare_winner_advances_to_next_round(): void
+    {
+        $this->actingAs($this->admin)
+            ->postJson("/api/matches/{$this->match->id}/declare-winner", [
+                'winner_id' => $this->player2->id,
+            ]);
+
+        $finalMatch = Match_::where('round_id', $this->round2->id)->first();
+        $this->assertEquals($this->player2->id, $finalMatch->player1_id);
+    }
+
+    public function test_declare_winner_forbidden_for_player(): void
+    {
+        $response = $this->actingAs($this->playerUser)
+            ->postJson("/api/matches/{$this->match->id}/declare-winner", [
+                'winner_id' => $this->player->id,
+            ]);
+
+        $response->assertStatus(403);
     }
 
     public function test_board_umpire(): void

@@ -18,6 +18,8 @@ class UpdateMatchRequest extends FormRequest
             'mode' => ['sometimes', 'in:singles,doubles,century'],
             'table_no' => ['nullable', 'string', 'max:50'],
             'scheduled_at' => ['nullable', 'date'],
+            'score1' => ['sometimes', 'integer', 'min:0'],
+            'score2' => ['sometimes', 'integer', 'min:0'],
             'video_url' => ['nullable', 'url', 'max:500'],
             'note' => ['nullable', 'string'],
         ];

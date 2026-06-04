@@ -59,7 +59,7 @@
 - [x] tournamentOrganizers.js (list, create, update, destroy)
 - [x] entries.js (list, request, mine, approve, reject, adminAdd, seed)
 - [x] draws.js (preview, generate, confirm, reroll)
-- [x] matches.js (show, update, walkover, assignUmpire, complete)
+- [x] matches.js (show, update, walkover, assignUmpire, complete, declareWinner)
 - [x] frames.js, breaks.js
 - [x] prizes.js, rounds.js
 - [x] rankings.js (list)
@@ -89,7 +89,7 @@
 - [x] Manage players (`/admin/players`, `/admin/players/new`, `/admin/players/:id/edit`)
 - [x] Generate draw (`/admin/tournaments/:id/draw`)
 - [x] Draw reveal (`/admin/tournaments/:id/draw/reveal`)
-- [x] Manage matches (`/admin/tournaments/:id/matches`)
+- [x] Manage matches (`/admin/tournaments/:id/matches`) — Set Score modal (enter frame scores + auto-complete), Declare Winner modal (pick winner + optional scores), walkover buttons, complete button
 
 ### Design System CSS (`index.css`)
 - [x] Baize color tokens (felt, brass, live, ok, warn, bad, ink, canvas, surface, night, panel)
@@ -106,5 +106,6 @@
 - [ ] Tournament form wizard: review step, success page, preview sidebar
 - [ ] Draw generation: mode selector UI, summary sidebar
 - [ ] Draw reveal: slot-machine style reveal animation (currently grid-based)
-- [ ] Match management: inline score controls, per-frame scores, live scoring interface
+- [x] Match management: Set Score & Complete modal, Declare Winner modal (admin can enter scores or pick winners directly)
+- [ ] Match management: per-frame scores, live scoring interface
 - [ ] Store page: dark felt hero styling

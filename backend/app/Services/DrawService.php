@@ -41,6 +41,26 @@ class DrawService
 
     public function generateDraw(Tournament $tournament, Round $round, ?array $pairings = null): Tournament
     {
+        // Prevent regeneration when the bracket already has results
+        $hasResults = Match_::where('tournament_id', $tournament->id)
+            ->whereIn('status', ['completed', 'walkover', 'live'])
+            ->exists();
+
+        if ($hasResults) {
+            throw ValidationException::withMessages([
+                'tournament' => ['Cannot regenerate draw — matches with results already exist in this tournament.'],
+            ]);
+        }
+
+        // Only allow generation for the first round — subsequent rounds are created as placeholders
+        $firstRound = $tournament->rounds()->orderBy('sort_order')->first();
+
+        if ($firstRound && $firstRound->id !== $round->id) {
+            throw ValidationException::withMessages([
+                'round' => ['Draw can only be generated for the first round. Subsequent rounds are filled automatically as matches complete.'],
+            ]);
+        }
+
         if ($pairings) {
             return $this->generateFromPairings($tournament, $round, $pairings);
         }
@@ -54,6 +74,18 @@ class DrawService
      */
     private function generateFromPairings(Tournament $tournament, Round $round, array $pairings): Tournament
     {
+        // Validate enough rounds exist for the bracket to complete
+        $drawSize = $this->nextPowerOfTwo(count($pairings) * 2);
+        $requiredRounds = (int) log($drawSize, 2);
+        $totalRounds = $tournament->rounds()->count();
+
+        if ($totalRounds < $requiredRounds) {
+            $playerCount = count($pairings) * 2;
+            throw ValidationException::withMessages([
+                'rounds' => ["Not enough rounds for {$playerCount} players (draw size {$drawSize}). Need at least {$requiredRounds} rounds, but only {$totalRounds} exist."],
+            ]);
+        }
+
         DB::transaction(function () use ($tournament, $round, $pairings) {
             // Clear existing matches for this round and subsequent rounds
             Match_::where('tournament_id', $tournament->id)
@@ -119,6 +151,16 @@ class DrawService
         }
 
         $drawSize = $tournament->draw_size ?? $this->nextPowerOfTwo($playerCount);
+
+        // Validate enough rounds exist for the bracket to complete
+        $requiredRounds = (int) log($drawSize, 2);
+        $totalRounds = $tournament->rounds()->count();
+
+        if ($totalRounds < $requiredRounds) {
+            throw ValidationException::withMessages([
+                'rounds' => ["Not enough rounds for {$playerCount} players (draw size {$drawSize}). Need at least {$requiredRounds} rounds, but only {$totalRounds} exist."],
+            ]);
+        }
 
         $seeded = $approvedEntries->whereNotNull('seed')->sortBy('seed')->values();
         $unseeded = $approvedEntries->whereNull('seed')->shuffle();

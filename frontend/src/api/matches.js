@@ -5,4 +5,5 @@ export const update = (id, data) => client.put(`/matches/${id}`, data);
 export const assignUmpire = (id, data) => client.post(`/matches/${id}/assign-umpire`, data);
 export const walkover = (id, data) => client.post(`/matches/${id}/walkover`, data);
 export const complete = (id) => client.post(`/matches/${id}/complete`);
+export const declareWinner = (id, data) => client.post(`/matches/${id}/declare-winner`, data);
 export const board = (id) => client.get(`/matches/${id}/board`);
