@@ -46,6 +46,7 @@ export default function DrawGeneratePage() {
   const [generating, setGenerating] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   // Load tournament, rounds, draw data, and entry count on mount
   useEffect(() => {
@@ -153,18 +154,30 @@ export default function DrawGeneratePage() {
     }
 
     setGenerating(true);
+    setError('');
     try {
-      await persistSetting('draw_mode', drawMode);
-      await persistSetting('frames_to_win', framesToWin(bestOf));
-      const res = await drawsApi.generate({
-        tournament_id: Number(id),
-        round_id: selectedRoundId,
-        mode: drawMode,
-      });
+      if (selectedRoundId) {
+        await persistSetting('draw_mode', drawMode);
+        await persistSetting('frames_to_win', framesToWin(bestOf));
+      }
+      const payload = { tournament_id: Number(id), mode: drawMode };
+      if (selectedRoundId) payload.round_id = selectedRoundId;
+      const res = await drawsApi.generate(payload);
       setGenerated(res.data.data ?? res.data);
-      // Refresh draw data so sidebar and round state update
+      // Refresh rounds (may have been auto-created) and draw data
+      roundsApi.list(id).then(res => {
+        const r = res.data.data ?? res.data ?? [];
+        setRounds(r);
+        if (r.length && !selectedRoundId) {
+          setSelectedRoundId(r[0].id);
+          loadRoundSettings(r[0]);
+        }
+      }).catch(() => {});
       tournamentsApi.draw(id).then(r => setDrawData(r.data.data ?? r.data ?? [])).catch(() => {});
-    } catch { /* ignore */ }
+    } catch (err) {
+      const msg = err.response?.data?.message || Object.values(err.response?.data?.errors || {}).flat()[0] || 'Failed to generate draw.';
+      setError(msg);
+    }
     setGenerating(false);
   }
 
@@ -200,6 +213,13 @@ export default function DrawGeneratePage() {
         </div>
       </div>
 
+      {error && (
+        <div className="bg-bad-tint text-bad text-[13px] px-4 py-3 rounded-md mb-4 flex items-center justify-between">
+          {error}
+          <button onClick={() => setError('')} className="text-bad/60 hover:text-bad font-bold ml-3">×</button>
+        </div>
+      )}
+
       {/* 2-column layout */}
       <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
         {/* Left column — config cards */}
@@ -207,26 +227,30 @@ export default function DrawGeneratePage() {
           {/* Card 1: Round selector */}
           <div className="card p-5">
             <div className="seclabel text-felt mb-3">1 · Round</div>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {rounds.map(r => (
-                <button
-                  key={r.id}
-                  onClick={() => handleRoundChange(r.id)}
-                  className={`px-3.5 py-2 rounded-md text-[13px] font-display font-semibold transition flex items-center gap-1.5 ${
-                    r.id === selectedRoundId
-                      ? 'bg-felt text-white'
-                      : 'bg-surface2 text-ink-600 hover:text-ink-900'
-                  }`}
-                >
-                  {r.name}
-                  {r.generated_at && (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className={r.id === selectedRoundId ? 'text-white/70' : 'text-ok'}>
-                      <path d="M5 12l5 5L20 6" />
-                    </svg>
-                  )}
-                </button>
-              ))}
-            </div>
+            {rounds.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {rounds.map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => handleRoundChange(r.id)}
+                    className={`px-3.5 py-2 rounded-md text-[13px] font-display font-semibold transition flex items-center gap-1.5 ${
+                      r.id === selectedRoundId
+                        ? 'bg-felt text-white'
+                        : 'bg-surface2 text-ink-600 hover:text-ink-900'
+                    }`}
+                  >
+                    {r.name}
+                    {r.generated_at && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className={r.id === selectedRoundId ? 'text-white/70' : 'text-ok'}>
+                        <path d="M5 12l5 5L20 6" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[13px] text-ink-400 mb-3">Rounds will be created automatically based on the number of approved players.</p>
+            )}
             {poolSize > 0 && (
               <div className="flex items-center gap-2 rounded-md bg-surface2 px-3.5 py-2.5 text-[13px]">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-felt shrink-0">
@@ -478,7 +502,7 @@ export default function DrawGeneratePage() {
               <Button
                 className="w-full"
                 onClick={handleGenerate}
-                disabled={generating || !selectedRoundId}
+                disabled={generating || (rounds.length > 0 && !selectedRoundId)}
               >
                 {generating ? 'Generating...' : isAlreadyGenerated ? 'Re-generate pairing' : 'Generate pairing'}
               </Button>
@@ -487,7 +511,7 @@ export default function DrawGeneratePage() {
                 variant="brass"
                 className="w-full"
                 onClick={handleGenerate}
-                disabled={!selectedRoundId}
+                disabled={rounds.length > 0 && !selectedRoundId}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
                   <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />

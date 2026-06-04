@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import * as tournamentsApi from '../../api/tournaments';
 import * as prizesApi from '../../api/prizes';
 import * as organizersApi from '../../api/tournamentOrganizers';
-import * as roundsApi from '../../api/rounds';
 import * as playersApi from '../../api/players';
 import * as playerPhonesApi from '../../api/playerPhones';
 import Input from '../../components/ui/Input';
@@ -12,12 +11,22 @@ import FileUpload from '../../components/ui/FileUpload';
 import Button from '../../components/ui/Button';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 
-const STEPS = ['Basics', 'Prizes', 'Organizers', 'Rounds'];
+const STEPS = ['Basics', 'Prizes', 'Organizers'];
 
 const PK_CITIES = [
-  'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad',
-  'Multan', 'Peshawar', 'Quetta', 'Sialkot', 'Gujranwala',
-  'Hyderabad', 'Bahawalpur', 'Sargodha', 'Abbottabad', 'Mardan',
+  'Abbottabad', 'Attock', 'Bahawalnagar', 'Bahawalpur', 'Bannu',
+  'Bhakkar', 'Burewala', 'Chakwal', 'Chiniot', 'Dera Ghazi Khan',
+  'Dera Ismail Khan', 'Faisalabad', 'Ghotki', 'Gojra', 'Gujranwala',
+  'Gujrat', 'Hafizabad', 'Haripur', 'Hyderabad', 'Islamabad',
+  'Jacobabad', 'Jhelum', 'Jhang', 'Kamalia', 'Karachi',
+  'Kasur', 'Khairpur', 'Khanewal', 'Khanpur', 'Khushab',
+  'Kohat', 'Lahore', 'Lalamusa', 'Larkana', 'Lodhran',
+  'Mandi Bahauddin', 'Mansehra', 'Mardan', 'Mianwali', 'Mingora',
+  'Mirpur Khas', 'Multan', 'Muridke', 'Muzaffarabad', 'Muzaffargarh',
+  'Nawabshah', 'Nowshera', 'Okara', 'Pakpattan', 'Peshawar',
+  'Quetta', 'Rahim Yar Khan', 'Rawalpindi', 'Sadiqabad', 'Sahiwal',
+  'Sargodha', 'Sheikhupura', 'Sialkot', 'Sukkur', 'Swabi',
+  'Tando Adam', 'Taxila', 'Vehari', 'Wah Cantt', 'Wazirabad',
 ];
 
 export default function TournamentFormPage() {
@@ -38,7 +47,10 @@ export default function TournamentFormPage() {
   const [banner, setBanner] = useState(null);
 
   // Prizes
-  const [prizes, setPrizes] = useState([{ position_label: 'Winner', amount: '', count: 1, is_highlight: true }]);
+  const [prizes, setPrizes] = useState([
+    { position_label: 'Winner', amount: '', count: 1, is_highlight: true },
+    { position_label: 'Runner-up', amount: '', count: 1, is_highlight: false },
+  ]);
 
   // Organizers
   const [existingOrganizers, setExistingOrganizers] = useState([]);
@@ -53,8 +65,8 @@ export default function TournamentFormPage() {
   const [inlineForm, setInlineForm] = useState({ name: '', city: '', phone: '' });
   const [inlineCreating, setInlineCreating] = useState(false);
 
-  // Rounds
-  const [rounds, setRounds] = useState([{ name: 'Round of 32', frames_to_win: 3, draw_mode: 'fixed' }]);
+  // Slug auto-generation
+  const [slugManual, setSlugManual] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -68,7 +80,7 @@ export default function TournamentFormPage() {
       });
       if (t.prizes?.length) setPrizes(t.prizes.map(p => ({ ...p })));
       if (t.organizers?.length) setExistingOrganizers(t.organizers);
-      if (t.rounds?.length) setRounds(t.rounds.map(r => ({ ...r })));
+      if (t.slug) setSlugManual(true);
     }).catch(() => {});
   }, [id]);
 
@@ -81,8 +93,21 @@ export default function TournamentFormPage() {
     }
   }, [step, tournamentId]);
 
+  function toSlug(str) {
+    return str.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/[\s]+/g, '-').replace(/-+/g, '-');
+  }
+
   function set(field) {
-    return (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
+    return (e) => {
+      const val = e.target.value;
+      setForm(prev => {
+        const next = { ...prev, [field]: val };
+        if (field === 'name' && !slugManual) {
+          next.slug = toSlug(val);
+        }
+        return next;
+      });
+    };
   }
 
   // Debounced phone search for organizer lookup
@@ -185,20 +210,6 @@ export default function TournamentFormPage() {
     setSaving(false);
   }
 
-  async function saveRounds() {
-    if (!tournamentId) { navigate('/admin'); return; }
-    setSaving(true);
-    try {
-      for (let i = 0; i < rounds.length; i++) {
-        const r = { ...rounds[i], sort_order: i };
-        if (r.id) await roundsApi.update(r.id, r);
-        else if (r.name) await roundsApi.create(tournamentId, r);
-      }
-      navigate('/admin');
-    } catch { navigate('/admin'); }
-    setSaving(false);
-  }
-
   function updateArray(setter, index, field, value) {
     setter(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
   }
@@ -231,10 +242,19 @@ export default function TournamentFormPage() {
       {step === 0 && (
         <div className="card p-6 space-y-4 max-w-2xl">
           <Input label="Tournament name" value={form.name} onChange={set('name')} error={errors.name?.[0]} />
-          <Input label="URL slug" value={form.slug} onChange={set('slug')} placeholder="karachi-national-open-26" error={errors.slug?.[0]} />
+          <Input
+            label="URL slug"
+            value={form.slug}
+            onChange={e => { setSlugManual(true); setForm(prev => ({ ...prev, slug: e.target.value })); }}
+            placeholder="karachi-national-open-26"
+            error={errors.slug?.[0]}
+          />
           <div className="grid sm:grid-cols-2 gap-4">
             <Input label="Venue" value={form.venue} onChange={set('venue')} error={errors.venue?.[0]} />
-            <Input label="City" value={form.city} onChange={set('city')} error={errors.city?.[0]} />
+            <Select label="City" value={form.city} onChange={set('city')} error={errors.city?.[0]}>
+              <option value="">Select city</option>
+              {PK_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </Select>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <Input label="Start date" type="date" value={form.start_date} onChange={set('start_date')} error={errors.start_date?.[0]} />
@@ -368,32 +388,12 @@ export default function TournamentFormPage() {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Button onClick={() => setStep(3)}>Next: Rounds →</Button>
-            <Button variant="ghost" onClick={() => setStep(3)}>Skip</Button>
+            <Button onClick={() => navigate('/admin')}>{isEdit ? 'Save & finish' : 'Finish'}</Button>
+            <Button variant="ghost" onClick={() => navigate('/admin')}>Skip</Button>
           </div>
         </div>
       )}
 
-      {/* Step 3: Rounds */}
-      {step === 3 && (
-        <div className="card p-6 space-y-4 max-w-2xl">
-          {rounds.map((r, i) => (
-            <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-end">
-              <Input label="Round name" value={r.name} onChange={e => updateArray(setRounds, i, 'name', e.target.value)} />
-              <Input label="Frames to win" type="number" value={r.frames_to_win} onChange={e => updateArray(setRounds, i, 'frames_to_win', e.target.value)} />
-              <Select label="Draw mode" value={r.draw_mode} onChange={e => updateArray(setRounds, i, 'draw_mode', e.target.value)}>
-                <option value="fixed">Fixed (seeded)</option>
-                <option value="random">Random draw</option>
-              </Select>
-              <button onClick={() => setRounds(prev => prev.filter((_, j) => j !== i))} className="btn btn-ghost btn-sm text-bad">×</button>
-            </div>
-          ))}
-          <button onClick={() => setRounds(prev => [...prev, { name: '', frames_to_win: 3, draw_mode: 'fixed' }])} className="btn btn-ghost btn-sm">+ Add round</button>
-          <div className="flex gap-3 pt-2">
-            <Button onClick={saveRounds} disabled={saving}>{saving ? 'Saving...' : isEdit ? 'Save & finish' : 'Create tournament'}</Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

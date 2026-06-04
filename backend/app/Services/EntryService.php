@@ -75,6 +75,8 @@ class EntryService
 
     public function adminAdd(int $tournamentId, int $playerId, User $decidedBy): TournamentEntry
     {
+        $tournament = Tournament::findOrFail($tournamentId);
+
         $existing = TournamentEntry::where('tournament_id', $tournamentId)
             ->where('player_id', $playerId)
             ->whereNull('deleted_at')
@@ -86,6 +88,15 @@ class EntryService
             ]);
         }
 
+        if ($tournament->max_players) {
+            $approvedCount = $tournament->approvedEntries()->count();
+            if ($approvedCount >= $tournament->max_players) {
+                throw ValidationException::withMessages([
+                    'tournament' => ["This tournament has reached its maximum capacity of {$tournament->max_players} players."],
+                ]);
+            }
+        }
+
         return TournamentEntry::create([
             'tournament_id' => $tournamentId,
             'player_id' => $playerId,
@@ -95,6 +106,56 @@ class EntryService
             'decided_at' => now(),
             'decided_by' => $decidedBy->id,
         ]);
+    }
+
+    public function bulkAdminAdd(int $tournamentId, array $playerIds, User $decidedBy): int
+    {
+        $tournament = Tournament::findOrFail($tournamentId);
+
+        $existing = TournamentEntry::where('tournament_id', $tournamentId)
+            ->whereIn('player_id', $playerIds)
+            ->whereNull('deleted_at')
+            ->pluck('player_id')
+            ->toArray();
+
+        $newIds = array_values(array_diff($playerIds, $existing));
+
+        // Enforce max_players capacity
+        if ($tournament->max_players) {
+            $approvedCount = $tournament->approvedEntries()->count();
+            $available = $tournament->max_players - $approvedCount;
+
+            if ($available <= 0) {
+                throw ValidationException::withMessages([
+                    'tournament' => ["This tournament has reached its maximum capacity of {$tournament->max_players} players."],
+                ]);
+            }
+
+            // Trim to available slots
+            $newIds = array_slice($newIds, 0, $available);
+        }
+
+        if (empty($newIds)) {
+            return 0;
+        }
+
+        $now = now();
+
+        $rows = array_map(fn ($pid) => [
+            'tournament_id' => $tournamentId,
+            'player_id' => $pid,
+            'status' => 'approved',
+            'source' => 'admin_added',
+            'requested_at' => $now,
+            'decided_at' => $now,
+            'decided_by' => $decidedBy->id,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $newIds);
+
+        TournamentEntry::insert($rows);
+
+        return count($newIds);
     }
 
     public function setSeed(TournamentEntry $entry, ?int $seed): TournamentEntry

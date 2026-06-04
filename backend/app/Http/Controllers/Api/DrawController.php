@@ -33,19 +33,22 @@ class DrawController extends Controller
     {
         $validated = $request->validated();
         $tournament = Tournament::findOrFail($validated['tournament_id']);
-        $round = Round::findOrFail($validated['round_id']);
+        $round = isset($validated['round_id']) ? Round::findOrFail($validated['round_id']) : null;
 
         $pairings = $validated['pairings'] ?? null;
 
         $this->drawService->generateDraw($tournament, $round, $pairings);
 
+        // Resolve the first round (may have been auto-created)
+        $firstRound = $round ?? $tournament->rounds()->orderBy('sort_order')->first();
+
         $matches = MatchResource::collection(
-            $round->matches()->with(['player1', 'player2'])
+            $firstRound->matches()->with(['player1', 'player2'])
                 ->where('status', '!=', 'bye')->orderBy('position')->get()
         );
 
         $byes = MatchResource::collection(
-            $round->matches()->with(['player1', 'player2'])
+            $firstRound->matches()->with(['player1', 'player2'])
                 ->where('status', 'bye')->orderBy('position')->get()
         );
 
@@ -75,12 +78,13 @@ class DrawController extends Controller
     {
         $validated = $request->validated();
         $tournament = Tournament::findOrFail($validated['tournament_id']);
-        $round = Round::findOrFail($validated['round_id']);
+        $round = isset($validated['round_id']) ? Round::findOrFail($validated['round_id']) : null;
 
-        $this->drawService->rerollDraw($tournament, $round);
+        $this->drawService->rerollDraw($tournament, $round ?? $tournament->rounds()->orderBy('sort_order')->first());
 
+        $firstRound = $round ?? $tournament->rounds()->orderBy('sort_order')->first();
         $matches = MatchResource::collection(
-            $round->matches()->with(['player1', 'player2'])->orderBy('position')->get()
+            $firstRound->matches()->with(['player1', 'player2'])->orderBy('position')->get()
         );
 
         return response()->json([

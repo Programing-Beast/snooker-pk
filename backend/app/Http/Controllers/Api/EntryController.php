@@ -47,9 +47,26 @@ class EntryController extends Controller
 
     public function adminAdd(AdminAddEntryRequest $request): JsonResponse
     {
+        $data = $request->validated();
+
+        // Bulk add: player_ids array
+        if (! empty($data['player_ids'])) {
+            $added = $this->entryService->bulkAdminAdd(
+                $data['tournament_id'],
+                $data['player_ids'],
+                $request->user()
+            );
+
+            return response()->json([
+                'message' => "{$added} player(s) added.",
+                'added' => $added,
+            ], 201);
+        }
+
+        // Single add: player_id
         $entry = $this->entryService->adminAdd(
-            $request->validated()['tournament_id'],
-            $request->validated()['player_id'],
+            $data['tournament_id'],
+            $data['player_id'],
             $request->user()
         );
 

@@ -15,7 +15,9 @@ class AdminAddEntryRequest extends FormRequest
     {
         return [
             'tournament_id' => ['required', 'exists:tournaments,id'],
-            'player_id' => ['required', 'exists:players,id'],
+            'player_id' => ['required_without:player_ids', 'exists:players,id'],
+            'player_ids' => ['required_without:player_id', 'array', 'min:1'],
+            'player_ids.*' => ['exists:players,id'],
         ];
     }
 }

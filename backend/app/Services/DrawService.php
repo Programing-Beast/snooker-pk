@@ -39,7 +39,7 @@ class DrawService
         ];
     }
 
-    public function generateDraw(Tournament $tournament, Round $round, ?array $pairings = null): Tournament
+    public function generateDraw(Tournament $tournament, ?Round $round = null, ?array $pairings = null): Tournament
     {
         // Prevent regeneration when the bracket already has results
         $hasResults = Match_::where('tournament_id', $tournament->id)
@@ -52,9 +52,17 @@ class DrawService
             ]);
         }
 
-        // Only allow generation for the first round — subsequent rounds are created as placeholders
+        // Auto-create or fill in missing rounds
+        $this->ensureRoundsExist($tournament);
+
+        // Resolve to first round if not specified
         $firstRound = $tournament->rounds()->orderBy('sort_order')->first();
 
+        if (! $round) {
+            $round = $firstRound;
+        }
+
+        // Only allow generation for the first round — subsequent rounds are created as placeholders
         if ($firstRound && $firstRound->id !== $round->id) {
             throw ValidationException::withMessages([
                 'round' => ['Draw can only be generated for the first round. Subsequent rounds are filled automatically as matches complete.'],
@@ -69,23 +77,73 @@ class DrawService
     }
 
     /**
+     * Ensure the tournament has enough rounds for its draw size.
+     * Creates missing rounds with standard snooker names.
+     */
+    public function ensureRoundsExist(Tournament $tournament): void
+    {
+        $playerCount = $tournament->approvedEntries()->count();
+
+        if ($playerCount < 2) {
+            return;
+        }
+
+        $drawSize = $tournament->draw_size ?? $this->nextPowerOfTwo($playerCount);
+        $requiredRounds = (int) log($drawSize, 2);
+        $existingCount = $tournament->rounds()->count();
+
+        if ($existingCount >= $requiredRounds) {
+            return;
+        }
+
+        $names = $this->getRoundNames($drawSize);
+        $maxSortOrder = $tournament->rounds()->max('sort_order') ?? -1;
+
+        // Create only the missing rounds (append after existing ones)
+        for ($i = $existingCount; $i < $requiredRounds; $i++) {
+            Round::create([
+                'tournament_id' => $tournament->id,
+                'name' => $names[$i],
+                'sort_order' => $maxSortOrder + ($i - $existingCount) + 1,
+                'frames_to_win' => 3,
+            ]);
+        }
+    }
+
+    /**
+     * Generate standard snooker round names for a given draw size.
+     */
+    private function getRoundNames(int $drawSize): array
+    {
+        $roundCount = (int) log($drawSize, 2);
+        $names = [];
+        $playersInRound = $drawSize;
+
+        for ($i = 0; $i < $roundCount; $i++) {
+            $roundsRemaining = $roundCount - $i;
+
+            if ($roundsRemaining === 1) {
+                $names[] = 'Final';
+            } elseif ($roundsRemaining === 2) {
+                $names[] = 'Semi Final';
+            } elseif ($roundsRemaining === 3) {
+                $names[] = 'Quarter Final';
+            } else {
+                $names[] = "Round of {$playersInRound}";
+            }
+
+            $playersInRound = intdiv($playersInRound, 2);
+        }
+
+        return $names;
+    }
+
+    /**
      * Generate draw from explicit pairings (random reveal mode).
      * The frontend sends the confirmed pairings after the live reveal.
      */
     private function generateFromPairings(Tournament $tournament, Round $round, array $pairings): Tournament
     {
-        // Validate enough rounds exist for the bracket to complete
-        $drawSize = $this->nextPowerOfTwo(count($pairings) * 2);
-        $requiredRounds = (int) log($drawSize, 2);
-        $totalRounds = $tournament->rounds()->count();
-
-        if ($totalRounds < $requiredRounds) {
-            $playerCount = count($pairings) * 2;
-            throw ValidationException::withMessages([
-                'rounds' => ["Not enough rounds for {$playerCount} players (draw size {$drawSize}). Need at least {$requiredRounds} rounds, but only {$totalRounds} exist."],
-            ]);
-        }
-
         DB::transaction(function () use ($tournament, $round, $pairings) {
             // Clear existing matches for this round and subsequent rounds
             Match_::where('tournament_id', $tournament->id)
@@ -151,16 +209,6 @@ class DrawService
         }
 
         $drawSize = $tournament->draw_size ?? $this->nextPowerOfTwo($playerCount);
-
-        // Validate enough rounds exist for the bracket to complete
-        $requiredRounds = (int) log($drawSize, 2);
-        $totalRounds = $tournament->rounds()->count();
-
-        if ($totalRounds < $requiredRounds) {
-            throw ValidationException::withMessages([
-                'rounds' => ["Not enough rounds for {$playerCount} players (draw size {$drawSize}). Need at least {$requiredRounds} rounds, but only {$totalRounds} exist."],
-            ]);
-        }
 
         $seeded = $approvedEntries->whereNotNull('seed')->sortBy('seed')->values();
         $unseeded = $approvedEntries->whereNull('seed')->shuffle();

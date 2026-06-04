@@ -81,6 +81,7 @@ export default function ManageMatchesPage() {
     const s1 = parseInt(scoreForm.score1, 10);
     const s2 = parseInt(scoreForm.score2, 10);
     const ftw = scoreMatch.frames_to_win;
+    const bestOf = ftw ? ftw * 2 - 1 : null;
 
     if (isNaN(s1) || isNaN(s2) || s1 < 0 || s2 < 0) {
       setScoreError('Enter valid scores for both players.');
@@ -88,6 +89,22 @@ export default function ManageMatchesPage() {
     }
     if (ftw && s1 < ftw && s2 < ftw) {
       setScoreError(`At least one player must reach ${ftw} frames to win.`);
+      return;
+    }
+    if (ftw && s1 > ftw) {
+      setScoreError(`${scoreMatch.player1?.name} score cannot exceed ${ftw}.`);
+      return;
+    }
+    if (ftw && s2 > ftw) {
+      setScoreError(`${scoreMatch.player2?.name} score cannot exceed ${ftw}.`);
+      return;
+    }
+    if (ftw && s1 === ftw && s2 === ftw) {
+      setScoreError('Both players cannot reach frames to win.');
+      return;
+    }
+    if (bestOf && s1 + s2 > bestOf) {
+      setScoreError(`Total frames cannot exceed ${bestOf} (best of ${bestOf}).`);
       return;
     }
 
@@ -104,20 +121,24 @@ export default function ManageMatchesPage() {
   }
 
   // Declare Winner helpers
-  function openDeclareModal(match) {
-    setDeclareMatch(match);
-    setDeclareForm({ score1: '', score2: '' });
+  function openDeclareModal(match, round) {
+    setDeclareMatch({ ...match, frames_to_win: round.frames_to_win });
+    setDeclareForm({ loserScore: '' });
   }
 
   async function handleDeclareWinner(winnerId) {
     if (!declareMatch) return;
     setDeclareSaving(true);
     try {
+      const ftw = declareMatch.frames_to_win;
+      const isP1Winner = winnerId === declareMatch.player1?.id;
       const payload = { winner_id: winnerId };
-      const s1 = parseInt(declareForm.score1, 10);
-      const s2 = parseInt(declareForm.score2, 10);
-      if (!isNaN(s1) && s1 >= 0) payload.score1 = s1;
-      if (!isNaN(s2) && s2 >= 0) payload.score2 = s2;
+
+      // Auto-set scores: winner gets frames_to_win, loser gets entered score or 0
+      const loserScore = parseInt(declareForm.loserScore, 10);
+      const loserVal = isNaN(loserScore) || loserScore < 0 ? 0 : (ftw ? Math.min(loserScore, ftw - 1) : loserScore);
+      payload.score1 = isP1Winner ? (ftw || 0) : loserVal;
+      payload.score2 = isP1Winner ? loserVal : (ftw || 0);
 
       await matchesApi.declareWinner(declareMatch.id, payload);
       loadData();
@@ -159,7 +180,7 @@ export default function ManageMatchesPage() {
                         <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => handleWalkover(m.id, m.player1.id)}>W/O → {m.player1.name?.split(' ').pop()}</button>
                         <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => handleWalkover(m.id, m.player2.id)}>W/O → {m.player2.name?.split(' ').pop()}</button>
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openScoreModal(m, round)}>Set Score</button>
-                        <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openDeclareModal(m)}>Declare Winner</button>
+                        <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openDeclareModal(m, round)}>Declare Winner</button>
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => handleComplete(m.id)}>Complete</button>
                       </>
                     )}
@@ -200,6 +221,7 @@ export default function ManageMatchesPage() {
                 label={scoreMatch.player1?.name || 'Player 1'}
                 type="number"
                 min="0"
+                max={scoreMatch.frames_to_win || undefined}
                 value={scoreForm.score1}
                 onChange={e => setScoreForm(f => ({ ...f, score1: e.target.value }))}
               />
@@ -207,11 +229,12 @@ export default function ManageMatchesPage() {
                 label={scoreMatch.player2?.name || 'Player 2'}
                 type="number"
                 min="0"
+                max={scoreMatch.frames_to_win || undefined}
                 value={scoreForm.score2}
                 onChange={e => setScoreForm(f => ({ ...f, score2: e.target.value }))}
               />
               {scoreMatch.frames_to_win && (
-                <p className="text-[12px] text-ink-400">Frames to win: {scoreMatch.frames_to_win}</p>
+                <p className="text-[12px] text-ink-400">Best of {scoreMatch.frames_to_win * 2 - 1} · First to {scoreMatch.frames_to_win}</p>
               )}
               {scoreError && <p className="text-[12px] text-red-500">{scoreError}</p>}
             </div>
@@ -229,25 +252,19 @@ export default function ManageMatchesPage() {
           <h3 className="font-display font-bold text-[18px] mb-4">Declare Winner</h3>
           {declareMatch && (
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  label={declareMatch.player1?.name || 'Player 1'}
-                  type="number"
-                  min="0"
-                  value={declareForm.score1}
-                  onChange={e => setDeclareForm(f => ({ ...f, score1: e.target.value }))}
-                  placeholder="Score (optional)"
-                />
-                <Input
-                  label={declareMatch.player2?.name || 'Player 2'}
-                  type="number"
-                  min="0"
-                  value={declareForm.score2}
-                  onChange={e => setDeclareForm(f => ({ ...f, score2: e.target.value }))}
-                  placeholder="Score (optional)"
-                />
-              </div>
-              <p className="text-[12px] text-ink-400">Select the winner below. Scores are optional.</p>
+              {declareMatch.frames_to_win && (
+                <p className="text-[12px] text-ink-400">Best of {declareMatch.frames_to_win * 2 - 1} · Winner gets {declareMatch.frames_to_win} frames automatically.</p>
+              )}
+              <Input
+                label="Loser's score (optional)"
+                type="number"
+                min="0"
+                max={declareMatch.frames_to_win ? declareMatch.frames_to_win - 1 : undefined}
+                value={declareForm.loserScore}
+                onChange={e => setDeclareForm(f => ({ ...f, loserScore: e.target.value }))}
+                placeholder="0"
+              />
+              <p className="text-[12px] text-ink-400">Select the winner below.</p>
               <div className="flex gap-2">
                 <Button
                   size="sm"

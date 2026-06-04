@@ -15,7 +15,7 @@ class GenerateDrawRequest extends FormRequest
     {
         return [
             'tournament_id' => ['required', 'exists:tournaments,id'],
-            'round_id' => ['required', 'exists:rounds,id'],
+            'round_id' => ['sometimes', 'exists:rounds,id'],
             'pairings' => ['sometimes', 'array', 'min:1'],
             'pairings.*.player1_id' => ['required_with:pairings', 'exists:players,id'],
             'pairings.*.player2_id' => ['required_with:pairings', 'exists:players,id'],

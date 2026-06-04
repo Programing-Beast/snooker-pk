@@ -86,9 +86,7 @@ export default function ManageEntriesPage() {
     if (ids.length === 0) return;
     setAdding(true);
     try {
-      for (const playerId of ids) {
-        await entriesApi.adminAdd({ tournament_id: id, player_id: playerId });
-      }
+      await entriesApi.bulkAdd(id, ids);
       await loadEntries();
       setCheckedIds(new Set());
       setSearch('');
@@ -101,6 +99,7 @@ export default function ManageEntriesPage() {
   const rejected = entries.filter(e => e.status === 'rejected');
   const capacity = tournament?.max_players || 0;
   const fillPct = capacity ? Math.round((approved.length / capacity) * 100) : 0;
+  const isFull = capacity > 0 && approved.length >= capacity;
 
   return (
     <div>
@@ -165,8 +164,8 @@ export default function ManageEntriesPage() {
             <Button variant="ghost" size="sm" onClick={() => { setShowAddSection(false); setCheckedIds(new Set()); setSearch(''); }}>
               Cancel
             </Button>
-            <Button size="sm" onClick={addSelected} disabled={adding || checkedIds.size === 0}>
-              {adding ? 'Adding...' : `Add selected (${checkedIds.size})`}
+            <Button size="sm" onClick={addSelected} disabled={adding || checkedIds.size === 0 || isFull}>
+              {isFull ? 'Tournament full' : adding ? 'Adding...' : `Add selected (${checkedIds.size})`}
             </Button>
           </div>
         </div>

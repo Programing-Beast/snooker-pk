@@ -185,15 +185,46 @@ class DrawTest extends ApiTestCase
             ->assertJsonPath('message', 'Draw re-rolled successfully.');
     }
 
-    public function test_generate_draw_validates_round_id(): void
+    public function test_generate_draw_without_round_id_auto_creates_rounds(): void
     {
+        // Remove manually-created rounds so auto-creation kicks in
+        Round::where('tournament_id', $this->tournament->id)->forceDelete();
+        $this->seedPlayers(4);
+        $this->tournament->update(['draw_size' => 4]);
+
         $response = $this->actingAs($this->admin)
             ->postJson('/api/draw/generate', [
                 'tournament_id' => $this->tournament->id,
             ]);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['round_id']);
+        $response->assertOk();
+
+        // Should auto-create 2 rounds for 4 players: Semi Final, Final
+        $rounds = $this->tournament->rounds()->orderBy('sort_order')->get();
+        $this->assertEquals(2, $rounds->count());
+        $this->assertEquals('Semi Final', $rounds[0]->name);
+        $this->assertEquals('Final', $rounds[1]->name);
+
+        // 2 first-round matches + 1 final placeholder = 3
+        $this->assertEquals(3, $this->tournament->matches()->count());
+    }
+
+    public function test_auto_round_names_for_larger_draws(): void
+    {
+        Round::where('tournament_id', $this->tournament->id)->forceDelete();
+        $this->seedPlayers(8);
+        $this->tournament->update(['draw_size' => 8]);
+
+        $this->actingAs($this->admin)
+            ->postJson('/api/draw/generate', [
+                'tournament_id' => $this->tournament->id,
+            ]);
+
+        $rounds = $this->tournament->rounds()->orderBy('sort_order')->get();
+        $this->assertEquals(3, $rounds->count());
+        $this->assertEquals('Quarter Final', $rounds[0]->name);
+        $this->assertEquals('Semi Final', $rounds[1]->name);
+        $this->assertEquals('Final', $rounds[2]->name);
     }
 
     public function test_bye_winners_advance_to_next_round(): void
