@@ -1,0 +1,399 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import * as tournamentsApi from '../../api/tournaments';
+import * as prizesApi from '../../api/prizes';
+import * as organizersApi from '../../api/tournamentOrganizers';
+import * as roundsApi from '../../api/rounds';
+import * as playersApi from '../../api/players';
+import * as playerPhonesApi from '../../api/playerPhones';
+import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
+import FileUpload from '../../components/ui/FileUpload';
+import Button from '../../components/ui/Button';
+import PlayerAvatar from '../../components/ui/PlayerAvatar';
+
+const STEPS = ['Basics', 'Prizes', 'Organizers', 'Rounds'];
+
+const PK_CITIES = [
+  'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad',
+  'Multan', 'Peshawar', 'Quetta', 'Sialkot', 'Gujranwala',
+  'Hyderabad', 'Bahawalpur', 'Sargodha', 'Abbottabad', 'Mardan',
+];
+
+export default function TournamentFormPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isEdit = !!id;
+  const [step, setStep] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [tournamentId, setTournamentId] = useState(id || null);
+
+  // Basics
+  const [form, setForm] = useState({
+    name: '', slug: '', venue: '', city: '', country_code: 'PAK',
+    start_date: '', end_date: '', description: '', max_players: 32,
+    entry_status: 'open',
+  });
+  const [banner, setBanner] = useState(null);
+
+  // Prizes
+  const [prizes, setPrizes] = useState([{ position_label: 'Winner', amount: '', count: 1, is_highlight: true }]);
+
+  // Organizers
+  const [existingOrganizers, setExistingOrganizers] = useState([]);
+  const [phoneQuery, setPhoneQuery] = useState('');
+  const [phoneResults, setPhoneResults] = useState([]);
+  const [phoneSearching, setPhoneSearching] = useState(false);
+  const [orgRole, setOrgRole] = useState('');
+  const phoneDebounce = useRef(null);
+
+  // Inline create player
+  const [showInlineCreate, setShowInlineCreate] = useState(false);
+  const [inlineForm, setInlineForm] = useState({ name: '', city: '', phone: '' });
+  const [inlineCreating, setInlineCreating] = useState(false);
+
+  // Rounds
+  const [rounds, setRounds] = useState([{ name: 'Round of 32', frames_to_win: 3, draw_mode: 'fixed' }]);
+
+  useEffect(() => {
+    if (!id) return;
+    tournamentsApi.show(id).then(res => {
+      const t = res.data.data ?? res.data;
+      setForm({
+        name: t.name || '', slug: t.slug || '', venue: t.venue || '', city: t.city || '',
+        country_code: t.country_code || 'PAK', start_date: t.start_date?.slice(0, 10) || '',
+        end_date: t.end_date?.slice(0, 10) || '', description: t.description || '',
+        max_players: t.max_players || 32, entry_status: t.entry_status || 'open',
+      });
+      if (t.prizes?.length) setPrizes(t.prizes.map(p => ({ ...p })));
+      if (t.organizers?.length) setExistingOrganizers(t.organizers);
+      if (t.rounds?.length) setRounds(t.rounds.map(r => ({ ...r })));
+    }).catch(() => {});
+  }, [id]);
+
+  // Load organizers when entering step 2
+  useEffect(() => {
+    if (step === 2 && tournamentId) {
+      organizersApi.list(tournamentId)
+        .then(res => setExistingOrganizers(res.data.data || []))
+        .catch(() => {});
+    }
+  }, [step, tournamentId]);
+
+  function set(field) {
+    return (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
+  }
+
+  // Debounced phone search for organizer lookup
+  const handleOrgPhoneSearch = useCallback((value) => {
+    setPhoneQuery(value);
+    setShowInlineCreate(false);
+    if (phoneDebounce.current) clearTimeout(phoneDebounce.current);
+    if (!value || value.length < 3) {
+      setPhoneResults([]);
+      setPhoneSearching(false);
+      return;
+    }
+    setPhoneSearching(true);
+    phoneDebounce.current = setTimeout(() => {
+      playersApi.list({ phone: value, per_page: 5 })
+        .then(res => setPhoneResults(res.data.data || []))
+        .catch(() => setPhoneResults([]))
+        .finally(() => setPhoneSearching(false));
+    }, 400);
+  }, []);
+
+  async function addOrganizer(player) {
+    if (!tournamentId || !player.user_id) return;
+    // Check if already added
+    if (existingOrganizers.some(o => o.user_id === player.user_id)) return;
+    setSaving(true);
+    try {
+      const res = await organizersApi.create(tournamentId, { user_id: player.user_id, role: orgRole });
+      setExistingOrganizers(prev => [...prev, res.data.data]);
+      setPhoneQuery('');
+      setPhoneResults([]);
+      setOrgRole('');
+    } catch { /* ignore */ }
+    setSaving(false);
+  }
+
+  async function removeOrganizer(orgId) {
+    try {
+      await organizersApi.destroy(orgId);
+      setExistingOrganizers(prev => prev.filter(o => o.id !== orgId));
+    } catch { /* ignore */ }
+  }
+
+  async function handleInlineCreate() {
+    if (!inlineForm.name || !inlineForm.phone) return;
+    setInlineCreating(true);
+    try {
+      // Create the player
+      const playerRes = await playersApi.create({ name: inlineForm.name, city: inlineForm.city, country_code: 'PAK' });
+      const newPlayer = playerRes.data.data ?? playerRes.data;
+      // Add phone
+      await playerPhonesApi.create(newPlayer.id, { phone: inlineForm.phone, label: 'Primary' });
+      // Add as organizer if they have a user_id
+      if (newPlayer.user_id && tournamentId) {
+        const orgRes = await organizersApi.create(tournamentId, { user_id: newPlayer.user_id, role: orgRole });
+        setExistingOrganizers(prev => [...prev, orgRes.data.data]);
+      }
+      setInlineForm({ name: '', city: '', phone: '' });
+      setShowInlineCreate(false);
+      setPhoneQuery('');
+      setPhoneResults([]);
+      setOrgRole('');
+    } catch { /* ignore */ }
+    setInlineCreating(false);
+  }
+
+  async function saveBasics() {
+    setSaving(true);
+    setErrors({});
+    try {
+      const data = new FormData();
+      Object.entries(form).forEach(([k, v]) => {
+        if (v !== '' && v !== null && v !== undefined) data.append(k, v);
+      });
+      if (banner) data.append('banner', banner);
+
+      if (isEdit) {
+        await tournamentsApi.update(id, data);
+      } else {
+        const res = await tournamentsApi.create(data);
+        const t = res.data.data ?? res.data;
+        setTournamentId(t.id);
+      }
+      setStep(1);
+    } catch (err) {
+      setErrors(err.response?.data?.errors || { general: [err.response?.data?.message || 'Failed'] });
+    } finally { setSaving(false); }
+  }
+
+  async function savePrizes() {
+    if (!tournamentId) { setStep(2); return; }
+    setSaving(true);
+    try {
+      for (const p of prizes) {
+        if (p.id) await prizesApi.update(p.id, p);
+        else if (p.position_label && p.amount) await prizesApi.create(tournamentId, p);
+      }
+      setStep(2);
+    } catch { /* proceed anyway */ }
+    setSaving(false);
+  }
+
+  async function saveRounds() {
+    if (!tournamentId) { navigate('/admin'); return; }
+    setSaving(true);
+    try {
+      for (let i = 0; i < rounds.length; i++) {
+        const r = { ...rounds[i], sort_order: i };
+        if (r.id) await roundsApi.update(r.id, r);
+        else if (r.name) await roundsApi.create(tournamentId, r);
+      }
+      navigate('/admin');
+    } catch { navigate('/admin'); }
+    setSaving(false);
+  }
+
+  function updateArray(setter, index, field, value) {
+    setter(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+  }
+
+  return (
+    <div>
+      <div className="mb-6">
+        <div className="seclabel text-felt mb-1.5">Admin</div>
+        <h1 className="font-display font-bold text-[1.5rem]">{isEdit ? 'Edit tournament' : 'Create tournament'}</h1>
+      </div>
+
+      {/* Step indicator */}
+      <div className="flex gap-2 mb-8">
+        {STEPS.map((s, i) => (
+          <button
+            key={s}
+            onClick={() => i <= step && setStep(i)}
+            className={`px-4 py-2 rounded-md text-[13px] font-display font-semibold ${
+              i === step ? 'bg-felt text-white' : i < step ? 'bg-felt-50 text-felt' : 'bg-surface2 text-ink-400'
+            }`}
+          >
+            {i + 1}. {s}
+          </button>
+        ))}
+      </div>
+
+      {errors.general && <div className="bg-bad-tint text-bad text-[13px] px-4 py-3 rounded-md mb-4">{errors.general[0]}</div>}
+
+      {/* Step 0: Basics */}
+      {step === 0 && (
+        <div className="card p-6 space-y-4 max-w-2xl">
+          <Input label="Tournament name" value={form.name} onChange={set('name')} error={errors.name?.[0]} />
+          <Input label="URL slug" value={form.slug} onChange={set('slug')} placeholder="karachi-national-open-26" error={errors.slug?.[0]} />
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Input label="Venue" value={form.venue} onChange={set('venue')} error={errors.venue?.[0]} />
+            <Input label="City" value={form.city} onChange={set('city')} error={errors.city?.[0]} />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Input label="Start date" type="date" value={form.start_date} onChange={set('start_date')} error={errors.start_date?.[0]} />
+            <Input label="End date" type="date" value={form.end_date} onChange={set('end_date')} error={errors.end_date?.[0]} />
+          </div>
+          <Input label="Max players" type="number" value={form.max_players} onChange={set('max_players')} error={errors.max_players?.[0]} />
+          <Select label="Entry status" value={form.entry_status} onChange={set('entry_status')}>
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+          </Select>
+          <div>
+            <label className="lbl">Description</label>
+            <textarea className="input min-h-[100px]" value={form.description} onChange={set('description')} />
+          </div>
+          <FileUpload label="Banner image" onFile={setBanner} />
+          <Button onClick={saveBasics} disabled={saving}>{saving ? 'Saving...' : 'Next: Prizes →'}</Button>
+        </div>
+      )}
+
+      {/* Step 1: Prizes */}
+      {step === 1 && (
+        <div className="card p-6 space-y-4 max-w-2xl">
+          {prizes.map((p, i) => (
+            <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
+              <Input label="Position" value={p.position_label} onChange={e => updateArray(setPrizes, i, 'position_label', e.target.value)} />
+              <Input label="Amount (PKR)" type="number" value={p.amount} onChange={e => updateArray(setPrizes, i, 'amount', e.target.value)} />
+              <button onClick={() => setPrizes(prev => prev.filter((_, j) => j !== i))} className="btn btn-ghost btn-sm text-bad">Remove</button>
+            </div>
+          ))}
+          <button onClick={() => setPrizes(prev => [...prev, { position_label: '', amount: '', count: 1, is_highlight: false }])} className="btn btn-ghost btn-sm">+ Add prize</button>
+          <div className="flex gap-3 pt-2">
+            <Button onClick={savePrizes} disabled={saving}>{saving ? 'Saving...' : 'Next: Organizers →'}</Button>
+            <Button variant="ghost" onClick={() => setStep(2)}>Skip</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Organizers */}
+      {step === 2 && (
+        <div className="card p-6 space-y-4 max-w-2xl">
+          {/* Existing organizers */}
+          {existingOrganizers.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {existingOrganizers.map(o => {
+                const player = o.user?.player;
+                const phone = player?.phones?.[0]?.phone;
+                return (
+                  <div key={o.id} className="flex items-center gap-3 py-2 border-b border-hairline last:border-0">
+                    <PlayerAvatar name={player?.name || o.user?.name} photo={player?.photo_path} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-[14px] truncate">{player?.name || o.user?.name}</div>
+                      <div className="flex items-center gap-2 text-[12px] text-ink-500">
+                        {o.role && <span>{o.role}</span>}
+                        {phone && <span>{phone}</span>}
+                      </div>
+                    </div>
+                    <button onClick={() => removeOrganizer(o.id)} className="text-bad hover:text-bad/80 text-[13px]">Remove</button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Search by phone to add organizer */}
+          <div className="space-y-3 p-4 bg-surface2 rounded-lg">
+            <label className="lbl">Add organizer by phone</label>
+            <input
+              className="input"
+              placeholder="Search by phone number..."
+              value={phoneQuery}
+              onChange={e => handleOrgPhoneSearch(e.target.value)}
+            />
+            <Input label="Role (optional)" value={orgRole} onChange={e => setOrgRole(e.target.value)} placeholder="Tournament Director" />
+
+            {phoneSearching && <p className="text-[12px] text-ink-400">Searching...</p>}
+
+            {phoneResults.length > 0 && (
+              <div className="border border-hairline rounded-md overflow-hidden">
+                {phoneResults.map(p => {
+                  const alreadyAdded = existingOrganizers.some(o => o.user_id === p.user_id);
+                  return (
+                    <div key={p.id} className="flex items-center gap-3 px-3 py-2 hover:bg-surface2">
+                      <PlayerAvatar name={p.name} photo={p.photo_path} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-[13px] truncate">{p.name}</div>
+                        {p.phones?.[0]?.phone && <div className="text-[11px] text-ink-500">{p.phones[0].phone}</div>}
+                      </div>
+                      {alreadyAdded ? (
+                        <span className="text-[11px] text-ink-400">Already added</span>
+                      ) : p.user_id ? (
+                        <Button size="sm" onClick={() => addOrganizer(p)} disabled={saving}>Add</Button>
+                      ) : (
+                        <span className="text-[11px] text-ink-400">No user account</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {phoneQuery.length >= 3 && !phoneSearching && phoneResults.length === 0 && (
+              <div className="text-[13px] text-ink-500">
+                No player found.{' '}
+                <button className="text-felt font-semibold hover:underline" onClick={() => {
+                  setShowInlineCreate(true);
+                  setInlineForm(prev => ({ ...prev, phone: phoneQuery }));
+                }}>
+                  Create new player
+                </button>
+              </div>
+            )}
+
+            {/* Inline create player form */}
+            {showInlineCreate && (
+              <div className="border border-hairline rounded-md p-3 space-y-3">
+                <div className="text-[13px] font-semibold">Create new player</div>
+                <Input label="Name" value={inlineForm.name} onChange={e => setInlineForm(f => ({ ...f, name: e.target.value }))} />
+                <Input label="Phone" value={inlineForm.phone} onChange={e => setInlineForm(f => ({ ...f, phone: e.target.value }))} />
+                <Select label="City" value={inlineForm.city} onChange={e => setInlineForm(f => ({ ...f, city: e.target.value }))}>
+                  <option value="">Select city</option>
+                  {PK_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </Select>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleInlineCreate} disabled={inlineCreating}>
+                    {inlineCreating ? 'Creating...' : 'Create & add'}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowInlineCreate(false)}>Cancel</Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button onClick={() => setStep(3)}>Next: Rounds →</Button>
+            <Button variant="ghost" onClick={() => setStep(3)}>Skip</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Rounds */}
+      {step === 3 && (
+        <div className="card p-6 space-y-4 max-w-2xl">
+          {rounds.map((r, i) => (
+            <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-end">
+              <Input label="Round name" value={r.name} onChange={e => updateArray(setRounds, i, 'name', e.target.value)} />
+              <Input label="Frames to win" type="number" value={r.frames_to_win} onChange={e => updateArray(setRounds, i, 'frames_to_win', e.target.value)} />
+              <Select label="Draw mode" value={r.draw_mode} onChange={e => updateArray(setRounds, i, 'draw_mode', e.target.value)}>
+                <option value="fixed">Fixed (seeded)</option>
+                <option value="random">Random draw</option>
+              </Select>
+              <button onClick={() => setRounds(prev => prev.filter((_, j) => j !== i))} className="btn btn-ghost btn-sm text-bad">×</button>
+            </div>
+          ))}
+          <button onClick={() => setRounds(prev => [...prev, { name: '', frames_to_win: 3, draw_mode: 'fixed' }])} className="btn btn-ghost btn-sm">+ Add round</button>
+          <div className="flex gap-3 pt-2">
+            <Button onClick={saveRounds} disabled={saving}>{saving ? 'Saving...' : isEdit ? 'Save & finish' : 'Create tournament'}</Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

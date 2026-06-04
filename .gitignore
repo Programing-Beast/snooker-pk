@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+
+# Dependencies (covered by sub-gitignores but belt-and-suspenders)
+node_modules/
+vendor/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+dist/

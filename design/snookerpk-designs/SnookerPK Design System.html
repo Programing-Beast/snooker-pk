@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="a">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnookerPK — Design System</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="shell">
+
+  <!-- ====================== TOP BAR ====================== -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="disp" style="font-weight:800;letter-spacing:.02em;font-size:17px;text-transform:uppercase;">Snooker<span style="color:var(--accent-live);">PK</span></span>
+      <span style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7e8a83;font-family:'Saira';font-weight:600;">Design System v0.1</span>
+    </div>
+    <nav class="nav">
+      <a href="#palettes">Palettes</a>
+      <a href="#brand">Logo</a>
+      <a href="#type">Type</a>
+      <a href="#components">Components</a>
+      <a href="#foundations">Foundations</a>
+    </nav>
+    <div class="toggle" role="group" aria-label="Theme">
+      <button id="ta" aria-pressed="true" onclick="setTheme('a')">A · Baize</button>
+      <button id="tb" aria-pressed="false" onclick="setTheme('b')">B · Spotlight</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ====================== HERO ====================== -->
+    <header class="hero reveal" data-screen-label="Hero">
+      <div class="kicker"><span class="dot"></span> Pakistan’s first dedicated snooker platform</div>
+      <h1>Snooker<span class="pk">PK</span></h1>
+      <p class="lede">A purpose-built design system for running snooker tournaments end to end — from data-dense draws and live scores to player profiles and, soon, a clean equipment store. Broadcast-sport energy, baize at its heart.</p>
+      <div class="balls" aria-hidden="true">
+        <span class="ball lg red"></span>
+        <span class="ball lg yellow"></span>
+        <span class="ball lg green"></span>
+        <span class="ball lg brown"></span>
+        <span class="ball lg blue"></span>
+        <span class="ball lg pink"></span>
+        <span class="ball lg black"></span>
+      </div>
+    </header>
+
+    <!-- ====================== RATIONALE ====================== -->
+    <section class="section" id="rationale">
+      <div class="grid cols-2" style="align-items:stretch;">
+        <div class="lead-card">
+          <h3>The thinking</h3>
+          <ul>
+            <li><b style="color:#fff;">Built from the table.</b> The palette, the live-score voice and the recurring 7-ball motif all borrow from snooker’s own visual language — felt green, brass trophy gleam, spotlit arena.</li>
+            <li><b style="color:#fff;">One system, two surfaces.</b> Tight, tabular, broadcast-grade screens for competition; airy and calm for the future shop — same tokens, no re-theme.</li>
+            <li><b style="color:#fff;">A platform, not one event.</b> Tournaments can carry an “organized by / presented by” credit, so named organizers shine while SnookerPK stays the home brand.</li>
+            <li><b style="color:#fff;">Light first, dark ready.</b> Every token has a dark-mode counterpart; the shell you’re looking at is that arena-dark direction.</li>
+          </ul>
+        </div>
+        <div class="lead-card">
+          <h3>What’s in here</h3>
+          <ul>
+            <li><span class="pill">01</span> Two color palettes — pick one, or A/B them live with the toggle above.</li>
+            <li><span class="pill">02</span> Wordmark &amp; app-icon treatment in each palette.</li>
+            <li><span class="pill">03</span> Type scale — Saira for the scoreboard voice, Hanken Grotesk for dense data.</li>
+            <li><span class="pill">04</span> Core components — buttons, forms, tables, the match-row, badges, flag chips, tournament / stat / product cards.</li>
+            <li><span class="pill">05</span> Spacing, radius &amp; elevation foundations.</li>
+          </ul>
+          <div class="darknote" style="margin-top:18px;">
+            <span class="ball sm green" style="margin-top:2px;"></span>
+            <div>The <b>theme toggle</b> top-right re-colors every component below in real time — proof the system flexes without being rebuilt.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== PALETTES ====================== -->
+    <section class="section" id="palettes">
+      <div class="section-head">
+        <span class="idx">01</span>
+        <div class="col">
+          <h2>Color Palettes</h2>
+          <p>Two complete directions. Each carries primary, secondary, a full neutral scale, semantic states and a single “live / highlight” accent. Hex + usage on every chip. Light mode shown.</p>
+        </div>
+      </div>
+
+      <!-- Palette A -->
+      <div class="card" style="margin-bottom:22px;" data-theme="a">
+        <div class="pal-head">
+          <span class="tag" style="background:var(--primary-tint);color:var(--primary-700);">Option A</span>
+          <span class="pal-name">Baize</span>
+          <span class="badge badge--approved" style="margin-left:auto;">Recommended</span>
+        </div>
+        <p class="pal-desc">Heritage broadcast. Deep snooker-felt green anchors the brand; champagne brass adds trophy-room premium; a hot broadcast-pink calls the live action. Warm, green-tinted neutrals keep dense tables easy on the eye.</p>
+
+        <div class="sw-row">
+          <div class="sw"><div class="chip" style="background:var(--primary);"><span class="onlabel" style="color:#fff;">Aa</span></div><div class="meta"><div class="nm">Primary · Felt</div><div class="hx">#0B6E43</div><div class="use">Brand, primary buttons, links, active nav</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--primary-900);"><span class="onlabel" style="color:#fff;">Aa</span></div><div class="meta"><div class="nm">Primary Deep</div><div class="hx">#063421</div><div class="use">Headers, pressed states, dark surfaces</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--secondary);"><span class="onlabel" style="color:#3a2c08;">Aa</span></div><div class="meta"><div class="nm">Secondary · Brass</div><div class="hx">#C2A14D</div><div class="use">Premium accents, trophies, winners</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--accent-live);"><span class="onlabel" style="color:#fff;">Live</span></div><div class="meta"><div class="nm">Live Accent</div><div class="hx">#FF3D71</div><div class="use">Live badges, pulses, on-air markers</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--bg);border-bottom:1px solid var(--border);"><span class="onlabel" style="color:var(--text);">Aa</span></div><div class="meta"><div class="nm">Canvas</div><div class="hx">#F6F5F0</div><div class="use">App background (light)</div></div></div>
+        </div>
+
+        <div class="sw-row" style="grid-template-columns:repeat(4,1fr);">
+          <div class="sw"><div class="chip" style="background:var(--success);"><span class="onlabel" style="color:#fff;">✓</span></div><div class="meta"><div class="nm">Success</div><div class="hx">#1E9E5A</div><div class="use">Approved, won, in good standing</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--warning);"><span class="onlabel" style="color:#3a2c08;">!</span></div><div class="meta"><div class="nm">Warning</div><div class="hx">#E8902A</div><div class="use">Pending, deadlines, attention</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--error);"><span class="onlabel" style="color:#fff;">✕</span></div><div class="meta"><div class="nm">Error</div><div class="hx">#C5392F</div><div class="use">Rejected, destructive, failed</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--secondary-tint);"><span class="onlabel" style="color:var(--secondary-700);">Aa</span></div><div class="meta"><div class="nm">Surface 2</div><div class="hx">#F1EFE8</div><div class="use">Table headers, wells, hovers</div></div></div>
+        </div>
+
+        <div class="csub" style="margin:6px 0 8px;font-weight:700;color:var(--text);">Neutral scale — warm, green-tinted</div>
+        <div class="scale-row">
+          <div class="cell" style="background:#f6f8f5;color:#33433b;">50</div>
+          <div class="cell" style="background:#edf0ec;color:#33433b;">100</div>
+          <div class="cell" style="background:#dde4de;color:#33433b;">200</div>
+          <div class="cell" style="background:#bfcbc3;color:#13201a;">300</div>
+          <div class="cell" style="background:#95a39a;color:#13201a;">400</div>
+          <div class="cell" style="background:#6f7f75;color:#fff;">500</div>
+          <div class="cell" style="background:#4e5f56;color:#fff;">600</div>
+          <div class="cell" style="background:#33433b;color:#fff;">700</div>
+          <div class="cell" style="background:#1f2d26;color:#fff;">800</div>
+          <div class="cell" style="background:#13201a;color:#fff;">900</div>
+        </div>
+      </div>
+
+      <!-- Palette B -->
+      <div class="card" data-theme="b">
+        <div class="pal-head">
+          <span class="tag" style="background:var(--secondary-tint);color:var(--secondary-700);">Option B</span>
+          <span class="pal-name">Spotlight</span>
+          <span class="badge badge--upcoming" style="margin-left:auto;">Alternate</span>
+        </div>
+        <p class="pal-desc">Modern arena. Deep pine green — a quiet nod to green heritage, never a flag — paired with authentic snooker-chalk blue and a charged acid-lime for the live moment. Cool slate neutrals read crisp and athletic.</p>
+
+        <div class="sw-row">
+          <div class="sw"><div class="chip" style="background:var(--primary);"><span class="onlabel" style="color:#fff;">Aa</span></div><div class="meta"><div class="nm">Primary · Pine</div><div class="hx">#14674A</div><div class="use">Brand, primary buttons, links</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--primary-900);"><span class="onlabel" style="color:#fff;">Aa</span></div><div class="meta"><div class="nm">Primary Deep</div><div class="hx">#082A1F</div><div class="use">Headers, pressed, dark surfaces</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--secondary);"><span class="onlabel" style="color:#fff;">Aa</span></div><div class="meta"><div class="nm">Secondary · Chalk</div><div class="hx">#2D7C9E</div><div class="use">Info, secondary actions, links</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--accent-live);"><span class="onlabel" style="color:#13201a;">Live</span></div><div class="meta"><div class="nm">Live Accent</div><div class="hx">#C6F24E</div><div class="use">Live badges, pulses, on-air markers</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--bg);border-bottom:1px solid var(--border);"><span class="onlabel" style="color:var(--text);">Aa</span></div><div class="meta"><div class="nm">Canvas</div><div class="hx">#F4F6F5</div><div class="use">App background (light)</div></div></div>
+        </div>
+
+        <div class="sw-row" style="grid-template-columns:repeat(4,1fr);">
+          <div class="sw"><div class="chip" style="background:var(--success);"><span class="onlabel" style="color:#fff;">✓</span></div><div class="meta"><div class="nm">Success</div><div class="hx">#0FB17E</div><div class="use">Approved, won, in good standing</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--warning);"><span class="onlabel" style="color:#3a2c08;">!</span></div><div class="meta"><div class="nm">Warning</div><div class="hx">#F2B33D</div><div class="use">Pending, deadlines, attention</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--error);"><span class="onlabel" style="color:#fff;">✕</span></div><div class="meta"><div class="nm">Error</div><div class="hx">#EF4757</div><div class="use">Rejected, destructive, failed</div></div></div>
+          <div class="sw"><div class="chip" style="background:var(--surface-2);"><span class="onlabel" style="color:var(--text);">Aa</span></div><div class="meta"><div class="nm">Surface 2</div><div class="hx">#ECEFF0</div><div class="use">Table headers, wells, hovers</div></div></div>
+        </div>
+
+        <div class="csub" style="margin:6px 0 8px;font-weight:700;color:var(--text);">Neutral scale — cool slate</div>
+        <div class="scale-row">
+          <div class="cell" style="background:#f4f7f7;color:#2c3b40;">50</div>
+          <div class="cell" style="background:#ebf0f1;color:#2c3b40;">100</div>
+          <div class="cell" style="background:#dce4e6;color:#2c3b40;">200</div>
+          <div class="cell" style="background:#bfccd0;color:#0f1517;">300</div>
+          <div class="cell" style="background:#93a4aa;color:#0f1517;">400</div>
+          <div class="cell" style="background:#687a80;color:#fff;">500</div>
+          <div class="cell" style="background:#46585e;color:#fff;">600</div>
+          <div class="cell" style="background:#2c3b40;color:#fff;">700</div>
+          <div class="cell" style="background:#182226;color:#fff;">800</div>
+          <div class="cell" style="background:#0f1517;color:#fff;">900</div>
+        </div>
+      </div>
+
+      <div class="darknote" style="margin-top:20px;">
+        <span class="ball sm black" style="margin-top:2px;"></span>
+        <div><b>Dark mode</b> (intent): canvas drops to <code style="color:#fff;">#0C100E</code> felt-dark, surfaces lift to <code style="color:#fff;">#16201A</code>, neutrals invert, and the live accent gains a soft glow against the dark — exactly the shell framing this page.</div>
+      </div>
+    </section>
+
+    <!-- ====================== BRAND / WORDMARK ====================== -->
+    <section class="section" id="brand">
+      <div class="section-head">
+        <span class="idx">02</span>
+        <div class="col">
+          <h2>Wordmark &amp; Mark</h2>
+          <p>Type-led. “Snooker” set in Saira extra-bold; “PK” lives in a colored chip so the platform name reads at any size. The app icon is a spotlit ball monogram.</p>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card" data-theme="a">
+          <div class="ctitle">Baize lockups</div>
+          <div class="mark-stage">
+            <div class="mark-lockup">
+              <span class="mono-mark"><span class="hl"></span>PK</span>
+              <span class="wordmark">Snooker<span class="pk-chip">PK</span></span>
+            </div>
+            <span class="wordmark" style="font-size:30px;">Snooker<span style="color:var(--secondary);">PK</span></span>
+            <div class="mark-reverse" style="align-self:stretch;display:flex;align-items:center;gap:14px;">
+              <span class="mono-mark" style="width:48px;height:48px;font-size:18px;border-radius:14px;"><span class="hl"></span>PK</span>
+              <span class="wordmark" style="font-size:30px;">Snooker<span class="pk-chip">PK</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="card" data-theme="b">
+          <div class="ctitle">Spotlight lockups</div>
+          <div class="mark-stage">
+            <div class="mark-lockup">
+              <span class="mono-mark"><span class="hl"></span>PK</span>
+              <span class="wordmark">Snooker<span class="pk-chip">PK</span></span>
+            </div>
+            <span class="wordmark" style="font-size:30px;">Snooker<span style="color:var(--secondary);">PK</span></span>
+            <div class="mark-reverse" style="align-self:stretch;display:flex;align-items:center;gap:14px;">
+              <span class="mono-mark" style="width:48px;height:48px;font-size:18px;border-radius:14px;"><span class="hl"></span>PK</span>
+              <span class="wordmark" style="font-size:30px;">Snooker<span class="pk-chip">PK</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== TYPOGRAPHY ====================== -->
+    <section class="section" id="type">
+      <div class="section-head">
+        <span class="idx">03</span>
+        <div class="col">
+          <h2>Typography</h2>
+          <p>Two families. <b style="color:#fff;">Saira</b> — a technical, scoreboard-grade grotesque — carries display, headings, the wordmark and big scores. <b style="color:#fff;">Hanken Grotesk</b> handles body, UI and dense tables, with tabular figures for every number.</p>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="ctitle">Saira · Display &amp; Scores</div>
+          <div class="type-row"><div class="spec"><b>Display</b>800 · 56/0.92</div><div class="type-sample ff-saira" style="font-weight:800;font-size:50px;line-height:.95;text-transform:uppercase;letter-spacing:-.01em;">Frame Won</div></div>
+          <div class="type-row"><div class="spec"><b>H1</b>700 · 34</div><div class="type-sample ff-saira" style="font-weight:700;font-size:32px;">National Championship</div></div>
+          <div class="type-row"><div class="spec"><b>H2</b>700 · 24</div><div class="type-sample ff-saira" style="font-weight:700;font-size:24px;">Round of 16</div></div>
+          <div class="type-row"><div class="spec"><b>Score</b>700 · 28 · tnum</div><div class="type-sample ff-saira" style="font-weight:700;font-size:28px;font-variant-numeric:tabular-nums;">71 — 42</div></div>
+          <div class="type-row"><div class="spec"><b>Eyebrow</b>600 · 12 · .12em</div><div class="type-sample ff-saira" style="font-weight:600;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);">Presented by</div></div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Hanken Grotesk · Text &amp; Data</div>
+          <div class="type-row"><div class="spec"><b>Lead</b>400 · 18</div><div class="type-sample ff-hanken" style="font-size:18px;">Request entry, manage your profile and follow every frame as it happens.</div></div>
+          <div class="type-row"><div class="spec"><b>Body</b>400 · 15</div><div class="type-sample ff-hanken" style="font-size:15px;">The draw is a flat, per-round match list — fast to scan on a phone between sessions, dense enough for a control desk.</div></div>
+          <div class="type-row"><div class="spec"><b>Label</b>600 · 12.5</div><div class="type-sample ff-hanken" style="font-size:12.5px;font-weight:600;">Entry deadline</div></div>
+          <div class="type-row"><div class="spec"><b>Caption</b>400 · 11.5</div><div class="type-sample ff-hanken" style="font-size:11.5px;color:var(--text-muted);">Best of 9 frames · Table 3</div></div>
+          <div class="type-row"><div class="spec"><b>Data</b>600 · 14 · tnum</div><div class="type-sample ff-hanken" style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;">1,284 pts · 18W–3L · 147 HB</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== COMPONENTS ====================== -->
+    <section class="section" id="components">
+      <div class="section-head">
+        <span class="idx">04</span>
+        <div class="col">
+          <h2>Core Components</h2>
+          <p>Styled in the active theme — flip the toggle to recolor everything. From competition-grade match rows to a clean store card, all on the same tokens.</p>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="card" style="margin-bottom:22px;">
+        <div class="ctitle">Buttons — variants &amp; states</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:22px;">
+          <div class="state-col"><span class="state-lbl">Primary</span>
+            <button class="btn btn--primary">Create event</button>
+            <button class="btn btn--primary" style="background:var(--primary-700);">Hover</button>
+            <button class="btn btn--primary" style="background:var(--primary-900);transform:translateY(1px);">Active</button>
+            <button class="btn btn--primary" style="box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--primary);">Focus</button>
+            <button class="btn btn--primary is-disabled" disabled>Disabled</button>
+            <button class="btn btn--primary"><span class="spin"></span> Saving</button>
+          </div>
+          <div class="state-col"><span class="state-lbl">Secondary</span>
+            <button class="btn btn--secondary">Generate draw</button>
+            <button class="btn btn--secondary" style="background:var(--primary-tint);">Hover</button>
+            <button class="btn btn--secondary" style="background:var(--primary-tint);transform:translateY(1px);">Active</button>
+            <button class="btn btn--secondary" style="box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--primary);">Focus</button>
+            <button class="btn btn--secondary is-disabled" disabled>Disabled</button>
+          </div>
+          <div class="state-col"><span class="state-lbl">Ghost / tertiary</span>
+            <button class="btn btn--ghost">View bracket</button>
+            <button class="btn btn--ghost" style="background:var(--surface-2);">Hover</button>
+            <button class="btn btn--ghost" style="background:var(--surface-2);transform:translateY(1px);">Active</button>
+            <button class="btn btn--ghost is-disabled" disabled>Disabled</button>
+          </div>
+          <div class="state-col"><span class="state-lbl">Destructive</span>
+            <button class="btn btn--danger">Reject entry</button>
+            <button class="btn btn--danger" style="filter:brightness(.93);">Hover</button>
+            <button class="btn btn--danger is-disabled" disabled>Disabled</button>
+          </div>
+          <div class="state-col"><span class="state-lbl">Live / sizes</span>
+            <button class="btn btn--live"><span class="ball sm" style="background:currentColor;width:8px;height:8px;box-shadow:none;"></span>Go live</button>
+            <button class="btn btn--primary btn--lg">Large</button>
+            <button class="btn btn--primary">Default</button>
+            <button class="btn btn--primary btn--sm">Small</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forms + Badges -->
+      <div class="grid cols-2" style="margin-bottom:22px;">
+        <div class="card">
+          <div class="ctitle">Form inputs</div>
+          <div class="field">
+            <label>Player name</label>
+            <input class="input" type="text" value="Muhammad Asif" />
+          </div>
+          <div class="field">
+            <label>Search players</label>
+            <div class="search-wrap">
+              <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+              <input class="input" type="text" placeholder="Name, city or club…" />
+            </div>
+          </div>
+          <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div><label>Tier</label>
+              <select class="input"><option>Professional</option><option>Amateur</option></select>
+            </div>
+            <div><label>Frames (best of)</label>
+              <input class="input" type="text" value="9" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Entry email</label>
+            <input class="input is-error" type="text" value="asif@@example" />
+            <div class="hint err">Enter a valid email address.</div>
+          </div>
+          <div class="field">
+            <label>Notes (optional)</label>
+            <input class="input" type="text" placeholder="Disabled" disabled />
+          </div>
+          <div style="display:flex;gap:26px;flex-wrap:wrap;margin-top:4px;">
+            <div>
+              <div class="checkline"><span class="box on"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="M5 12l5 5L20 6"/></svg></span> Agree to rules</div>
+              <div class="checkline"><span class="box"></span> Email me updates</div>
+            </div>
+            <div>
+              <div class="checkline"><span class="radio on"></span> Knockout</div>
+              <div class="checkline"><span class="radio"></span> Round robin</div>
+            </div>
+            <div>
+              <div class="checkline"><span class="switch on"></span> Public draw</div>
+              <div class="checkline"><span class="switch"></span> Walk-ups</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ctitle">Status badges</div>
+          <div class="csub" style="margin-bottom:8px;">Match state</div>
+          <div class="badge-grid" style="margin-bottom:18px;">
+            <span class="badge badge--live"><span class="d"></span>Live</span>
+            <span class="badge badge--upcoming"><span class="d"></span>Upcoming</span>
+            <span class="badge badge--completed"><span class="d"></span>Completed</span>
+          </div>
+          <div class="csub" style="margin-bottom:8px;">Entry request</div>
+          <div class="badge-grid" style="margin-bottom:18px;">
+            <span class="badge badge--pending"><span class="d"></span>Pending</span>
+            <span class="badge badge--approved"><span class="d"></span>Approved</span>
+            <span class="badge badge--rejected"><span class="d"></span>Rejected</span>
+          </div>
+          <div class="csub" style="margin-bottom:8px;">Player tier</div>
+          <div class="badge-grid" style="margin-bottom:24px;">
+            <span class="badge badge--pro">Pro</span>
+            <span class="badge badge--amateur">Amateur</span>
+          </div>
+
+          <div class="ctitle" style="margin-bottom:12px;">Country-flag chips</div>
+          <div class="badge-grid">
+            <span class="flag pill"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 7px;"></i></span><span class="code">PAK</span></span>
+            <span class="flag pill"><span class="fg"><i style="background:#fff;"></i></span><span class="code">ENG</span></span>
+            <span class="flag pill"><span class="fg"><i style="background:#de2910;"></i></span><span class="code">CHN</span></span>
+            <span class="flag pill"><span class="fg" style="flex-direction:column;"><i style="background:#ff9933;"></i><i style="background:#fff;"></i><i style="background:#138808;"></i></span><span class="code">IND</span></span>
+            <span class="flag"><span class="fg"><i style="background:#012169;"></i></span><span class="code">AUS</span></span>
+            <span class="flag"><span class="fg" style="flex-direction:column;"><i style="background:#00247d;"></i><i style="background:#ef3340;"></i></span><span class="code">THA</span></span>
+          </div>
+          <div class="hint" style="margin-top:14px;">Abstract color-band placeholders — production swaps in licensed flag SVGs at the same 24×16 chip.</div>
+        </div>
+      </div>
+
+      <!-- Match list + Table -->
+      <div class="grid cols-2" style="margin-bottom:22px;align-items:start;">
+        <div class="card flush">
+          <div style="padding:20px 22px 0;"><div class="ctitle">Match row — flat per-round draw</div></div>
+          <div style="height:8px;"></div>
+          <div class="round-head">Round of 16 · Table 1 <span class="count">8 matches</span></div>
+          <div class="match is-live">
+            <div class="side">
+              <span class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 7px;"></i></span></span>
+              <span class="pname win">M. Asif</span>
+            </div>
+            <div class="score"><span class="s win">4</span><span class="dash">–</span><span class="s lose">2</span></div>
+            <div class="side right">
+              <span class="pname lose">B. Sajjad</span>
+              <span class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 7px;"></i></span></span>
+            </div>
+          </div>
+          <div class="round-head" style="background:transparent;color:var(--text-muted);padding:8px 18px;border-bottom:1px solid var(--border);">In play <span class="badge badge--live" style="margin-left:auto;"><span class="d"></span>Live · Frame 7</span></div>
+          <div class="match">
+            <div class="side">
+              <span class="flag"><span class="fg"><i style="background:#fff;"></i></span></span>
+              <span class="pname win">J. Trump</span>
+            </div>
+            <div class="score"><span class="s win">5</span><span class="dash">–</span><span class="s lose">1</span></div>
+            <div class="side right">
+              <span class="pname lose">N. Hussain</span>
+              <span class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 7px;"></i></span></span>
+            </div>
+          </div>
+          <div class="match">
+            <div class="side">
+              <span class="flag"><span class="fg"><i style="background:#de2910;"></i></span></span>
+              <span class="pname">D. Junhui</span>
+            </div>
+            <div class="score" style="font-size:13px;"><span class="when">Today 18:30</span></div>
+            <div class="side right">
+              <span class="pname">A. Mehmood</span>
+              <span class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 7px;"></i></span></span>
+            </div>
+          </div>
+          <div class="match" style="opacity:.8;">
+            <div class="side">
+              <span class="flag"><span class="fg"><i style="background:#012169;"></i></span></span>
+              <span class="pname lose">R. Walker</span>
+            </div>
+            <div class="score"><span class="s lose">2</span><span class="dash">–</span><span class="s win">5</span></div>
+            <div class="side right">
+              <span class="pname win">S. Khan</span>
+              <span class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 7px;"></i></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card flush">
+          <div style="padding:20px 22px 12px;"><div class="ctitle" style="margin:0;">Table — rankings / standings</div></div>
+          <table class="tbl">
+            <thead><tr><th class="rank">#</th><th>Player</th><th class="num">Pld</th><th class="num">Pts</th><th class="num">Form</th></tr></thead>
+            <tbody>
+              <tr><td class="rank">1</td><td><div class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 6px;"></i></span><b>M. Asif</b></div></td><td class="num">12</td><td class="num">1,284</td><td class="num up">▲ 2</td></tr>
+              <tr><td class="rank">2</td><td><div class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 6px;"></i></span><b>S. Khan</b></div></td><td class="num">12</td><td class="num">1,150</td><td class="num up">▲ 1</td></tr>
+              <tr><td class="rank">3</td><td><div class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 6px;"></i></span><b>N. Hussain</b></div></td><td class="num">11</td><td class="num">986</td><td class="num down">▼ 1</td></tr>
+              <tr><td class="rank">4</td><td><div class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 6px;"></i></span><b>A. Mehmood</b></div></td><td class="num">12</td><td class="num">902</td><td class="num">—</td></tr>
+              <tr><td class="rank">5</td><td><div class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 6px;"></i></span><b>B. Sajjad</b></div></td><td class="num">10</td><td class="num">748</td><td class="num up">▲ 3</td></tr>
+            </tbody>
+          </table>
+          <div style="padding:14px 18px;"><span class="badge badge--upcoming"><span class="d"></span>Rankings — coming soon</span></div>
+        </div>
+      </div>
+
+      <!-- Cards row -->
+      <div class="grid cols-3" style="align-items:start;">
+        <!-- Tournament card -->
+        <div class="tcard">
+          <div class="banner">
+            <div class="felt"></div>
+            <span class="ttitle">National Open ’26</span>
+            <span class="badge badge--live" style="position:relative;"><span class="d"></span>Live</span>
+            <div class="balls" aria-hidden="true"><span class="ball sm red"></span><span class="ball sm yellow"></span><span class="ball sm pink"></span><span class="ball sm black"></span></div>
+          </div>
+          <div class="body">
+            <h3>Karachi National Open</h3>
+            <div class="meta">
+              <span>◷ 12–18 Jun</span>
+              <span>⌂ Karachi Club</span>
+              <span>♟ 64 draw</span>
+            </div>
+            <div class="org">
+              <span class="av">CB</span>
+              <div>
+                <div class="lbl">Organized by</div>
+                <div class="who">Cue Masters Pakistan</div>
+              </div>
+              <button class="btn btn--primary btn--sm" style="margin-left:auto;">Enter</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat card -->
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <div class="stat">
+            <div class="label">Entries</div>
+            <div class="big">48<span class="of"> / 64</span></div>
+            <div class="bar"><i style="width:75%;"></i></div>
+            <div class="trend">▲ 12 in the last 24h</div>
+          </div>
+          <div class="stat">
+            <div class="label">Highest break</div>
+            <div class="big">147</div>
+            <div class="csub" style="margin-top:6px;">M. Asif · QF vs S. Khan</div>
+          </div>
+        </div>
+
+        <!-- Product card -->
+        <div class="pcard">
+          <div class="ph">
+            <span class="tag badge badge--upcoming"><span class="d"></span>Store · soon</span>
+            <span class="ph-ic"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 21L21 3M6.5 4.5l13 13"/><circle cx="5" cy="6" r="2.2"/></svg></span>
+          </div>
+          <div class="pb">
+            <div class="brand">Cue Masters</div>
+            <h4>Pro Maple Snooker Cue — 9.5mm</h4>
+            <div class="row">
+              <span class="price"><span class="cur">PKR</span> 14,500</span>
+              <button class="btn btn--secondary btn--sm">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== FOUNDATIONS ====================== -->
+    <section class="section" id="foundations">
+      <div class="section-head">
+        <span class="idx">05</span>
+        <div class="col">
+          <h2>Spacing · Radius · Elevation</h2>
+          <p>A 4-point spacing base, a four-step radius ramp and four elevation levels — enough to keep a dense draw orderly and a shop page calm.</p>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-bottom:22px;align-items:start;">
+        <div class="card">
+          <div class="ctitle">Spacing — 4pt base</div>
+          <div class="token-grid">
+            <div class="sp-item"><div class="bx" style="width:4px;height:4px;"></div><div class="v">2xs</div><div class="px">4px</div></div>
+            <div class="sp-item"><div class="bx" style="width:8px;height:8px;"></div><div class="v">xs</div><div class="px">8px</div></div>
+            <div class="sp-item"><div class="bx" style="width:12px;height:12px;"></div><div class="v">sm</div><div class="px">12px</div></div>
+            <div class="sp-item"><div class="bx" style="width:16px;height:16px;"></div><div class="v">md</div><div class="px">16px</div></div>
+            <div class="sp-item"><div class="bx" style="width:24px;height:24px;"></div><div class="v">lg</div><div class="px">24px</div></div>
+            <div class="sp-item"><div class="bx" style="width:32px;height:32px;"></div><div class="v">xl</div><div class="px">32px</div></div>
+            <div class="sp-item"><div class="bx" style="width:48px;height:48px;"></div><div class="v">2xl</div><div class="px">48px</div></div>
+            <div class="sp-item"><div class="bx" style="width:64px;height:64px;"></div><div class="v">3xl</div><div class="px">64px</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Radius</div>
+          <div class="token-grid" style="grid-template-columns:repeat(4,1fr);">
+            <div class="sp-item rad-item"><div class="bx" style="border-radius:6px;"></div><div class="v">sm</div><div class="px">6px · inputs</div></div>
+            <div class="sp-item rad-item"><div class="bx" style="border-radius:11px;"></div><div class="v">md</div><div class="px">11px · buttons</div></div>
+            <div class="sp-item rad-item"><div class="bx" style="border-radius:18px;"></div><div class="v">lg</div><div class="px">18px · cards</div></div>
+            <div class="sp-item rad-item"><div class="bx" style="border-radius:999px;"></div><div class="v">full</div><div class="px">badges</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">Elevation</div>
+        <div class="elev-grid">
+          <div class="elev-item"><div class="bx elev-1"></div><div class="v" style="font-weight:700;font-size:12.5px;">E1 · Hairline</div><div class="px" style="font-size:11px;color:var(--text-muted);">Rows, table cells, dividers</div></div>
+          <div class="elev-item"><div class="bx elev-2"></div><div class="v" style="font-weight:700;font-size:12.5px;">E2 · Card</div><div class="px" style="font-size:11px;color:var(--text-muted);">Tournament / stat cards</div></div>
+          <div class="elev-item"><div class="bx elev-3"></div><div class="v" style="font-weight:700;font-size:12.5px;">E3 · Popover</div><div class="px" style="font-size:11px;color:var(--text-muted);">Menus, dropdowns, toasts</div></div>
+          <div class="elev-item"><div class="bx elev-4"></div><div class="v" style="font-weight:700;font-size:12.5px;">E4 · Modal</div><div class="px" style="font-size:11px;color:var(--text-muted);">Dialogs, draw generator</div></div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:60px;color:#6e7a73;font-size:12.5px;letter-spacing:.04em;">
+        <span class="disp" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;">SnookerPK</span> Design System · v0.1 · Light mode · Dark-mode tokens noted
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('ta').setAttribute('aria-pressed', t==='a');
+    document.getElementById('tb').setAttribute('aria-pressed', t==='b');
+    try{ localStorage.setItem('snookerpk-theme', t); }catch(e){}
+  }
+  (function(){
+    var saved;
+    try{ saved = localStorage.getItem('snookerpk-theme'); }catch(e){}
+    if(saved) setTheme(saved);
+  })();
+</script>
+</body>
+</html>

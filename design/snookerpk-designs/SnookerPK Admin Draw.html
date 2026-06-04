@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnookerPK — Draw Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  colors: {
+    felt:{DEFAULT:'#0B6E43',50:'#DCEEE4',400:'#15915A',700:'#0A5234',900:'#063421'},
+    brass:{DEFAULT:'#C2A14D',tint:'#F4EAD0',700:'#8A6620'},
+    live:{DEFAULT:'#FF3D71',fill:'#E11D48',tint:'#FFE1EA'},
+    ok:{DEFAULT:'#1E9E5A',tint:'#DCF1E5'},warn:{DEFAULT:'#E8902A',tint:'#FBE8CF'},bad:{DEFAULT:'#C5392F',tint:'#F7DDDA'},
+    ink:{50:'#F6F8F5',100:'#EDF0EC',200:'#DDE4DE',300:'#BFCBC3',400:'#95A39A',500:'#6F7F75',600:'#4E5F56',700:'#33433B',800:'#1F2D26',900:'#13201A'},
+    canvas:'#F6F5F0',surface2:'#F1EFE8',hairline:'#E2E6DF',
+    night:'#0C100E',panel:'#16201A',panel2:'#1F2D26','hairline-d':'#2B3A32',
+  },
+  fontFamily:{display:['Saira','system-ui','sans-serif'],sans:['Hanken Grotesk','system-ui','sans-serif']},
+  borderRadius:{sm:'6px',md:'11px',lg:'18px',xl:'24px'},
+  boxShadow:{e1:'0 1px 2px rgba(0,0,0,.06)',e2:'0 4px 10px -2px rgba(0,0,0,.12)',e3:'0 12px 26px -8px rgba(0,0,0,.20)',e4:'0 24px 50px -16px rgba(0,0,0,.30)'},
+} } };
+</script>
+<style type="text/tailwindcss">
+  @layer components {
+    .btn{@apply inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md px-5 py-2.5 text-sm leading-none transition active:translate-y-px focus-visible:outline-none disabled:opacity-45 disabled:cursor-not-allowed;}
+    .btn-sm{@apply px-3.5 py-2 text-xs rounded-md;} .btn-lg{@apply px-6 py-3.5 text-base rounded-lg;}
+    .btn-primary{@apply bg-felt text-white hover:bg-felt-700;}
+    .btn-brass{@apply bg-brass text-[#3A2C08] hover:brightness-105;}
+    .btn-ghost{@apply text-ink-700 bg-surface2 hover:bg-ink-100;}
+    .btn-outline{@apply bg-white text-felt border border-felt hover:bg-felt-50;}
+    .badge{@apply inline-flex items-center gap-1.5 font-display font-semibold uppercase px-2.5 py-1 rounded-full leading-none tracking-[0.08em] text-[11.5px];}
+    .badge .dot{@apply w-1.5 h-1.5 rounded-full bg-current;}
+    .card{@apply bg-white rounded-lg border border-hairline;}
+    .seclabel{@apply font-display font-semibold uppercase tracking-[0.18em] text-ink-400 text-[11.5px];}
+    .lbl{@apply block font-sans text-[12.5px] font-semibold text-ink-800 mb-1.5;}
+    .input{@apply w-full font-sans text-[14px] text-ink-900 bg-white border border-ink-300 rounded-md px-3.5 py-2.5 transition hover:border-ink-400 focus:outline-none focus:border-felt focus:ring-2 focus:ring-felt/20;}
+    .navitem{@apply flex items-center gap-3 px-3 py-2.5 rounded-md text-[13.5px] font-medium text-ink-300 hover:text-white hover:bg-white/5 transition cursor-pointer;}
+    .navitem.on{@apply text-white bg-white/10;}
+    .tier{@apply text-[9px] font-display font-bold uppercase tracking-wide px-1 py-0.5 rounded leading-none;}
+    .tier-pro{@apply text-felt bg-felt-50;} .tier-am{@apply text-ink-500 bg-ink-100;}
+  }
+  .fg{border-radius:3px;overflow:hidden;display:inline-flex;flex:0 0 auto;box-shadow:0 0 0 1px rgba(0,0,0,.12);}
+  .on-felt .fg{box-shadow:0 0 0 1px rgba(255,255,255,.35);}
+  .fg i{flex:1;display:block;height:100%;} .fg.col{flex-direction:column;}
+  .felt-grain{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");}
+  .card{box-shadow:0 4px 10px -2px rgba(0,0,0,.10);}
+  .ball{border-radius:50%;position:relative;box-shadow:inset -2px -2px 4px rgba(0,0,0,.45),0 2px 5px rgba(0,0,0,.4);}
+  .ball::after{content:"";position:absolute;top:18%;left:24%;width:32%;height:28%;border-radius:50%;background:rgba(255,255,255,.6);filter:blur(.5px);}
+  @keyframes pulse{50%{opacity:.4}} .pulse{animation:pulse 1.6s infinite;}
+  @keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+  .pop{animation:pop .25s cubic-bezier(.2,1.4,.4,1) both;}
+  @keyframes dropin{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+  .dropin{animation:dropin .35s ease both;}
+  /* slot-machine spin */
+  .spinning{animation:flick .09s linear infinite;}
+  @keyframes flick{0%{filter:blur(.6px);transform:translateY(-2px)}50%{filter:blur(1.4px);transform:translateY(2px)}100%{filter:blur(.6px);transform:translateY(-2px)}}
+  body{background:#0c100e;}
+  .arena{background:radial-gradient(1100px 600px at 50% -5%,rgba(11,110,67,.34),transparent 60%),radial-gradient(900px 600px at 88% 8%,rgba(233,61,113,.08),transparent 55%),#0c100e;}
+  ::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:#2b3a32;border-radius:99px}
+  .browser{border-radius:14px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,.7);border:1px solid #2b3a32;}
+  .scrollbox{overflow-y:auto;}
+  .frame-label{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .frame-label .n{font-family:'Saira';font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#fff;}
+  .frame-label .d{font-size:12px;color:#8ea69a;}
+</style>
+</head>
+<body class="font-sans text-ink-900 antialiased">
+<div class="arena min-h-screen">
+  <div class="max-w-[1320px] mx-auto px-6 py-10">
+
+    <div class="flex items-center justify-between flex-wrap gap-4 mb-10">
+      <div class="flex items-center gap-3">
+        <span class="font-display font-extrabold text-xl uppercase tracking-tight text-white">Snooker<span class="text-live">PK</span></span>
+        <span class="badge bg-brass/20 text-brass !text-[10px]">Admin</span>
+      </div>
+      <div class="flex items-center gap-2.5 text-[12.5px] text-ink-400"><span class="w-2 h-2 rounded-full bg-live pulse"></span> Interactive — pick a round &amp; mode, generate; then run the live slot-machine reveal</div>
+    </div>
+
+    <!-- ===== GENERATE DRAW ===== -->
+    <div class="frame-label"><span class="n">01 · Generate draw</span><span class="d">— Per-round mode · Karachi National Open ’26</span></div>
+    <div class="browser mb-12">
+      <div class="bg-panel2 px-4 py-2.5 flex items-center gap-3 border-b border-hairline-d">
+        <span class="flex gap-1.5"><span class="w-3 h-3 rounded-full bg-bad/80"></span><span class="w-3 h-3 rounded-full bg-warn/80"></span><span class="w-3 h-3 rounded-full bg-ok/80"></span></span>
+        <span class="ml-3 flex-1 max-w-md bg-night/60 rounded-md px-3 py-1.5 text-[12px] text-ink-400 font-mono">admin.snookerpk.com/tournaments/karachi-national-open/draw</span>
+      </div>
+      <div class="bg-canvas scrollbox flex" style="max-height:920px">
+        <aside class="w-60 bg-night shrink-0 sticky top-0 self-start" style="min-height:920px" data-sidebar="draw"></aside>
+        <div class="flex-1 min-w-0">
+          <div data-topbar="Tournaments / Karachi National Open ’26 / Generate draw"></div>
+          <div id="generate" class="p-7"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LIVE DRAW REVEAL ===== -->
+    <div class="frame-label"><span class="n">02 · Live draw reveal</span><span class="d">— Random mode · slot-machine</span></div>
+    <div class="browser mb-6">
+      <div class="bg-panel2 px-4 py-2.5 flex items-center gap-3 border-b border-hairline-d">
+        <span class="flex gap-1.5"><span class="w-3 h-3 rounded-full bg-bad/80"></span><span class="w-3 h-3 rounded-full bg-warn/80"></span><span class="w-3 h-3 rounded-full bg-ok/80"></span></span>
+        <span class="ml-3 flex-1 max-w-md bg-night/60 rounded-md px-3 py-1.5 text-[12px] text-ink-400 font-mono">admin.snookerpk.com/tournaments/karachi-national-open/draw/reveal</span>
+      </div>
+      <div class="bg-canvas scrollbox flex" style="max-height:920px">
+        <aside class="w-60 bg-night shrink-0 sticky top-0 self-start" style="min-height:920px" data-sidebar="draw"></aside>
+        <div class="flex-1 min-w-0">
+          <div data-topbar="Karachi National Open ’26 / Live draw reveal"></div>
+          <div id="reveal" class="p-7"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script src="draw.js"></script>
+</body>
+</html>

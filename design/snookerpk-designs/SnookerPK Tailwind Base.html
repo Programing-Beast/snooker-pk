@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnookerPK — Tailwind Foundation & Component Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+/* ============================================================
+   SnookerPK · Baize — Tailwind config (LOCKED)
+   Paste theme.extend into tailwind.config.js (web) or
+   nativewind config (RN). darkMode:'class'.
+   ============================================================ */
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        /* brand */
+        felt:   { DEFAULT:'#0B6E43', 50:'#DCEEE4', 400:'#15915A', 700:'#0A5234', 900:'#063421' },
+        brass:  { DEFAULT:'#C2A14D', tint:'#F4EAD0', 700:'#8A6620' },
+        live:   { DEFAULT:'#FF3D71', fill:'#E11D48', tint:'#FFE1EA' },  /* fill = AA-safe small-badge */
+        /* semantic */
+        ok:     { DEFAULT:'#1E9E5A', tint:'#DCF1E5' },
+        warn:   { DEFAULT:'#E8902A', tint:'#FBE8CF' },
+        bad:    { DEFAULT:'#C5392F', tint:'#F7DDDA' },
+        /* warm green-tinted neutral ramp */
+        ink:    { 50:'#F6F8F5',100:'#EDF0EC',200:'#DDE4DE',300:'#BFCBC3',400:'#95A39A',500:'#6F7F75',600:'#4E5F56',700:'#33433B',800:'#1F2D26',900:'#13201A' },
+        /* surfaces — light */
+        canvas:'#F6F5F0', surface:'#FFFFFF', surface2:'#F1EFE8', hairline:'#E2E6DF',
+        /* surfaces — dark (live/scoring screens) */
+        night:'#0C100E', panel:'#16201A', panel2:'#1F2D26', 'hairline-d':'#2B3A32',
+      },
+      fontFamily: {
+        display: ['Saira','system-ui','sans-serif'],     // headings, scores, wordmark
+        sans:    ['Hanken Grotesk','system-ui','sans-serif'], // body, UI, tables
+        mono:    ['JetBrains Mono','ui-monospace','monospace'],
+      },
+      fontSize: {
+        display:  ['3.5rem',  {lineHeight:'0.92',fontWeight:'800',letterSpacing:'-0.01em'}], // 56
+        h1:       ['2.125rem',{lineHeight:'1.05',fontWeight:'700',letterSpacing:'-0.01em'}], // 34
+        h2:       ['1.5rem',  {lineHeight:'1.12',fontWeight:'700'}],                         // 24
+        h3:       ['1.25rem', {lineHeight:'1.2', fontWeight:'700'}],                         // 20
+        'score-lg':['3.375rem',{lineHeight:'1',  fontWeight:'800'}],                         // 54
+        score:    ['1.75rem', {lineHeight:'1',   fontWeight:'700'}],                         // 28
+        lead:     ['1.125rem',{lineHeight:'1.5'}],                                           // 18
+        body:     ['0.9375rem',{lineHeight:'1.55'}],                                         // 15
+        label:    ['0.78rem', {lineHeight:'1.3', fontWeight:'600'}],                         // 12.5
+        caption:  ['0.72rem', {lineHeight:'1.4'}],                                           // 11.5
+        eyebrow:  ['0.72rem', {lineHeight:'1',   fontWeight:'600',letterSpacing:'0.14em'}],  // 11.5
+        data:     ['0.875rem',{lineHeight:'1.4', fontWeight:'600'}],                         // 14
+      },
+      spacing: { /* base unit = 4px (Tailwind default). Named extras: */
+        '4.5':'1.125rem','13':'3.25rem','18':'4.5rem','22':'5.5rem' },
+      borderRadius: { sm:'6px', md:'11px', lg:'18px', xl:'24px' }, // input / button / card / sheet
+      boxShadow: {
+        e1:'0 1px 2px rgba(0,0,0,.06)',                 // rows, cells
+        e2:'0 4px 10px -2px rgba(0,0,0,.12)',           // cards
+        e3:'0 12px 26px -8px rgba(0,0,0,.20)',          // popovers, dropdowns
+        e4:'0 24px 50px -16px rgba(0,0,0,.30)',         // modals
+        glow:'0 0 0 4px rgba(225,29,72,.25)',           // live pulse ring
+      },
+    },
+  },
+};
+</script>
+<style type="text/tailwindcss">
+  @layer components {
+    /* ---- buttons ---- */
+    .btn { @apply inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md
+            px-5 py-2.5 text-sm leading-none transition active:translate-y-px
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-felt
+            disabled:opacity-45 disabled:cursor-not-allowed disabled:active:translate-y-0; }
+    .btn-sm { @apply px-3.5 py-2 text-xs rounded-md; }
+    .btn-lg { @apply px-6 py-3.5 text-base rounded-lg; }
+    .btn-primary   { @apply bg-felt text-white hover:bg-felt-700 active:bg-felt-900; }
+    .btn-secondary { @apply bg-white text-felt border border-felt hover:bg-felt-50 active:bg-felt-50
+                      dark:bg-transparent dark:text-felt-400 dark:border-felt-400 dark:hover:bg-felt-900/40; }
+    .btn-ghost     { @apply text-ink-800 hover:bg-surface2 dark:text-ink-100 dark:hover:bg-panel2; }
+    .btn-danger    { @apply bg-bad text-white hover:brightness-95; }
+    .btn-brass     { @apply bg-brass text-[#3A2C08] hover:brightness-105; }
+    .btn-live      { @apply bg-live-fill text-white hover:brightness-105; }
+
+    /* ---- inputs ---- */
+    .input { @apply w-full font-sans text-[15px] text-ink-900 bg-white border border-ink-300 rounded-md px-3.5 py-2.5
+              placeholder:text-ink-400 transition
+              hover:border-ink-400 focus:outline-none focus:border-felt focus:ring-2 focus:ring-felt/20
+              disabled:bg-surface2 disabled:text-ink-400 disabled:cursor-not-allowed
+              dark:bg-panel2 dark:text-ink-50 dark:border-hairline-d dark:placeholder:text-ink-500
+              dark:focus:border-felt-400 dark:focus:ring-felt-400/25; }
+    .input-error { @apply border-bad ring-2 ring-bad/15 focus:border-bad focus:ring-bad/20; }
+    .lbl { @apply block font-sans text-label text-ink-800 mb-1.5 dark:text-ink-100; }
+
+    /* ---- badge ---- */
+    .badge { @apply inline-flex items-center gap-1.5 font-display font-semibold text-eyebrow uppercase
+              px-2.5 py-1 rounded-full leading-none tracking-[0.08em]; }
+    .badge .dot { @apply w-1.5 h-1.5 rounded-full bg-current; }
+
+    /* ---- card ---- */
+    .card { @apply bg-white rounded-lg border border-hairline
+             dark:bg-panel dark:border-hairline-d; }
+
+    /* ---- section label ---- */
+    .seclabel { @apply font-display font-semibold text-eyebrow uppercase tracking-[0.18em] text-ink-400; }
+  }
+  /* flag chip core (color-band placeholder; swap licensed SVG at 24x16) */
+  .fg { width:24px;height:16px;border-radius:3px;overflow:hidden;display:flex;flex:0 0 auto;
+        box-shadow:0 0 0 1px rgba(0,0,0,.12); }
+  .dark .fg, .on-felt .fg { box-shadow:0 0 0 1px rgba(255,255,255,.35); }
+  .fg i{ flex:1;display:block;height:100%; }
+  .fg.col{ flex-direction:column; }
+  .felt-grain{ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E"); }
+  html{ scroll-behavior:smooth; }
+  /* explicit elevation for component classes (Play-CDN @apply doesn't pull custom shadows reliably) */
+  .card{ box-shadow:0 4px 10px -2px rgba(0,0,0,.12); }
+  .dark .card{ box-shadow:0 8px 22px -10px rgba(0,0,0,.6); }
+  .ball{ border-radius:50%; position:relative; box-shadow:inset -2px -2px 4px rgba(0,0,0,.45),0 2px 5px rgba(0,0,0,.4); }
+  .ball::after{ content:"";position:absolute;top:18%;left:24%;width:32%;height:28%;border-radius:50%;background:rgba(255,255,255,.6);filter:blur(.5px); }
+  @keyframes pulse{50%{opacity:.4}}
+  .pulse{ animation:pulse 1.6s infinite; }
+</style>
+</head>
+<body class="font-sans bg-canvas text-ink-900 antialiased">
+
+<!-- ===================== PAGE HEADER ===================== -->
+<header class="sticky top-0 z-40 bg-night/90 backdrop-blur border-b border-white/10">
+  <div class="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <span class="font-display font-extrabold text-lg uppercase tracking-tight text-white">Snooker<span class="text-live">PK</span></span>
+      <span class="seclabel text-[#7E8A83]">Tailwind Base · v1</span>
+    </div>
+    <nav class="hidden md:flex gap-6 text-[13px] text-ink-300">
+      <a href="#config" class="hover:text-white transition">Config</a>
+      <a href="#nav" class="hover:text-white transition">Navigation</a>
+      <a href="#actions" class="hover:text-white transition">Buttons & Forms</a>
+      <a href="#data" class="hover:text-white transition">Cards & Data</a>
+      <a href="#match" class="hover:text-white transition">Match Rows</a>
+      <a href="#overlays" class="hover:text-white transition">Overlays</a>
+      <a href="#dark" class="hover:text-white transition">Dark</a>
+    </nav>
+    <button id="modeBtn" onclick="toggleDark()" class="btn btn-sm bg-white/10 text-white hover:bg-white/20 border border-white/15">
+      <span id="modeIcon">◐</span> <span id="modeLbl">Dark</span>
+    </button>
+  </div>
+</header>
+
+<main class="max-w-[1200px] mx-auto px-6 pb-32">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="pt-14 pb-8">
+    <div class="flex items-center gap-2.5 seclabel text-felt mb-5">
+      <span class="w-1.5 h-1.5 rounded-full bg-live pulse"></span> Baize · locked · shared base for every screen
+    </div>
+    <h1 class="font-display text-h1 sm:text-display uppercase text-ink-900 mb-4">Component Library</h1>
+    <p class="text-lead text-ink-600 max-w-2xl">One Tailwind foundation for the whole platform — web (Vue/React) and the NativeWind app. Every reusable piece below is built from the locked Baize tokens, in its states, light and dark. Realistic draw data throughout.</p>
+    <div class="flex gap-2.5 mt-6">
+      <span class="ball w-7 h-7" style="background:#c0392b"></span>
+      <span class="ball w-7 h-7" style="background:#f2c200"></span>
+      <span class="ball w-7 h-7" style="background:#1e7a3d"></span>
+      <span class="ball w-7 h-7" style="background:#7a4a1e"></span>
+      <span class="ball w-7 h-7" style="background:#1f5fa8"></span>
+      <span class="ball w-7 h-7" style="background:#e86a92"></span>
+      <span class="ball w-7 h-7" style="background:#161616"></span>
+    </div>
+  </section>
+
+  <!-- ===================== CONFIG / TOKENS ===================== -->
+  <section id="config" class="pt-10">
+    <div class="border-t border-ink-200 pt-7 mb-7 flex items-baseline gap-4">
+      <span class="font-display font-bold text-felt text-sm">01</span>
+      <div><h2 class="font-display text-h2 uppercase">Tokens &amp; Tailwind config</h2>
+      <p class="text-ink-500 text-sm mt-1">The locked Baize values as <code class="font-mono text-xs">theme.extend</code>. Same tokens drive web Tailwind and NativeWind.</p></div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6 items-start">
+      <!-- live foundations -->
+      <div class="space-y-5">
+        <div class="card p-6">
+          <div class="seclabel text-ink-500 mb-4">Brand &amp; semantic</div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div><div class="h-14 rounded-md bg-felt shadow-e1"></div><div class="mt-1.5 text-label">felt</div><div class="font-mono text-[11px] text-ink-500">#0B6E43</div></div>
+            <div><div class="h-14 rounded-md bg-felt-900"></div><div class="mt-1.5 text-label">felt-900</div><div class="font-mono text-[11px] text-ink-500">#063421</div></div>
+            <div><div class="h-14 rounded-md bg-brass"></div><div class="mt-1.5 text-label">brass</div><div class="font-mono text-[11px] text-ink-500">#C2A14D</div></div>
+            <div><div class="h-14 rounded-md bg-live"></div><div class="mt-1.5 text-label">live</div><div class="font-mono text-[11px] text-ink-500">#FF3D71</div></div>
+            <div><div class="h-14 rounded-md bg-ok"></div><div class="mt-1.5 text-label">ok</div><div class="font-mono text-[11px] text-ink-500">#1E9E5A</div></div>
+            <div><div class="h-14 rounded-md bg-warn"></div><div class="mt-1.5 text-label">warn</div><div class="font-mono text-[11px] text-ink-500">#E8902A</div></div>
+            <div><div class="h-14 rounded-md bg-bad"></div><div class="mt-1.5 text-label">bad</div><div class="font-mono text-[11px] text-ink-500">#C5392F</div></div>
+            <div><div class="h-14 rounded-md bg-night"></div><div class="mt-1.5 text-label">night</div><div class="font-mono text-[11px] text-ink-500">#0C100E</div></div>
+            <div><div class="h-14 rounded-md bg-panel border border-hairline-d"></div><div class="mt-1.5 text-label">panel</div><div class="font-mono text-[11px] text-ink-500">#16201A</div></div>
+          </div>
+          <div class="seclabel text-ink-500 mt-5 mb-2">ink ramp (warm neutrals)</div>
+          <div class="flex rounded-md overflow-hidden border border-hairline">
+            <div class="flex-1 h-9 bg-ink-50"></div><div class="flex-1 h-9 bg-ink-100"></div><div class="flex-1 h-9 bg-ink-200"></div><div class="flex-1 h-9 bg-ink-300"></div><div class="flex-1 h-9 bg-ink-400"></div><div class="flex-1 h-9 bg-ink-500"></div><div class="flex-1 h-9 bg-ink-600"></div><div class="flex-1 h-9 bg-ink-700"></div><div class="flex-1 h-9 bg-ink-800"></div><div class="flex-1 h-9 bg-ink-900"></div>
+          </div>
+        </div>
+        <div class="card p-6">
+          <div class="seclabel text-ink-500 mb-4">Type · radius · elevation</div>
+          <div class="space-y-2 mb-5">
+            <div class="flex items-baseline gap-3"><span class="font-mono text-[11px] text-ink-400 w-20">display 56</span><span class="font-display font-extrabold text-3xl uppercase">Frame Won</span></div>
+            <div class="flex items-baseline gap-3"><span class="font-mono text-[11px] text-ink-400 w-20">h2 24</span><span class="font-display font-bold text-2xl">Round of 16</span></div>
+            <div class="flex items-baseline gap-3"><span class="font-mono text-[11px] text-ink-400 w-20">score 28</span><span class="font-display font-bold text-[28px] tabular-nums">71 — 42</span></div>
+            <div class="flex items-baseline gap-3"><span class="font-mono text-[11px] text-ink-400 w-20">body 15</span><span class="text-[15px] text-ink-700">Hanken Grotesk · tabular data 1,284 pts</span></div>
+          </div>
+          <div class="flex gap-4 items-end mb-4">
+            <div class="text-center"><div class="w-12 h-12 bg-surface2 border-2 border-felt rounded-sm mx-auto"></div><div class="text-label mt-1">sm 6</div></div>
+            <div class="text-center"><div class="w-12 h-12 bg-surface2 border-2 border-felt rounded-md mx-auto"></div><div class="text-label mt-1">md 11</div></div>
+            <div class="text-center"><div class="w-12 h-12 bg-surface2 border-2 border-felt rounded-lg mx-auto"></div><div class="text-label mt-1">lg 18</div></div>
+            <div class="text-center"><div class="w-12 h-12 bg-surface2 border-2 border-felt rounded-xl mx-auto"></div><div class="text-label mt-1">xl 24</div></div>
+          </div>
+          <div class="grid grid-cols-4 gap-3">
+            <div><div class="h-12 bg-white rounded-md shadow-e1 border border-hairline"></div><div class="text-label mt-1">e1</div></div>
+            <div><div class="h-12 bg-white rounded-md shadow-e2"></div><div class="text-label mt-1">e2</div></div>
+            <div><div class="h-12 bg-white rounded-md shadow-e3"></div><div class="text-label mt-1">e3</div></div>
+            <div><div class="h-12 bg-white rounded-md shadow-e4"></div><div class="text-label mt-1">e4</div></div>
+          </div>
+        </div>
+      </div>
+      <!-- config code -->
+      <div class="rounded-lg overflow-hidden shadow-e3 border border-hairline-d">
+        <div class="bg-panel2 px-4 py-2.5 flex items-center gap-2 border-b border-hairline-d">
+          <span class="w-3 h-3 rounded-full bg-bad/80"></span><span class="w-3 h-3 rounded-full bg-warn/80"></span><span class="w-3 h-3 rounded-full bg-ok/80"></span>
+          <span class="font-mono text-[11px] text-ink-400 ml-2">tailwind.config.js · theme.extend</span>
+        </div>
+        <pre class="bg-night text-ink-100 text-[11.5px] leading-relaxed font-mono p-4 overflow-x-auto"><code>colors: {
+  felt:  { DEFAULT:'#0B6E43', 50:'#DCEEE4', 400:'#15915A',
+           700:'#0A5234', 900:'#063421' },
+  brass: { DEFAULT:'#C2A14D', tint:'#F4EAD0', 700:'#8A6620' },
+  live:  { DEFAULT:'#FF3D71', fill:'#E11D48', tint:'#FFE1EA' },
+  ok:   { DEFAULT:'#1E9E5A', tint:'#DCF1E5' },
+  warn: { DEFAULT:'#E8902A', tint:'#FBE8CF' },
+  bad:  { DEFAULT:'#C5392F', tint:'#F7DDDA' },
+  ink:  { 50:'#F6F8F5',100:'#EDF0EC',200:'#DDE4DE',
+          300:'#BFCBC3',400:'#95A39A',500:'#6F7F75',
+          600:'#4E5F56',700:'#33433B',800:'#1F2D26',
+          900:'#13201A' },
+  // surfaces — light
+  canvas:'#F6F5F0', surface:'#FFFFFF',
+  surface2:'#F1EFE8', hairline:'#E2E6DF',
+  // surfaces — dark (live / scoring)
+  night:'#0C100E', panel:'#16201A',
+  panel2:'#1F2D26', 'hairline-d':'#2B3A32',
+},
+fontFamily: {
+  display:['Saira',...],   // headings · scores · wordmark
+  sans:['Hanken Grotesk',...], // body · UI · tables
+},
+fontSize: {           // px / weight
+  display:['3.5rem',{lineHeight:'.92',fontWeight:800}], //56
+  h1:['2.125rem',{fontWeight:700}],  // 34
+  h2:['1.5rem',{fontWeight:700}],    // 24
+  h3:['1.25rem',{fontWeight:700}],   // 20
+  score:['1.75rem',{fontWeight:700}],// 28 · tabular
+  lead:['1.125rem'],                 // 18
+  body:['.9375rem'],                 // 15
+  label:['.78rem',{fontWeight:600}], // 12.5
+  caption:['.72rem'],                // 11.5
+  data:['.875rem',{fontWeight:600}], // 14 · tabular
+},
+spacing: { base:'4px' },          // 4pt grid
+borderRadius:{ sm:'6px',  // inputs
+               md:'11px', // buttons
+               lg:'18px', // cards
+               xl:'24px' },// sheets
+boxShadow:{
+  e1:'0 1px 2px rgba(0,0,0,.06)',       // rows
+  e2:'0 4px 10px -2px rgba(0,0,0,.12)', // cards
+  e3:'0 12px 26px -8px rgba(0,0,0,.2)', // popovers
+  e4:'0 24px 50px -16px rgba(0,0,0,.3)',// modals
+},
+// darkMode:'class' — live/scoring screens use .dark</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== NAVIGATION ===================== -->
+  <section id="nav" class="pt-14">
+    <div class="border-t border-ink-200 pt-7 mb-7 flex items-baseline gap-4">
+      <span class="font-display font-bold text-felt text-sm">02</span>
+      <div><h2 class="font-display text-h2 uppercase">Navigation</h2>
+      <p class="text-ink-500 text-sm mt-1">App header (web) and the mobile bottom tab bar (NativeWind).</p></div>
+    </div>
+
+    <!-- top nav component -->
+    <div class="seclabel text-ink-400 mb-2">App header · dark (default for the platform)</div>
+    <div class="rounded-lg overflow-hidden border border-hairline-d shadow-e2 mb-7">
+      <div class="bg-night px-5 h-16 flex items-center gap-5">
+        <span class="font-display font-extrabold text-white uppercase tracking-tight">Snooker<span class="text-live">PK</span></span>
+        <nav class="hidden sm:flex gap-1 ml-2">
+          <a class="px-3 py-2 rounded-md text-[13px] font-medium text-white bg-white/10">Tournaments</a>
+          <a class="px-3 py-2 rounded-md text-[13px] font-medium text-ink-300 hover:text-white hover:bg-white/5 transition">Rankings</a>
+          <a class="px-3 py-2 rounded-md text-[13px] font-medium text-ink-300 hover:text-white hover:bg-white/5 transition">Players</a>
+          <a class="px-3 py-2 rounded-md text-[13px] font-medium text-ink-300 hover:text-white hover:bg-white/5 transition flex items-center gap-1.5">Store <span class="badge bg-brass/20 text-brass text-[9px] px-1.5 py-0.5">Soon</span></a>
+        </nav>
+        <div class="ml-auto flex items-center gap-3">
+          <button class="w-9 h-9 rounded-md grid place-items-center text-ink-300 hover:text-white hover:bg-white/10 transition">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          </button>
+          <div class="w-9 h-9 rounded-full bg-felt grid place-items-center font-display font-bold text-white text-sm ring-2 ring-brass">MA</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottom tab bar -->
+    <div class="seclabel text-ink-400 mb-2">Mobile bottom tab bar</div>
+    <div class="max-w-[400px]">
+      <div class="rounded-2xl overflow-hidden border border-hairline shadow-e3 bg-white">
+        <div class="h-12 bg-surface2 grid place-items-center text-ink-400 text-xs">app content</div>
+        <div class="grid grid-cols-5 border-t border-hairline bg-white">
+          <a class="flex flex-col items-center gap-1 py-2.5 text-felt">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+            <span class="text-[10px] font-semibold font-display tracking-wide">Home</span>
+          </a>
+          <a class="flex flex-col items-center gap-1 py-2.5 text-ink-400">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/></svg>
+            <span class="text-[10px] font-semibold font-display tracking-wide">Draws</span>
+          </a>
+          <a class="flex flex-col items-center gap-1 py-1.5 text-ink-400 relative">
+            <span class="-mt-5 w-12 h-12 rounded-full bg-felt grid place-items-center shadow-e3 ring-4 ring-white text-white">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+            <span class="text-[10px] font-semibold font-display tracking-wide">Create</span>
+          </a>
+          <a class="flex flex-col items-center gap-1 py-2.5 text-ink-400">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M10 19v-9M16 19V8M22 19H2"/></svg>
+            <span class="text-[10px] font-semibold font-display tracking-wide">Ranks</span>
+          </a>
+          <a class="flex flex-col items-center gap-1 py-2.5 text-ink-400">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+            <span class="text-[10px] font-semibold font-display tracking-wide">Profile</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== BUTTONS & FORMS ===================== -->
+  <section id="actions" class="pt-14">
+    <div class="border-t border-ink-200 pt-7 mb-7 flex items-baseline gap-4">
+      <span class="font-display font-bold text-felt text-sm">03</span>
+      <div><h2 class="font-display text-h2 uppercase">Buttons &amp; forms</h2>
+      <p class="text-ink-500 text-sm mt-1">Every variant and interaction state. Real <code class="font-mono text-xs">hover/active/focus</code> — hover to see them move.</p></div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6 items-start">
+      <!-- buttons -->
+      <div class="card p-6">
+        <div class="seclabel text-ink-500 mb-4">Buttons</div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-5 gap-y-4">
+          <div><div class="text-caption text-ink-400 mb-2">Primary</div><div class="flex flex-col gap-2 items-start">
+            <button class="btn btn-primary">Create event</button>
+            <button class="btn btn-primary"><span class="inline-block w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin"></span> Saving</button>
+            <button class="btn btn-primary" disabled>Disabled</button></div></div>
+          <div><div class="text-caption text-ink-400 mb-2">Secondary</div><div class="flex flex-col gap-2 items-start">
+            <button class="btn btn-secondary">Generate draw</button>
+            <button class="btn btn-secondary" disabled>Disabled</button></div></div>
+          <div><div class="text-caption text-ink-400 mb-2">Ghost</div><div class="flex flex-col gap-2 items-start">
+            <button class="btn btn-ghost">View bracket</button>
+            <button class="btn btn-ghost" disabled>Disabled</button></div></div>
+          <div><div class="text-caption text-ink-400 mb-2">Destructive</div><div class="flex flex-col gap-2 items-start">
+            <button class="btn btn-danger">Reject entry</button></div></div>
+          <div><div class="text-caption text-ink-400 mb-2">Brass</div><div class="flex flex-col gap-2 items-start">
+            <button class="btn btn-brass">Enter</button></div></div>
+          <div><div class="text-caption text-ink-400 mb-2">Live</div><div class="flex flex-col gap-2 items-start">
+            <button class="btn btn-live"><span class="w-2 h-2 rounded-full bg-white pulse"></span> Go live</button></div></div>
+        </div>
+        <div class="seclabel text-ink-500 mt-6 mb-3">Sizes &amp; focus ring</div>
+        <div class="flex flex-wrap items-center gap-3">
+          <button class="btn btn-primary btn-lg">Large</button>
+          <button class="btn btn-primary">Default</button>
+          <button class="btn btn-primary btn-sm">Small</button>
+          <button class="btn btn-primary ring-2 ring-offset-2 ring-felt">Focus</button>
+          <button class="btn btn-primary bg-felt-900">Active</button>
+        </div>
+      </div>
+
+      <!-- forms -->
+      <div class="card p-6">
+        <div class="seclabel text-ink-500 mb-4">Form inputs</div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div><label class="lbl">Player name</label><input class="input" value="Muhammad Asif"></div>
+          <div><label class="lbl">Tier</label>
+            <div class="relative">
+              <select class="input appearance-none pr-9"><option>Professional</option><option>Amateur</option></select>
+              <svg class="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l5 5 5-5"/></svg>
+            </div>
+          </div>
+          <div class="sm:col-span-2"><label class="lbl">Search players</label>
+            <div class="relative">
+              <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input class="input pl-10" placeholder="Name, city or club…">
+            </div>
+          </div>
+          <div class="sm:col-span-2"><label class="lbl">Entry email</label>
+            <input class="input input-error" value="asif@@example">
+            <p class="text-caption text-bad mt-1.5">Enter a valid email address.</p>
+          </div>
+          <div class="sm:col-span-2"><label class="lbl">Player photo</label>
+            <label class="flex items-center gap-3 border border-dashed border-ink-300 rounded-md px-4 py-3.5 cursor-pointer hover:border-felt hover:bg-felt-50/50 transition">
+              <span class="w-9 h-9 rounded-md bg-surface2 grid place-items-center text-felt">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>
+              </span>
+              <span><span class="block text-[14px] font-semibold text-ink-800">Drag a photo or browse</span><span class="block text-caption text-ink-400">JPG or PNG · up to 5MB</span></span>
+              <input type="file" class="hidden">
+            </label>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-x-8 gap-y-3 mt-5">
+          <div class="space-y-2.5">
+            <label class="flex items-center gap-2.5 text-[14px] cursor-pointer"><span class="w-5 h-5 rounded-md bg-felt grid place-items-center text-white"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="M5 12l5 5L20 6"/></svg></span> Agree to rules</label>
+            <label class="flex items-center gap-2.5 text-[14px] cursor-pointer"><span class="w-5 h-5 rounded-md border-[1.5px] border-ink-300 bg-white"></span> Email me updates</label>
+          </div>
+          <div class="space-y-2.5">
+            <label class="flex items-center gap-2.5 text-[14px] cursor-pointer"><span class="w-5 h-5 rounded-full border-[1.5px] border-felt grid place-items-center"><span class="w-2.5 h-2.5 rounded-full bg-felt"></span></span> Knockout</label>
+            <label class="flex items-center gap-2.5 text-[14px] cursor-pointer"><span class="w-5 h-5 rounded-full border-[1.5px] border-ink-300"></span> Round robin</label>
+          </div>
+          <div class="space-y-2.5">
+            <label class="flex items-center gap-2.5 text-[14px] cursor-pointer"><span class="w-10 h-6 rounded-full bg-felt relative"><span class="absolute top-0.5 left-[18px] w-5 h-5 rounded-full bg-white shadow"></span></span> Public draw</label>
+            <label class="flex items-center gap-2.5 text-[14px] cursor-pointer"><span class="w-10 h-6 rounded-full bg-ink-300 relative"><span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow"></span></span> Walk-ups</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- badges, flags, avatars -->
+    <div class="grid lg:grid-cols-3 gap-6 mt-6 items-start">
+      <div class="card p-6">
+        <div class="seclabel text-ink-500 mb-4">Status badges</div>
+        <div class="text-caption text-ink-400 mb-2">Match state</div>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="badge bg-live-fill text-white"><span class="dot pulse"></span>Live</span>
+          <span class="badge bg-brass-tint text-brass-700"><span class="dot"></span>Upcoming</span>
+          <span class="badge bg-ink-100 text-ink-600"><span class="dot"></span>Completed</span>
+        </div>
+        <div class="text-caption text-ink-400 mb-2">Entry request</div>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="badge bg-warn-tint text-[#9A5B12]"><span class="dot"></span>Pending</span>
+          <span class="badge bg-ok-tint text-[#0C6B3C]"><span class="dot"></span>Approved</span>
+          <span class="badge bg-bad-tint text-[#9A2820]"><span class="dot"></span>Rejected</span>
+        </div>
+        <div class="text-caption text-ink-400 mb-2">Player tier</div>
+        <div class="flex flex-wrap gap-2">
+          <span class="badge bg-felt text-white">Pro</span>
+          <span class="badge bg-white text-ink-800 border border-ink-300">Amateur</span>
+        </div>
+      </div>
+      <div class="card p-6">
+        <div class="seclabel text-ink-500 mb-4">Country-flag chip</div>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <span class="inline-flex items-center gap-2 bg-surface2 border border-hairline rounded-full pl-1 pr-3 py-1 text-[12.5px] font-semibold"><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span>PAK</span>
+          <span class="inline-flex items-center gap-2 bg-surface2 border border-hairline rounded-full pl-1 pr-3 py-1 text-[12.5px] font-semibold"><span class="fg"><i style="background:#fff"></i><span class="absolute"></span></span>ENG</span>
+          <span class="inline-flex items-center gap-2 bg-surface2 border border-hairline rounded-full pl-1 pr-3 py-1 text-[12.5px] font-semibold"><span class="fg"><i style="background:#de2910"></i></span>CHN</span>
+          <span class="inline-flex items-center gap-2 bg-surface2 border border-hairline rounded-full pl-1 pr-3 py-1 text-[12.5px] font-semibold"><span class="fg col"><i style="background:#00247d"></i><i style="background:#ef3340"></i></span>THA</span>
+        </div>
+        <p class="text-caption text-ink-400">Abstract color-band placeholders — swap licensed flag SVGs at 24×16.</p>
+      </div>
+      <div class="card p-6">
+        <div class="seclabel text-ink-500 mb-4">Player avatar</div>
+        <div class="flex items-center gap-4">
+          <div class="text-center"><div class="w-12 h-12 rounded-full bg-felt grid place-items-center font-display font-bold text-white ring-2 ring-brass">MA</div><div class="text-caption text-ink-400 mt-1.5">Pro ring</div></div>
+          <div class="text-center"><div class="w-12 h-12 rounded-full bg-ink-200 grid place-items-center font-display font-bold text-ink-600">JT</div><div class="text-caption text-ink-400 mt-1.5">Amateur</div></div>
+          <div class="text-center relative"><div class="w-12 h-12 rounded-full bg-felt grid place-items-center font-display font-bold text-white">SK</div><span class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-ok ring-2 ring-white"></span><div class="text-caption text-ink-400 mt-1.5">Online</div></div>
+          <div class="text-center"><div class="w-12 h-12 rounded-full bg-cover ring-2 ring-hairline" style="background-image:url('https://i.pravatar.cc/96?img=12')"></div><div class="text-caption text-ink-400 mt-1.5">Photo</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CARDS & DATA ===================== -->
+  <section id="data" class="pt-14">
+    <div class="border-t border-ink-200 pt-7 mb-7 flex items-baseline gap-4">
+      <span class="font-display font-bold text-felt text-sm">04</span>
+      <div><h2 class="font-display text-h2 uppercase">Cards &amp; data</h2>
+      <p class="text-ink-500 text-sm mt-1">Tournament card with organizer credit, stat card, rankings row, store product card.</p></div>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+      <!-- tournament card -->
+      <div class="card overflow-hidden">
+        <div class="relative h-28 p-3.5 flex items-start justify-between bg-gradient-to-br from-felt-400 to-felt-900">
+          <div class="absolute inset-0 felt-grain opacity-30 mix-blend-overlay"></div>
+          <span class="relative font-display font-extrabold text-white text-[12px] tracking-[0.16em] uppercase">National Open ’26</span>
+          <span class="relative badge bg-live-fill text-white"><span class="dot pulse"></span>Live</span>
+          <div class="absolute bottom-3.5 right-3.5 flex gap-1.5">
+            <span class="ball w-3.5 h-3.5" style="background:#c0392b"></span><span class="ball w-3.5 h-3.5" style="background:#f2c200"></span><span class="ball w-3.5 h-3.5" style="background:#e86a92"></span><span class="ball w-3.5 h-3.5" style="background:#161616"></span>
+          </div>
+        </div>
+        <div class="p-4">
+          <h3 class="font-display font-bold text-[19px] leading-tight mb-2.5">Karachi National Open</h3>
+          <div class="flex flex-wrap gap-x-3.5 gap-y-1 text-caption text-ink-500 mb-3.5">
+            <span>◷ 12–18 Jun</span><span>⌂ Karachi Club</span><span>♟ 64 draw</span>
+          </div>
+          <div class="flex items-center gap-2.5 pt-3.5 border-t border-hairline">
+            <span class="w-8 h-8 rounded-md bg-surface2 border border-hairline grid place-items-center font-display font-bold text-[13px] text-felt">CM</span>
+            <div><div class="seclabel text-ink-400 text-[10px]">Organized by</div><div class="text-[13px] font-semibold text-ink-800">Cue Masters Pakistan</div></div>
+            <button class="btn btn-brass btn-sm ml-auto">Enter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- stat cards -->
+      <div class="space-y-6">
+        <div class="card p-5">
+          <div class="seclabel text-ink-400">Entries</div>
+          <div class="font-display font-extrabold text-[40px] leading-none tabular-nums mt-2.5">48<span class="text-ink-400 text-[28px]"> / 64</span></div>
+          <div class="h-1.5 rounded-full bg-ink-200 mt-3 overflow-hidden"><span class="block h-full rounded-full bg-felt" style="width:75%"></span></div>
+          <div class="text-caption text-ok font-semibold mt-2.5">▲ 12 in the last 24h</div>
+        </div>
+        <div class="card p-5">
+          <div class="seclabel text-ink-400">Highest break</div>
+          <div class="font-display font-extrabold text-[40px] leading-none tabular-nums mt-2.5">147</div>
+          <div class="text-caption text-ink-500 mt-1.5">M. Asif · QF vs S. Khan</div>
+        </div>
+      </div>
+
+      <!-- rankings rows -->
+      <div class="card overflow-hidden">
+        <div class="px-4 py-3 border-b border-hairline flex items-center justify-between">
+          <span class="seclabel text-ink-500">Rankings</span>
+          <span class="badge bg-brass-tint text-brass-700 text-[9px]">Coming soon</span>
+        </div>
+        <div class="divide-y divide-hairline">
+          <div class="flex items-center gap-3 px-4 py-3">
+            <span class="font-display font-bold text-ink-400 w-5 text-center">1</span>
+            <span class="w-8 h-8 rounded-full bg-felt grid place-items-center font-display font-bold text-white text-xs ring-1 ring-brass">MA</span>
+            <div class="min-w-0 flex-1"><div class="text-[14px] font-bold truncate">M. Asif</div><div class="flex items-center gap-1.5 text-caption text-ink-400"><span class="fg !w-4 !h-2.5"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 4px"></i></span>PAK</div></div>
+            <div class="text-right"><div class="font-display font-bold tabular-nums text-[15px]">1,284</div><div class="text-caption text-ok">▲ 2</div></div>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3">
+            <span class="font-display font-bold text-ink-400 w-5 text-center">2</span>
+            <span class="w-8 h-8 rounded-full bg-felt grid place-items-center font-display font-bold text-white text-xs">SK</span>
+            <div class="min-w-0 flex-1"><div class="text-[14px] font-bold truncate">S. Khan</div><div class="flex items-center gap-1.5 text-caption text-ink-400"><span class="fg !w-4 !h-2.5"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 4px"></i></span>PAK</div></div>
+            <div class="text-right"><div class="font-display font-bold tabular-nums text-[15px]">1,150</div><div class="text-caption text-ok">▲ 1</div></div>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-3">
+            <span class="font-display font-bold text-ink-400 w-5 text-center">3</span>
+            <span class="w-8 h-8 rounded-full bg-ink-200 grid place-items-center font-display font-bold text-ink-600 text-xs">DJ</span>
+            <div class="min-w-0 flex-1"><div class="text-[14px] font-bold truncate">D. Junhui</div><div class="flex items-center gap-1.5 text-caption text-ink-400"><span class="fg !w-4 !h-2.5"><i style="background:#de2910"></i></span>CHN</div></div>
+            <div class="text-right"><div class="font-display font-bold tabular-nums text-[15px]">986</div><div class="text-caption text-bad">▼ 1</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- product card -->
+      <div class="card overflow-hidden flex flex-col">
+        <div class="aspect-[4/3] bg-surface2 relative grid place-items-center">
+          <span class="absolute top-3 left-3 badge bg-brass-tint text-brass-700"><span class="dot"></span>Store · soon</span>
+          <svg class="text-ink-300" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 21L21 3M6.5 4.5l13 13"/><circle cx="5" cy="6" r="2.2"/></svg>
+        </div>
+        <div class="p-4">
+          <div class="seclabel text-ink-400 text-[10px]">Cue Masters</div>
+          <h4 class="text-[14.5px] font-semibold leading-snug mt-1.5 mb-3">Pro Maple Snooker Cue — 9.5mm</h4>
+          <div class="flex items-center justify-between">
+            <span class="font-display font-extrabold text-[19px]"><span class="text-ink-400 text-xs">PKR</span> 14,500</span>
+            <button class="btn btn-secondary btn-sm">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MATCH ROWS ===================== -->
+  <section id="match" class="pt-14">
+    <div class="border-t border-ink-200 pt-7 mb-7 flex items-baseline gap-4">
+      <span class="font-display font-bold text-felt text-sm">05</span>
+      <div><h2 class="font-display text-h2 uppercase">Match rows</h2>
+      <p class="text-ink-500 text-sm mt-1">Flat per-round list (snooker.org style). Winner bolded. Tap a row to expand per-frame scores. Bye &amp; walkover variants included.</p></div>
+    </div>
+
+    <div class="card overflow-hidden max-w-[680px]">
+      <div class="px-4.5 py-3 bg-night text-white font-display font-semibold text-[12px] tracking-[0.12em] uppercase flex items-center gap-3" style="padding-left:18px;padding-right:18px">
+        Quarter-finals · Best of 9 <span class="ml-auto text-ink-400 font-medium normal-case tracking-normal">4 matches</span>
+      </div>
+
+      <!-- expandable / live -->
+      <button onclick="toggleFrames('f1')" class="w-full text-left grid grid-cols-[1fr_auto_1fr] items-center gap-3.5 px-4.5 py-3.5 border-b border-hairline bg-gradient-to-r from-live-tint to-transparent" style="padding-left:18px;padding-right:18px">
+        <div class="flex items-center gap-2.5 min-w-0"><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span><span class="text-[14.5px] font-bold truncate">M. Asif</span></div>
+        <div class="font-display font-bold text-[20px] tabular-nums flex items-center gap-2.5"><span>4</span><span class="text-ink-300 font-medium">–</span><span class="text-ink-400">3</span></div>
+        <div class="flex items-center gap-2.5 justify-end text-right min-w-0"><span class="text-[14.5px] text-ink-500 truncate">J. Trump</span><span class="fg"><i style="background:#fff"></i></span></div>
+      </button>
+      <div class="flex items-center gap-2 px-4.5 py-2 text-caption text-ink-500 border-b border-hairline" style="padding-left:18px;padding-right:18px">
+        In play <span class="badge bg-live-fill text-white ml-auto"><span class="dot pulse"></span>Live · Frame 8</span>
+      </div>
+      <div id="f1" class="hidden bg-surface2 px-4.5 py-3 border-b border-hairline" style="padding-left:18px;padding-right:18px">
+        <div class="grid grid-cols-9 gap-1.5 text-center">
+          <div class="text-caption text-ink-400 col-span-9 mb-1 font-semibold">Frame scores</div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><b>74</b><br><span class="text-ink-400">21</span></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><span class="text-ink-400">12</span><br><b>88</b></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><b>67</b><br><span class="text-ink-400">40</span></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><b>71</b><br><span class="text-ink-400">9</span></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><span class="text-ink-400">33</span><br><b>82</b></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><b>91</b><br><span class="text-ink-400">0</span></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><span class="text-ink-400">45</span><br><b>64</b></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><span class="text-ink-400">18</span><br><b>59</b></div>
+          <div class="rounded bg-live-tint border border-live/30 py-1.5 text-[12px] font-mono text-ink-400">live</div>
+        </div>
+      </div>
+
+      <!-- completed expandable -->
+      <button onclick="toggleFrames('f2')" class="w-full text-left grid grid-cols-[1fr_auto_1fr] items-center gap-3.5 px-4.5 py-3.5 border-b border-hairline hover:bg-surface2 transition" style="padding-left:18px;padding-right:18px">
+        <div class="flex items-center gap-2.5 min-w-0"><span class="fg"><i style="background:#de2910"></i></span><span class="text-[14.5px] text-ink-500 truncate">D. Junhui</span></div>
+        <div class="font-display font-bold text-[20px] tabular-nums flex items-center gap-2.5"><span class="text-ink-400">2</span><span class="text-ink-300 font-medium">–</span><span>5</span></div>
+        <div class="flex items-center gap-2.5 justify-end text-right min-w-0"><span class="text-[14.5px] font-bold truncate">S. Khan</span><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span></div>
+      </button>
+      <div id="f2" class="hidden bg-surface2 px-4.5 py-3 border-b border-hairline" style="padding-left:18px;padding-right:18px">
+        <div class="grid grid-cols-7 gap-1.5 text-center">
+          <div class="text-caption text-ink-400 col-span-7 mb-1 font-semibold">Frame scores · final</div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><b>70</b><br><span class="text-ink-400">44</span></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><span class="text-ink-400">25</span><br><b>78</b></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><span class="text-ink-400">8</span><br><b>92</b></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><b>66</b><br><span class="text-ink-400">39</span></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><span class="text-ink-400">12</span><br><b>71</b></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><span class="text-ink-400">30</span><br><b>69</b></div>
+          <div class="rounded bg-white border border-hairline py-1.5 text-[12px] font-mono"><span class="text-ink-400">41</span><br><b>58</b></div>
+        </div>
+      </div>
+
+      <!-- scheduled (no score) -->
+      <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3.5 px-4.5 py-3.5 border-b border-hairline" style="padding-left:18px;padding-right:18px">
+        <div class="flex items-center gap-2.5 min-w-0"><span class="fg"><i style="background:#012169"></i></span><span class="text-[14.5px] truncate">R. Walker</span></div>
+        <div class="font-display font-semibold text-[13px] text-ink-500 tabular-nums">Today 18:30</div>
+        <div class="flex items-center gap-2.5 justify-end text-right min-w-0"><span class="text-[14.5px] truncate">A. Mehmood</span><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span></div>
+      </div>
+
+      <!-- BYE variant -->
+      <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3.5 px-4.5 py-3.5 border-b border-hairline" style="padding-left:18px;padding-right:18px">
+        <div class="flex items-center gap-2.5 min-w-0"><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span><span class="text-[14.5px] font-bold truncate">N. Hussain</span></div>
+        <div><span class="badge bg-ink-100 text-ink-500 tracking-[0.1em]">Bye</span></div>
+        <div class="flex items-center gap-2.5 justify-end text-right min-w-0"><span class="text-[14.5px] text-ink-300 italic truncate">— advances —</span></div>
+      </div>
+
+      <!-- WALKOVER variant -->
+      <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3.5 px-4.5 py-3.5" style="padding-left:18px;padding-right:18px">
+        <div class="flex items-center gap-2.5 min-w-0"><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span><span class="text-[14.5px] font-bold truncate">B. Sajjad</span></div>
+        <div class="flex flex-col items-center"><span class="font-display font-bold text-[15px] text-ink-700">w/o</span><span class="text-[10px] text-ink-400 uppercase tracking-wide">walkover</span></div>
+        <div class="flex items-center gap-2.5 justify-end text-right min-w-0"><span class="text-[14.5px] text-ink-400 line-through truncate">T. Aslam</span><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== OVERLAYS / TABS / EMPTY ===================== -->
+  <section id="overlays" class="pt-14">
+    <div class="border-t border-ink-200 pt-7 mb-7 flex items-baseline gap-4">
+      <span class="font-display font-bold text-felt text-sm">06</span>
+      <div><h2 class="font-display text-h2 uppercase">Tabs · modal · empty state</h2>
+      <p class="text-ink-500 text-sm mt-1">Navigation within a screen, a confirm dialog, and the zero-data state.</p></div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-6 items-start">
+      <!-- tabs + empty -->
+      <div class="card p-0 overflow-hidden">
+        <div class="flex border-b border-hairline px-2" role="tablist">
+          <button onclick="setTab(0)" data-tab="0" class="tabbtn px-4 py-3.5 text-[13.5px] font-semibold border-b-2 border-felt text-felt">Overview</button>
+          <button onclick="setTab(1)" data-tab="1" class="tabbtn px-4 py-3.5 text-[13.5px] font-semibold border-b-2 border-transparent text-ink-500 hover:text-ink-800">Draw</button>
+          <button onclick="setTab(2)" data-tab="2" class="tabbtn px-4 py-3.5 text-[13.5px] font-semibold border-b-2 border-transparent text-ink-500 hover:text-ink-800">Players</button>
+          <button onclick="setTab(3)" data-tab="3" class="tabbtn px-4 py-3.5 text-[13.5px] font-semibold border-b-2 border-transparent text-ink-500 hover:text-ink-800">Stats</button>
+        </div>
+        <div id="tabbody" class="p-6 min-h-[230px] grid place-items-center text-center">
+          <!-- empty state lives here as default Draw content -->
+          <div>
+            <div class="w-16 h-16 rounded-full bg-surface2 grid place-items-center mx-auto mb-4 text-ink-300">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/></svg>
+            </div>
+            <h3 class="font-display font-bold text-h3 mb-1.5">Overview</h3>
+            <p class="text-ink-500 text-[14px] max-w-xs mx-auto">Switch tabs — “Draw” shows the empty state before a draw is generated.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- modal demo -->
+      <div>
+        <button onclick="openModal()" class="btn btn-primary mb-4">Open confirm modal</button>
+        <!-- inline preview of modal (always visible as doc) -->
+        <div class="rounded-lg border border-hairline shadow-e4 bg-white overflow-hidden">
+          <div class="bg-night/90 p-5 relative">
+            <div class="bg-white rounded-lg shadow-e4 max-w-sm mx-auto overflow-hidden">
+              <div class="p-5">
+                <div class="flex items-start gap-3">
+                  <span class="w-10 h-10 rounded-full bg-ok-tint grid place-items-center text-ok shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span>
+                  <div><h3 class="font-display font-bold text-[18px]">Approve entry?</h3><p class="text-[13.5px] text-ink-500 mt-1">Muhammad Asif will be added to the <b>Karachi National Open</b> 64-player draw.</p></div>
+                </div>
+              </div>
+              <div class="flex gap-2.5 px-5 py-4 bg-surface2 border-t border-hairline justify-end">
+                <button class="btn btn-ghost btn-sm">Cancel</button>
+                <button class="btn btn-primary btn-sm">Approve entry</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-caption text-ink-400 mt-2">Static preview above · button triggers the live overlay.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DARK SHOWCASE ===================== -->
+  <section id="dark" class="pt-14">
+    <div class="border-t border-ink-200 pt-7 mb-7 flex items-baseline gap-4">
+      <span class="font-display font-bold text-felt text-sm">07</span>
+      <div><h2 class="font-display text-h2 uppercase">Dark mode · live &amp; scoring</h2>
+      <p class="text-ink-500 text-sm mt-1">The same components on <code class="font-mono text-xs">.dark</code> — what arena/scoring screens use. Toggle the whole page from the header too.</p></div>
+    </div>
+
+    <div class="dark rounded-2xl overflow-hidden border border-hairline-d shadow-e4">
+      <div class="bg-night felt-grain p-6 sm:p-8 space-y-6">
+        <!-- dark nav -->
+        <div class="bg-panel rounded-lg border border-hairline-d px-5 h-14 flex items-center gap-5">
+          <span class="font-display font-extrabold text-white uppercase tracking-tight text-[15px]">Snooker<span class="text-live">PK</span></span>
+          <nav class="hidden sm:flex gap-1">
+            <a class="px-3 py-1.5 rounded-md text-[13px] font-medium text-white bg-white/10">Live</a>
+            <a class="px-3 py-1.5 rounded-md text-[13px] font-medium text-ink-400 hover:text-white transition">Draw</a>
+            <a class="px-3 py-1.5 rounded-md text-[13px] font-medium text-ink-400 hover:text-white transition">Players</a>
+          </nav>
+          <div class="ml-auto w-8 h-8 rounded-full bg-felt grid place-items-center font-display font-bold text-white text-xs ring-2 ring-brass">MA</div>
+        </div>
+
+        <!-- live banner (dark hero) -->
+        <div class="rounded-lg overflow-hidden relative border border-hairline-d">
+          <div class="relative p-6 flex items-center gap-6 bg-gradient-to-br from-felt to-felt-900">
+            <div class="absolute -top-1/3 left-[8%] w-60 h-60 rounded-full pointer-events-none" style="background:radial-gradient(circle,rgba(255,247,224,.18),transparent 65%)"></div>
+            <div class="text-center min-w-[88px] relative">
+              <div class="font-display font-bold text-[16px] text-white">M. Asif</div>
+              <div class="text-[11px] text-ink-300 mt-1 flex items-center justify-center gap-1.5"><span class="fg !w-4 !h-2.5"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 4px"></i></span>PAK</div>
+            </div>
+            <div class="font-display font-extrabold text-[54px] leading-none text-white tabular-nums relative">4<span class="text-white/35 text-[30px] mx-3">–</span>3</div>
+            <div class="text-center min-w-[88px] relative">
+              <div class="font-display font-bold text-[16px] text-ink-200">J. Trump</div>
+              <div class="text-[11px] text-ink-300 mt-1 flex items-center justify-center gap-1.5"><span class="fg !w-4 !h-2.5"><i style="background:#fff"></i></span>ENG</div>
+            </div>
+            <div class="ml-auto text-right relative">
+              <span class="badge bg-live-fill text-white"><span class="dot pulse"></span>Live</span>
+              <div class="seclabel text-ink-300 mt-2">Frame 8</div>
+              <div class="font-display font-bold text-[22px] text-brass tabular-nums">62 – 17</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 items-start">
+          <!-- dark match list -->
+          <div class="rounded-lg overflow-hidden border border-hairline-d bg-panel">
+            <div class="px-4 py-3 bg-black/30 text-white font-display font-semibold text-[12px] tracking-[0.12em] uppercase border-b border-hairline-d">Quarter-finals · Best of 9</div>
+            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3.5 border-b border-hairline-d" style="background:linear-gradient(90deg,rgba(225,29,72,.18),transparent 60%)">
+              <div class="flex items-center gap-2.5 min-w-0"><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span><span class="text-[14.5px] font-bold text-white truncate">M. Asif</span></div>
+              <div class="font-display font-bold text-[20px] tabular-nums flex items-center gap-2.5 text-white"><span>4</span><span class="text-white/30 font-medium">–</span><span class="text-ink-400">3</span></div>
+              <div class="flex items-center gap-2.5 justify-end text-right min-w-0"><span class="text-[14.5px] text-ink-400 truncate">J. Trump</span><span class="fg"><i style="background:#fff"></i></span></div>
+            </div>
+            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3.5 border-b border-hairline-d">
+              <div class="flex items-center gap-2.5 min-w-0"><span class="fg"><i style="background:#de2910"></i></span><span class="text-[14.5px] text-ink-400 truncate">D. Junhui</span></div>
+              <div class="font-display font-bold text-[20px] tabular-nums flex items-center gap-2.5 text-white"><span class="text-ink-400">2</span><span class="text-white/30 font-medium">–</span><span>5</span></div>
+              <div class="flex items-center gap-2.5 justify-end text-right min-w-0"><span class="text-[14.5px] font-bold text-white truncate">S. Khan</span><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span></div>
+            </div>
+            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3.5">
+              <div class="flex items-center gap-2.5 min-w-0"><span class="fg"><i style="background:#012169"></i></span><span class="text-[14.5px] text-ink-300 truncate">R. Walker</span></div>
+              <div class="font-display font-semibold text-[13px] text-ink-400">Today 18:30</div>
+              <div class="flex items-center gap-2.5 justify-end text-right min-w-0"><span class="text-[14.5px] text-ink-300 truncate">A. Mehmood</span><span class="fg"><i style="background:#016d31"></i><i style="background:#fff;flex:0 0 7px"></i></span></div>
+            </div>
+          </div>
+
+          <!-- dark forms + buttons + badges -->
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="lbl">Player</label><input class="input" value="Muhammad Asif"></div>
+              <div><label class="lbl">Frames</label><input class="input" value="9"></div>
+            </div>
+            <div><label class="lbl">Email</label><input class="input input-error" value="asif@@example"><p class="text-caption text-bad mt-1.5">Enter a valid email.</p></div>
+            <div class="flex flex-wrap gap-2.5">
+              <button class="btn btn-primary">Create</button>
+              <button class="btn btn-secondary">Draw</button>
+              <button class="btn btn-live"><span class="w-2 h-2 rounded-full bg-white pulse"></span> Go live</button>
+              <button class="btn btn-ghost">Cancel</button>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="badge bg-live-fill text-white"><span class="dot pulse"></span>Live</span>
+              <span class="badge bg-brass/20 text-brass"><span class="dot"></span>Upcoming</span>
+              <span class="badge bg-white/10 text-ink-200"><span class="dot"></span>Completed</span>
+              <span class="badge bg-ok/20 text-ok">Approved</span>
+              <span class="badge bg-felt text-white">Pro</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="text-caption text-ink-400 mt-3">Dark tokens: <span class="font-mono">night #0C100E · panel #16201A · panel2 #1F2D26 · hairline-d #2B3A32</span> · text lifts to <span class="font-mono">ink-50/100</span>, muted to <span class="font-mono">ink-400</span>, brand fills brighten to <span class="font-mono">felt-400</span>.</p>
+  </section>
+
+  <footer class="text-center mt-16 text-ink-400 text-caption tracking-wide">
+    <span class="font-display font-bold uppercase tracking-wide">SnookerPK</span> · Tailwind Foundation v1 · Baize locked · light + dark
+  </footer>
+</main>
+
+<!-- live modal overlay -->
+<div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center p-5 bg-night/70 backdrop-blur-sm">
+  <div class="bg-white rounded-lg shadow-e4 max-w-sm w-full overflow-hidden">
+    <div class="p-5">
+      <div class="flex items-start gap-3">
+        <span class="w-10 h-10 rounded-full bg-ok-tint grid place-items-center text-ok shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span>
+        <div><h3 class="font-display font-bold text-[18px]">Approve entry?</h3><p class="text-[13.5px] text-ink-500 mt-1">Muhammad Asif will be added to the <b>Karachi National Open</b> 64-player draw.</p></div>
+      </div>
+    </div>
+    <div class="flex gap-2.5 px-5 py-4 bg-surface2 border-t border-hairline justify-end">
+      <button onclick="closeModal()" class="btn btn-ghost btn-sm">Cancel</button>
+      <button onclick="closeModal()" class="btn btn-primary btn-sm">Approve entry</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleDark(){
+    const d = document.documentElement.classList.toggle('dark');
+    document.body.classList.toggle('bg-night', d);
+    document.body.classList.toggle('bg-canvas', !d);
+    document.body.classList.toggle('text-ink-100', d);
+    document.body.classList.toggle('text-ink-900', !d);
+    document.getElementById('modeLbl').textContent = d ? 'Light' : 'Dark';
+    document.getElementById('modeIcon').textContent = d ? '☀' : '◐';
+    try{ localStorage.setItem('snookerpk-base-dark', d?'1':'0'); }catch(e){}
+  }
+  (function(){ try{ if(localStorage.getItem('snookerpk-base-dark')==='1') toggleDark(); }catch(e){} })();
+
+  function toggleFrames(id){ document.getElementById(id).classList.toggle('hidden'); }
+
+  function openModal(){ const m=document.getElementById('modal'); m.classList.remove('hidden'); m.classList.add('flex'); }
+  function closeModal(){ const m=document.getElementById('modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+  document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
+
+  const tabContent = [
+    {t:'Overview', s:'Switch tabs — “Draw” shows the empty state before a draw is generated.', empty:false},
+    {t:'No draw yet', s:'Generate the knockout draw once entries close. 48 of 64 places filled.', empty:true},
+    {t:'Players', s:'48 entries approved. Manage requests from the Players tab.', empty:false},
+    {t:'Stats', s:'Highest break, century count and frame stats appear once play begins.', empty:false},
+  ];
+  function setTab(i){
+    document.querySelectorAll('.tabbtn').forEach((b,bi)=>{
+      const on = bi===i;
+      b.classList.toggle('border-felt', on); b.classList.toggle('text-felt', on);
+      b.classList.toggle('border-transparent', !on); b.classList.toggle('text-ink-500', !on);
+    });
+    const c = tabContent[i];
+    const icon = c.empty
+      ? '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/></svg>'
+      : '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+    document.getElementById('tabbody').innerHTML =
+      '<div><div class="w-16 h-16 rounded-full bg-surface2 grid place-items-center mx-auto mb-4 text-ink-300">'+icon+'</div>'+
+      '<h3 class="font-display font-bold text-h3 mb-1.5">'+c.t+'</h3>'+
+      '<p class="text-ink-500 text-[14px] max-w-xs mx-auto">'+c.s+'</p>'+
+      (c.empty?'<button class="btn btn-primary btn-sm mt-4">Generate draw</button>':'')+'</div>';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnookerPK — Umpire Scoreboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { darkMode:'class', theme: { extend: {
+  colors: {
+    felt:{DEFAULT:'#0B6E43',50:'#DCEEE4',400:'#15915A',700:'#0A5234',900:'#063421'},
+    brass:{DEFAULT:'#C2A14D',tint:'#F4EAD0',700:'#8A6620'},
+    live:{DEFAULT:'#FF3D71',fill:'#E11D48',tint:'#FFE1EA'},
+    ok:{DEFAULT:'#1E9E5A',tint:'#DCF1E5'},warn:{DEFAULT:'#E8902A',tint:'#FBE8CF'},bad:{DEFAULT:'#C5392F',tint:'#F7DDDA'},
+    ink:{50:'#F6F8F5',100:'#EDF0EC',200:'#DDE4DE',300:'#BFCBC3',400:'#95A39A',500:'#6F7F75',600:'#4E5F56',700:'#33433B',800:'#1F2D26',900:'#13201A'},
+    canvas:'#F6F5F0',surface2:'#F1EFE8',hairline:'#E2E6DF',
+    night:'#0C100E',panel:'#16201A',panel2:'#1F2D26','hairline-d':'#2B3A32',
+  },
+  fontFamily:{display:['Saira','system-ui','sans-serif'],sans:['Hanken Grotesk','system-ui','sans-serif']},
+  borderRadius:{sm:'6px',md:'11px',lg:'18px',xl:'24px'},
+} } };
+</script>
+<style type="text/tailwindcss">
+  @layer components {
+    .btn{@apply inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md px-5 py-2.5 text-sm leading-none transition active:translate-y-px focus-visible:outline-none disabled:cursor-not-allowed;}
+    .badge{@apply inline-flex items-center gap-1.5 font-display font-semibold uppercase px-2.5 py-1 rounded-full leading-none tracking-[0.08em] text-[11.5px];}
+    .badge .dot{@apply w-1.5 h-1.5 rounded-full bg-current;}
+    .seclabel{@apply font-display font-semibold uppercase tracking-[0.18em] text-ink-400 text-[11.5px];}
+  }
+  .fg{border-radius:3px;overflow:hidden;display:inline-flex;flex:0 0 auto;box-shadow:0 0 0 1px rgba(255,255,255,.35);}
+  .fg i{flex:1;display:block;height:100%;}
+  .felt-grain{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");}
+  @keyframes pulse{50%{opacity:.4}} .pulse{animation:pulse 1.6s infinite;}
+  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}} .bump{animation:bump .26s ease;}
+  @keyframes glowring{0%,100%{box-shadow:0 0 0 2px rgba(11,110,67,.9),0 0 28px -2px rgba(21,145,90,.55)}50%{box-shadow:0 0 0 2px rgba(21,145,90,1),0 0 40px 2px rgba(21,145,90,.8)}}
+  .activeglow{animation:glowring 2.4s ease-in-out infinite;}
+  @keyframes dropin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}} .dropin{animation:dropin .3s ease both;}
+  body{background:#0c100e;}
+  .arena{background:radial-gradient(1200px 640px at 50% -6%,rgba(11,110,67,.34),transparent 60%),radial-gradient(900px 600px at 88% 8%,rgba(233,61,113,.07),transparent 55%),#0c100e;}
+  ::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:#2b3a32;border-radius:99px}
+  .frame-label{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;}
+  .frame-label .n{font-family:'Saira';font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#fff;}
+  .frame-label .d{font-size:12.5px;color:#8ea69a;}
+  /* the board canvas — fixed tablet-landscape size, scaled to fit */
+  .board{width:1180px;height:724px;}
+  .tablet-bezel{background:#1b241f;border-radius:30px;padding:16px;border:1px solid #2b3a32;box-shadow:0 50px 90px -34px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.07);}
+  .phone-bezel{background:#1b241f;border-radius:34px;padding:11px;border:1px solid #2b3a32;box-shadow:0 40px 80px -30px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.07);}
+  .phone-bezel .snap-wrap{border-radius:24px;}
+  .snap-wrap{overflow:hidden;border-radius:18px;}
+  .ballbtn{box-shadow:inset -4px -5px 9px rgba(0,0,0,.5),0 4px 10px rgba(0,0,0,.45);}
+  .annot{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:14px 16px;color:#c4ccc6;font-size:13px;line-height:1.55;}
+  .annot b{color:#fff;}
+  .annot .num{flex:0 0 auto;width:26px;height:26px;border-radius:8px;background:#0b6e43;color:#fff;font-family:'Saira';font-weight:700;font-size:13px;display:grid;place-items:center;}
+</style>
+</head>
+<body class="font-sans text-ink-100 antialiased dark">
+<div class="arena min-h-screen">
+  <div class="max-w-[1280px] mx-auto px-6 py-10">
+
+    <!-- intro -->
+    <div class="flex items-center justify-between flex-wrap gap-4 mb-8">
+      <div class="flex items-center gap-3">
+        <span class="font-display font-extrabold text-xl uppercase tracking-tight text-white">Snooker<span class="text-live">PK</span></span>
+        <span class="badge bg-brass/20 text-brass !text-[10px]">Umpire</span>
+      </div>
+      <div class="flex items-center gap-2.5 text-[12.5px] text-ink-400"><span class="w-2 h-2 rounded-full bg-live pulse"></span> Private referee scoreboard · rule-based · tablet landscape</div>
+    </div>
+
+    <header class="mb-10 max-w-3xl">
+      <h1 class="font-display font-extrabold uppercase text-[40px] leading-[0.95] text-white">Umpire Scoreboard</h1>
+      <p class="text-ink-300 text-[15px] mt-3">The private screen the assigned referee uses to score a live singles frame ball-by-ball. It enforces the snooker sequence — reds then colours, then the colours-clearing phase — so only legal balls are tappable. Built for a tablet in landscape: big targets, the active player and the expected ball impossible to miss, and Undo always one tap away.</p>
+    </header>
+
+    <!-- LIVE INTERACTIVE BOARD -->
+    <div class="frame-label"><span class="n">Live board</span><span class="d">— fully interactive · pot balls, end turns, foul, end frame</span></div>
+    <div class="flex justify-center mb-4">
+      <div class="tablet-bezel">
+        <div class="snap-wrap board bg-night" id="live"></div>
+      </div>
+    </div>
+    <div class="annot max-w-3xl mx-auto mb-16">
+      <span class="num">▸</span>
+      <div>This board is <b>real</b>. Pot the on-ball to build a break, <b>End Turn</b> to switch players, hit <b>Foul</b> to open the foul flow, and <b>End Frame</b> to record the winner + high break. Illegal balls are dimmed and locked. <b>Undo</b> reverses any action.</div>
+    </div>
+
+    <!-- ANNOTATED STATES -->
+    <div class="frame-label"><span class="n">States</span><span class="d">— five key moments, annotated</span></div>
+    <div class="space-y-12" id="states"></div>
+
+    <!-- ===== MOBILE ===== -->
+    <div class="frame-label mt-20"><span class="n">Mobile</span><span class="d">— phone portrait · same engine, reflowed for one thumb</span></div>
+    <div class="annot max-w-3xl mb-8">
+      <span class="num">▸</span>
+      <div>The exact same rules engine, driven from a phone. The two player panels sit side-by-side as a compact header, the on-ball pad fills the width, and <b>End&nbsp;Turn / Foul / Undo</b> dock to a fixed bottom bar so they stay thumb-reachable. This board is <b>live too</b> — and shares state with the tablet above, so potting here updates both.</div>
+    </div>
+    <div class="flex justify-center mb-16">
+      <div class="phone-bezel">
+        <div class="snap-wrap bg-night" style="width:360px;height:740px" id="live-m"></div>
+      </div>
+    </div>
+
+    <div class="frame-label"><span class="n">Mobile states</span><span class="d">— the same five moments, on a phone</span></div>
+    <div class="flex flex-wrap justify-center gap-x-8 gap-y-12" id="states-m"></div>
+
+    <footer class="text-center mt-16 text-ink-500 text-[12.5px] tracking-wide">
+      <span class="font-display font-bold uppercase tracking-wide text-ink-300">SnookerPK</span> · Umpire Scoreboard · tablet-first · dark broadcast · Baize
+    </footer>
+
+  </div>
+</div>
+<script src="umpire.js"></script>
+<script src="umpire-mobile.js"></script>
+</body>
+</html>

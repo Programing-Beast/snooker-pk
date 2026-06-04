@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="a">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnookerPK — Baize: Clean vs Table-Metaphor</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ============================================================
+     TABLE-METAPHOR VARIANT
+     Felt-green surface + warm wooden "cushion" frame.
+     Scoped to .tm so it never leaks into the clean version.
+     ============================================================ */
+  :root{
+    --felt:#0c5e3a;            /* playing-surface baize */
+    --felt-deep:#073d26;       /* shaded baize for banners */
+    --felt-line:#0a7048;       /* hairline on felt */
+    --wood:#7a4a22;            /* mahogany cushion rail */
+    --wood-hi:#a9743f;         /* lit top edge of rail */
+    --wood-lo:#4e2c12;         /* shadowed inner edge */
+    --on-felt:#f3efe3;         /* primary text on baize (warm white) */
+    --on-felt-mut:#aecbb9;     /* muted text on baize */
+  }
+
+  /* page chrome */
+  .cmp-wrap{ position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 28px 120px; }
+  .cmp-hero{ padding:60px 0 30px; }
+  .cmp-hero .kicker{ margin-bottom:20px; }
+  .cmp-hero h1{ font-family:'Saira'; font-weight:800; font-size:clamp(34px,5vw,56px);
+    line-height:1; letter-spacing:-.01em; text-transform:uppercase; margin:0 0 16px; }
+  .cmp-hero h1 .amp{ color:var(--secondary); }
+  .cmp-hero p{ max-width:680px; color:#b8c0ba; font-size:17px; margin:0; }
+
+  .cmp-grid{ display:grid; grid-template-columns:1fr 1fr; gap:30px; align-items:start; }
+  .col-head{ display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .col-head .tag{ font-family:'Saira'; font-weight:700; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; padding:5px 11px; border-radius:999px; }
+  .col-head .tag.clean{ background:rgba(255,255,255,.08); color:#cdd4ce; border:1px solid rgba(255,255,255,.14); }
+  .col-head .tag.tm{ background:var(--wood); color:#f7e9d8; }
+  .col-head .nm{ font-family:'Saira'; font-weight:700; font-size:18px; text-transform:uppercase; color:#fff; }
+  .col-sub{ color:#8ea69a; font-size:13px; margin:0 0 20px; min-height:34px; }
+
+  .row-label{ display:flex; align-items:center; gap:12px; margin:38px 0 16px;
+    font-family:'Saira'; font-weight:600; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:#7e8a83; }
+  .row-label::after{ content:""; flex:1; height:1px; background:rgba(255,255,255,.09); }
+
+  /* ---- the wooden cushion frame ---- */
+  .felt-frame{
+    border-radius:20px;
+    padding:11px;                       /* the rail thickness */
+    background:
+      linear-gradient(155deg, var(--wood-hi), var(--wood) 34%, var(--wood-lo));
+    box-shadow:
+      0 22px 46px -18px rgba(0,0,0,.7),
+      inset 0 1px 0 rgba(255,255,255,.28),     /* lit top bevel */
+      inset 0 -2px 4px rgba(0,0,0,.45);        /* shaded bottom */
+  }
+  .felt-frame > .felt-inner{
+    border-radius:11px;
+    background:var(--felt);
+    background-image:
+      radial-gradient(120% 130% at 80% -10%, rgba(255,255,255,.06), transparent 55%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
+    box-shadow:
+      inset 0 2px 6px rgba(0,0,0,.4),          /* felt sinks below rail */
+      inset 0 0 0 1px rgba(0,0,0,.25);
+    overflow:hidden;
+    color:var(--on-felt);
+  }
+
+  /* ---------- TM Tournament card ---------- */
+  .tm-tcard .felt-inner{ display:flex; flex-direction:column; }
+  .tm-tcard .banner{ position:relative; padding:16px 18px 14px; }
+  .tm-tcard .banner .ttitle{ font-family:'Saira'; font-weight:800; font-size:13px;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--secondary); }
+  .tm-tcard .banner .balls{ position:absolute; bottom:12px; right:16px; display:flex; gap:6px; }
+  .tm-tcard .body{ padding:4px 18px 18px; }
+  .tm-tcard .body h3{ font-family:'Saira'; font-weight:700; font-size:20px; margin:0 0 8px;
+    color:var(--on-felt); letter-spacing:-.01em; }
+  .tm-tcard .meta{ display:flex; gap:14px; color:var(--on-felt-mut); font-size:12.5px; margin:0 0 16px; flex-wrap:wrap; }
+  .tm-tcard .meta span{ display:inline-flex; align-items:center; gap:6px; }
+  .tm-tcard .org{ display:flex; align-items:center; gap:10px; padding-top:14px;
+    border-top:1px solid var(--felt-line); }
+  .tm-tcard .org .av{ width:30px; height:30px; border-radius:8px; background:rgba(0,0,0,.22);
+    border:1px solid var(--felt-line); display:flex; align-items:center; justify-content:center;
+    font-family:'Saira'; font-weight:700; font-size:13px; color:var(--secondary); }
+  .tm-tcard .org .lbl{ font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--on-felt-mut); font-family:'Saira'; font-weight:600; }
+  .tm-tcard .org .who{ font-size:13px; font-weight:600; color:var(--on-felt); }
+
+  /* on-felt button */
+  .btn--brass{ background:var(--secondary); color:#3a2c08; }
+  .btn--brass:hover{ filter:brightness(1.06); }
+
+  /* on-felt badges (recoloured for the dark surface) */
+  .badge--upcoming-felt{ background:var(--secondary); color:#3a2c08; }
+  .badge--completed-felt{ background:rgba(255,255,255,.14); color:#e8efe9; }
+
+  /* ---------- TM Match row ---------- */
+  .tm-match .felt-inner{ }
+  .tm-round-head{ display:flex; align-items:center; gap:12px; padding:12px 18px;
+    background:rgba(0,0,0,.26); color:var(--on-felt); font-family:'Saira'; font-weight:600;
+    font-size:12px; letter-spacing:.12em; text-transform:uppercase; border-bottom:1px solid var(--felt-line); }
+  .tm-round-head .count{ margin-left:auto; color:var(--on-felt-mut); font-weight:500; letter-spacing:.04em; }
+  .tm-row{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px;
+    padding:14px 18px; border-bottom:1px solid var(--felt-line); }
+  .tm-row:last-child{ border-bottom:0; }
+  .tm-row .side{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .tm-row .side.right{ justify-content:flex-end; text-align:right; }
+  .tm-row .pname{ font-size:14.5px; color:var(--on-felt); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tm-row .pname.win{ font-weight:700; }
+  .tm-row .pname.lose{ color:var(--on-felt-mut); }
+  .tm-row .score{ font-family:'Saira'; font-weight:700; font-size:20px; font-variant-numeric:tabular-nums;
+    display:flex; align-items:center; gap:10px; color:#fff; }
+  .tm-row .score .dash{ color:rgba(255,255,255,.4); font-weight:500; }
+  .tm-row .score .s.lose{ color:var(--on-felt-mut); }
+  .tm-row .when{ font-family:'Saira'; font-weight:600; font-size:13px; color:var(--on-felt-mut); font-variant-numeric:tabular-nums; }
+  .tm-row.is-live{ background:linear-gradient(90deg, rgba(225,29,72,.22), transparent 60%); }
+  /* flag chip readability boost on felt: hairline ring */
+  .tm-row .fg, .tm-tcard .fg, .tm-banner .fg{ box-shadow:0 0 0 1px rgba(255,255,255,.35); }
+
+  /* ---------- TM Live banner ---------- */
+  .tm-banner .felt-inner{ padding:0; }
+  .tm-banner .bnr{ position:relative; padding:22px 24px; display:flex; align-items:center; gap:22px;
+    background:
+      radial-gradient(80% 160% at 12% -30%, rgba(255,255,255,.10), transparent 60%),
+      linear-gradient(120deg, var(--felt) 0%, var(--felt-deep) 100%); }
+  .tm-banner .spot{ position:absolute; top:-40%; left:6%; width:240px; height:240px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,247,224,.20), transparent 65%); pointer-events:none; }
+  .tm-banner .scorewrap{ display:flex; align-items:center; gap:18px; position:relative; }
+  .tm-banner .who2{ text-align:center; min-width:96px; }
+  .tm-banner .who2 .nm{ font-family:'Saira'; font-weight:700; font-size:16px; color:var(--on-felt); }
+  .tm-banner .who2 .nm.win{ color:#fff; }
+  .tm-banner .who2 .ct{ font-size:11px; color:var(--on-felt-mut); letter-spacing:.06em; margin-top:3px; }
+  .tm-banner .big-score{ font-family:'Saira'; font-weight:800; font-size:54px; line-height:1;
+    color:#fff; font-variant-numeric:tabular-nums; letter-spacing:.01em; }
+  .tm-banner .big-score .vs{ color:rgba(255,255,255,.35); font-size:30px; vertical-align:middle; margin:0 12px; }
+  .tm-banner .frameinfo{ margin-left:auto; text-align:right; position:relative; }
+  .tm-banner .frameinfo .lbl{ font-family:'Saira'; font-weight:600; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--on-felt-mut); }
+  .tm-banner .frameinfo .frm{ font-family:'Saira'; font-weight:700; font-size:22px; color:var(--secondary); margin-top:2px; }
+
+  /* clean live banner (neutral counterpart) */
+  .cl-banner{ border-radius:18px; overflow:hidden; border:1px solid var(--border);
+    background:var(--surface); box-shadow:0 18px 40px -22px rgba(0,0,0,.5); }
+  .cl-banner .bnr{ padding:22px 24px; display:flex; align-items:center; gap:22px;
+    background:radial-gradient(120% 140% at 85% -20%, var(--primary-400), var(--primary-900)); }
+  .cl-banner .who2{ text-align:center; min-width:96px; }
+  .cl-banner .who2 .nm{ font-family:'Saira'; font-weight:700; font-size:16px; color:rgba(255,255,255,.85); }
+  .cl-banner .who2 .nm.win{ color:#fff; }
+  .cl-banner .who2 .ct{ font-size:11px; color:rgba(255,255,255,.6); letter-spacing:.06em; margin-top:3px; }
+  .cl-banner .big-score{ font-family:'Saira'; font-weight:800; font-size:54px; line-height:1; color:#fff; font-variant-numeric:tabular-nums; }
+  .cl-banner .big-score .vs{ color:rgba(255,255,255,.35); font-size:30px; margin:0 12px; }
+  .cl-banner .frameinfo{ margin-left:auto; text-align:right; }
+  .cl-banner .frameinfo .lbl{ font-family:'Saira'; font-weight:600; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.6); }
+  .cl-banner .frameinfo .frm{ font-family:'Saira'; font-weight:700; font-size:22px; color:var(--secondary); margin-top:2px; }
+  .cl-banner .fg{ box-shadow:0 0 0 1px rgba(255,255,255,.35); }
+
+  /* verdict / tradeoffs panel */
+  .verdict{ margin-top:54px; }
+  .verdict .grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:8px; }
+  .tcell{ background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:16px; padding:20px 22px; }
+  .tcell h4{ font-family:'Saira'; font-weight:700; font-size:13px; letter-spacing:.06em; text-transform:uppercase; margin:0 0 12px; color:#fff; display:flex; align-items:center; gap:9px; }
+  .tcell h4 .pip{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+  .tcell ul{ margin:0; padding-left:17px; color:#c4ccc6; font-size:13.5px; line-height:1.6; }
+  .tcell li{ margin-bottom:9px; }
+  .tcell li b{ color:#fff; }
+  .pip.good{ background:var(--success); } .pip.warn{ background:var(--warning); } .pip.info{ background:var(--secondary); }
+
+  .legend{ display:flex; flex-wrap:wrap; gap:18px; margin-top:18px; padding:16px 18px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:14px; }
+  .legend .sw2{ display:flex; align-items:center; gap:9px; font-size:12.5px; color:#cdd4ce; }
+  .legend .sw2 i{ width:26px; height:18px; border-radius:5px; flex:0 0 auto; border:1px solid rgba(255,255,255,.15); }
+
+  @media (max-width:880px){
+    .cmp-grid{ grid-template-columns:1fr; }
+    .verdict .grid3{ grid-template-columns:1fr; }
+    .tm-banner .frameinfo, .cl-banner .frameinfo{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="cmp-wrap">
+
+    <header class="cmp-hero">
+      <div class="kicker"><span class="dot"></span> Baize · locked · exploration</div>
+      <h1>Clean Neutral <span class="amp">&amp;</span> Table Metaphor</h1>
+      <p>Same locked Baize palette, two surface treatments. Left keeps the broadcast-clean white cards. Right leans all the way into the snooker table — baize-green playing surfaces inside a warm mahogany <em>cushion rail</em>. Compare the three components, then see the readability trade-offs below.</p>
+    </header>
+
+    <div class="cmp-grid">
+      <!-- ===== LEFT COLUMN: CLEAN ===== -->
+      <div>
+        <div class="col-head"><span class="tag clean">Current</span><span class="nm">Clean Neutral</span></div>
+        <p class="col-sub">White surfaces, hairline borders. Maximum legibility and density; reads as “control desk”.</p>
+      </div>
+      <!-- ===== RIGHT COLUMN: TABLE METAPHOR ===== -->
+      <div>
+        <div class="col-head"><span class="tag tm">Explore</span><span class="nm">Table Metaphor</span></div>
+        <p class="col-sub">Baize-green felt inside a mahogany cushion rail. Atmospheric and unmistakably snooker; richer, heavier.</p>
+      </div>
+    </div>
+
+    <!-- ============ ROW 1 · TOURNAMENT CARD ============ -->
+    <div class="row-label">Tournament card</div>
+    <div class="cmp-grid">
+      <!-- clean -->
+      <div class="tcard" style="max-width:420px;">
+        <div class="banner">
+          <div class="felt"></div>
+          <span class="ttitle">National Open ’26</span>
+          <span class="badge badge--live" style="position:relative;"><span class="d"></span>Live</span>
+          <div class="balls" aria-hidden="true"><span class="ball sm red"></span><span class="ball sm yellow"></span><span class="ball sm pink"></span><span class="ball sm black"></span></div>
+        </div>
+        <div class="body">
+          <h3>Karachi National Open</h3>
+          <div class="meta"><span>◷ 12–18 Jun</span><span>⌂ Karachi Club</span><span>♟ 64 draw</span></div>
+          <div class="org">
+            <span class="av">CB</span>
+            <div><div class="lbl">Organized by</div><div class="who">Cue Masters Pakistan</div></div>
+            <button class="btn btn--primary btn--sm" style="margin-left:auto;">Enter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- table metaphor -->
+      <div class="felt-frame tm-tcard" style="max-width:420px;">
+        <div class="felt-inner">
+          <div class="banner">
+            <span class="ttitle">National Open ’26</span>
+            <div class="balls" aria-hidden="true"><span class="ball sm red"></span><span class="ball sm yellow"></span><span class="ball sm pink"></span><span class="ball sm black"></span></div>
+          </div>
+          <div class="body">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <h3 style="margin:0;">Karachi National Open</h3>
+              <span class="badge badge--live" style="margin-left:auto;"><span class="d"></span>Live</span>
+            </div>
+            <div class="meta"><span>◷ 12–18 Jun</span><span>⌂ Karachi Club</span><span>♟ 64 draw</span></div>
+            <div class="org">
+              <span class="av">CB</span>
+              <div><div class="lbl">Organized by</div><div class="who">Cue Masters Pakistan</div></div>
+              <button class="btn btn--brass btn--sm" style="margin-left:auto;">Enter</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ROW 2 · MATCH ROW ============ -->
+    <div class="row-label">Match row · PAK vs ENG · live</div>
+    <div class="cmp-grid">
+      <!-- clean -->
+      <div class="card flush">
+        <div class="round-head">Quarter-final · Table 1 <span class="count">Best of 9</span></div>
+        <div class="match is-live">
+          <div class="side">
+            <span class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 7px;"></i></span></span>
+            <span class="pname win">M. Asif</span>
+          </div>
+          <div class="score"><span class="s win">4</span><span class="dash">–</span><span class="s lose">3</span></div>
+          <div class="side right">
+            <span class="pname lose">J. Trump</span>
+            <span class="flag"><span class="fg"><i style="background:#fff;"></i></span></span>
+          </div>
+        </div>
+        <div class="round-head" style="background:transparent;color:var(--text-muted);padding:9px 18px;border-bottom:0;">In play <span class="badge badge--live" style="margin-left:auto;"><span class="d"></span>Live · Frame 8</span></div>
+      </div>
+
+      <!-- table metaphor -->
+      <div class="felt-frame tm-match">
+        <div class="felt-inner">
+          <div class="tm-round-head">Quarter-final · Table 1 <span class="count">Best of 9</span></div>
+          <div class="tm-row is-live">
+            <div class="side">
+              <span class="flag"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 7px;"></i></span></span>
+              <span class="pname win">M. Asif</span>
+            </div>
+            <div class="score"><span class="s win">4</span><span class="dash">–</span><span class="s lose">3</span></div>
+            <div class="side right">
+              <span class="pname lose">J. Trump</span>
+              <span class="flag"><span class="fg"><i style="background:#fff;"></i></span></span>
+            </div>
+          </div>
+          <div class="tm-round-head" style="background:transparent;border-bottom:0;padding:9px 18px;">In play <span class="badge badge--live" style="margin-left:auto;"><span class="d"></span>Live · Frame 8</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ROW 3 · LIVE BANNER ============ -->
+    <div class="row-label">Live tournament banner</div>
+    <div class="cmp-grid">
+      <!-- clean -->
+      <div class="cl-banner">
+        <div class="bnr">
+          <div class="who2">
+            <div class="nm win">M. Asif</div>
+            <div class="ct"><span class="flag" style="justify-content:center;"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 6px;"></i></span>PAK</span></div>
+          </div>
+          <div class="big-score">4<span class="vs">–</span>3</div>
+          <div class="who2">
+            <div class="nm">J. Trump</div>
+            <div class="ct"><span class="flag" style="justify-content:center;"><span class="fg"><i style="background:#fff;"></i></span>ENG</span></div>
+          </div>
+          <div class="frameinfo">
+            <span class="badge badge--live"><span class="d"></span>Live</span>
+            <div class="lbl" style="margin-top:8px;">Frame 8</div>
+            <div class="frm">62 – 17</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- table metaphor -->
+      <div class="felt-frame tm-banner">
+        <div class="felt-inner">
+          <div class="bnr">
+            <div class="spot"></div>
+            <div class="scorewrap">
+              <div class="who2">
+                <div class="nm win">M. Asif</div>
+                <div class="ct"><span class="flag" style="justify-content:center;color:var(--on-felt-mut);"><span class="fg"><i style="background:#016d31;"></i><i style="background:#fff;flex:0 0 6px;"></i></span>PAK</span></div>
+              </div>
+              <div class="big-score">4<span class="vs">–</span>3</div>
+              <div class="who2">
+                <div class="nm">J. Trump</div>
+                <div class="ct"><span class="flag" style="justify-content:center;color:var(--on-felt-mut);"><span class="fg"><i style="background:#fff;"></i></span>ENG</span></div>
+              </div>
+            </div>
+            <div class="frameinfo">
+              <span class="badge badge--live"><span class="d"></span>Live</span>
+              <div class="lbl" style="margin-top:8px;">Frame 8</div>
+              <div class="frm">62 – 17</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ TRADE-OFFS ============ -->
+    <section class="verdict">
+      <div class="section-head" style="border-top-color:rgba(255,255,255,.09);">
+        <span class="idx">⚖</span>
+        <div class="col">
+          <h2>Readability trade-offs</h2>
+          <p>What the felt-and-wood treatment costs, and the adjustments already baked into the right-hand column to keep text legible.</p>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="tcell">
+          <h4><span class="pip good"></span>Holds up well</h4>
+          <ul>
+            <li><b>Player names &amp; scores</b> — warm-white (#F3EFE3) and pure-white on baize clear ~9–12:1 contrast. Bolded winner still reads instantly.</li>
+            <li><b>LIVE badge</b> — the deepened pink fill (#E11D48) pops hard against green; arguably stronger here than on white.</li>
+            <li><b>Brass accents</b> — champagne secondary on felt is the most premium combination in the whole system. Used for titles, the “Enter” button and frame score.</li>
+          </ul>
+        </div>
+        <div class="tcell">
+          <h4><span class="pip warn"></span>Costs &amp; fixes</h4>
+          <ul>
+            <li><b>Muted/secondary text</b> dropped below AA on raw felt, so it’s lifted to a lighter green-grey (#AECBB9, ~4.8:1). Don’t push metadata any dimmer.</li>
+            <li><b>Light-surface badge tints</b> (Upcoming brass-tint, Completed grey) vanish on green — they’re swapped for solid fills here. Every tinted chip needs an on-felt variant.</li>
+            <li><b>Flag chips</b> with white fields (ENG) blend into glare; a 1px white ring restores the edge. The green band of PAK sits close to the felt — the ring is doing real work.</li>
+          </ul>
+        </div>
+        <div class="tcell">
+          <h4><span class="pip info"></span>Where to use it</h4>
+          <ul>
+            <li><b>Hero / feature moments</b> — live banner, the marquee tournament card, an event landing header. The atmosphere earns its weight.</li>
+            <li><b>Not for dense lists.</b> A full 64-line draw or a rankings table in felt-and-wood gets heavy and tiring — keep those clean-neutral.</li>
+            <li><b>Wood = decoration only.</b> The rail never carries status or meaning; it’s a frame. Keep its thickness fixed so it doesn’t eat layout on mobile.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="sw2"><i style="background:#0c5e3a;"></i> Felt surface #0C5E3A</div>
+        <div class="sw2"><i style="background:linear-gradient(155deg,#a9743f,#7a4a22 60%,#4e2c12);"></i> Mahogany rail #7A4A22</div>
+        <div class="sw2"><i style="background:#f3efe3;"></i> On-felt text #F3EFE3</div>
+        <div class="sw2"><i style="background:#aecbb9;"></i> On-felt muted #AECBB9</div>
+        <div class="sw2"><i style="background:#c2a14d;"></i> Brass #C2A14D</div>
+        <div class="sw2"><i style="background:#e11d48;"></i> Live #E11D48</div>
+      </div>
+
+      <div class="darknote" style="margin-top:22px;">
+        <span class="ball sm green" style="margin-top:2px;"></span>
+        <div><b>My recommendation:</b> adopt the table-metaphor treatment as a <b>“feature” surface</b> — live banners and hero tournament cards — and keep clean-neutral as the workhorse for draws, tables and forms. Same locked Baize palette, two registers: ceremony vs. control.</div>
+      </div>
+    </section>
+
+    <div style="text-align:center;margin-top:56px;color:#6e7a73;font-size:12.5px;letter-spacing:.04em;">
+      <span class="disp" style="font-weight:700;text-transform:uppercase;">SnookerPK</span> · Baize locked · surface-treatment exploration
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
