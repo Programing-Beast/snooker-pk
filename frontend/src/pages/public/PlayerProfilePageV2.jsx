@@ -144,7 +144,7 @@ export default function PlayerProfilePageV2() {
       </section>
 
       {/* ─── Section 2: Player Name + Info Card ─── */}
-      <section className="bg-canvas">
+      <section className="bg-page">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 sm:py-12">
           {/* Name block */}
           <div className="text-center mb-8">

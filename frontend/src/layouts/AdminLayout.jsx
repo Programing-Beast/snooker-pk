@@ -12,7 +12,7 @@ export default function AdminLayout() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-canvas flex">
+    <div className="min-h-screen bg-page flex">
       {/* Sidebar */}
       <aside className="hidden lg:flex flex-col w-60 bg-night border-r border-hairline-d shrink-0">
         <div className="px-5 h-16 flex items-center border-b border-hairline-d">
