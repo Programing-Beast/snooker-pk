@@ -4,8 +4,12 @@ namespace App\Listeners;
 
 use App\Events\MatchCompleted;
 use App\Models\Match_;
+use App\Services\PrizeAwardService;
+
 class AdvanceWinner
 {
+    public function __construct(private PrizeAwardService $prizeAwardService) {}
+
     public function handle(MatchCompleted $event): void
     {
         $match = $event->match;
@@ -26,6 +30,13 @@ class AdvanceWinner
         if ($currentRoundIndex >= $rounds->count() - 1) {
             return;
         }
+
+        $loserId = $match->winner_id === $match->player1_id
+            ? $match->player2_id
+            : $match->player1_id;
+
+        // Award elimination prize for the loser
+        $this->prizeAwardService->awardEliminationPrize($match, $loserId);
 
         $nextRound = $rounds[$currentRoundIndex + 1];
         $nextPosition = intdiv($match->position - 1, 2) + 1;

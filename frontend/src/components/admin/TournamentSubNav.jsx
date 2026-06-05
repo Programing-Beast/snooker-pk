@@ -6,6 +6,7 @@ const TABS = [
   { to: '/entries', label: 'Entries', matchSuffixes: ['/entries'] },
   { to: '/draw', label: 'Draw', matchSuffixes: ['/draw', '/reveal'] },
   { to: '/matches', label: 'Matches', matchSuffixes: ['/matches'] },
+  { to: '/awards', label: 'Awards', matchSuffixes: ['/awards'] },
 ];
 
 export default function TournamentSubNav({ tournament }) {

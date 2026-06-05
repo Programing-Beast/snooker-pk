@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\Match_;
 use App\Models\Player;
+use App\Models\Prize;
 use App\Models\Round;
 use App\Models\Tournament;
 
@@ -277,5 +278,67 @@ class MatchTest extends ApiTestCase
             ->getJson("/api/matches/{$this->match->id}/board");
 
         $response->assertStatus(403);
+    }
+
+    public function test_complete_final_creates_prize_awards(): void
+    {
+        // Create system prizes
+        Prize::create([
+            'tournament_id' => $this->tournament->id,
+            'position_label' => 'Winner', 'amount' => 50000,
+            'type' => Prize::TYPE_WINNER, 'sort_order' => 0,
+        ]);
+        Prize::create([
+            'tournament_id' => $this->tournament->id,
+            'position_label' => 'Runner-up', 'amount' => 25000,
+            'type' => Prize::TYPE_RUNNER_UP, 'sort_order' => 1,
+        ]);
+
+        // Create final match with both players
+        $finalMatch = Match_::where('round_id', $this->round2->id)->first();
+        $finalMatch->update([
+            'player1_id' => $this->player->id,
+            'player2_id' => $this->player2->id,
+            'score1' => 5,
+            'score2' => 3,
+            'status' => 'live',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->postJson("/api/matches/{$finalMatch->id}/complete");
+
+        $this->assertDatabaseHas('prize_awards', [
+            'tournament_id' => $this->tournament->id,
+            'player_id' => $this->player->id,
+            'category' => 'tournament_winner',
+            'amount' => '50000.00',
+            'status' => 'awarded',
+        ]);
+
+        $this->assertDatabaseHas('prize_awards', [
+            'tournament_id' => $this->tournament->id,
+            'player_id' => $this->player2->id,
+            'category' => 'tournament_runner_up',
+            'amount' => '25000.00',
+            'status' => 'awarded',
+        ]);
+    }
+
+    public function test_walkover_creates_elimination_award(): void
+    {
+        $this->round1->update(['elimination_prize' => 5000]);
+
+        $this->actingAs($this->admin)
+            ->postJson("/api/matches/{$this->match->id}/walkover", [
+                'winner_id' => $this->player->id,
+            ]);
+
+        $this->assertDatabaseHas('prize_awards', [
+            'tournament_id' => $this->tournament->id,
+            'player_id' => $this->player2->id,
+            'category' => 'round_elimination',
+            'amount' => '5000.00',
+            'status' => 'awarded',
+        ]);
     }
 }

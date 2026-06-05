@@ -1,15 +1,18 @@
+import { Link } from 'react-router-dom';
 import PlayerAvatar from './PlayerAvatar';
 import CountryFlagChip from './CountryFlagChip';
 
 const TIER_LABEL = { pro: 'Professional', amateur: 'Amateur' };
 
-export default function PlayerListItem({ player, index, size = 'sm', showFlag = true, showTier = true, children }) {
+export default function PlayerListItem({ player, index, size = 'sm', showFlag = true, showTier = true, to, children }) {
   if (!player) return null;
 
   const tierLabel = TIER_LABEL[player.tier?.toLowerCase()] || player.tier;
+  const Root = to ? Link : 'div';
+  const rootProps = to ? { to } : {};
 
   return (
-    <div className="flex items-center gap-3">
+    <Root {...rootProps} className="flex items-center gap-3">
       {index != null && (
         <span className="w-6 text-center text-[12px] text-ink-400 tabular-nums shrink-0">{index}</span>
       )}
@@ -23,6 +26,6 @@ export default function PlayerListItem({ player, index, size = 'sm', showFlag = 
         </div>
       </div>
       {children}
-    </div>
+    </Root>
   );
 }

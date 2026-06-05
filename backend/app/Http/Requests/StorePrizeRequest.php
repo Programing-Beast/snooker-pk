@@ -20,6 +20,10 @@ class StorePrizeRequest extends FormRequest
             'note' => ['nullable', 'string', 'max:255'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
             'is_highlight' => ['sometimes', 'boolean'],
+            'type' => ['sometimes', 'string', 'in:winner,runner_up,custom'],
+            'ranking_prize' => ['sometimes', 'boolean'],
+            'multiple' => ['sometimes', 'boolean'],
+            'score_threshold' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

@@ -6,10 +6,12 @@ use App\Events\MatchCompleted;
 use App\Models\Break_;
 use App\Models\Frame;
 use App\Models\Match_;
+use App\Models\Prize;
 use Illuminate\Validation\ValidationException;
 
 class MatchService
 {
+    public function __construct(private PrizeAwardService $prizeAwardService) {}
     public function show(Match_ $match): Match_
     {
         return $match->load([
@@ -149,6 +151,8 @@ class MatchService
 
         $this->recalculateFrameScores($frame);
 
+        $this->checkScoreBasedPrizes($frame->match, $break);
+
         return $break->load('player');
     }
 
@@ -220,4 +224,34 @@ class MatchService
         ]);
     }
 
+    private function checkScoreBasedPrizes(Match_ $match, Break_ $break): void
+    {
+        if ($break->points <= 0 || $break->is_foul_turn) {
+            return;
+        }
+
+        $match = $match->fresh();
+        $player = $break->player;
+
+        $scorePrizes = Prize::where('tournament_id', $match->tournament_id)
+            ->whereNotNull('score_threshold')
+            ->where('score_threshold', '<=', $break->points)
+            ->get();
+
+        foreach ($scorePrizes as $prize) {
+            // If prize is not multiple, check if already awarded for this tournament+player
+            if (! $prize->multiple) {
+                $exists = \App\Models\PrizeAward::where('tournament_id', $match->tournament_id)
+                    ->where('player_id', $player->id)
+                    ->where('prize_id', $prize->id)
+                    ->exists();
+
+                if ($exists) {
+                    continue;
+                }
+            }
+
+            $this->prizeAwardService->createScorePrizeAward($match, $player, $prize);
+        }
+    }
 }

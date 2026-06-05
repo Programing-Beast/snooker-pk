@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import * as tournamentsApi from '../../api/tournaments';
 import * as entriesApi from '../../api/entries';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +7,7 @@ import Tabs from '../../components/ui/Tabs';
 import StatusBadge from '../../components/ui/StatusBadge';
 import MatchRow from '../../components/ui/MatchRow';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
+import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import PlayerListItem from '../../components/ui/PlayerListItem';
 import EmptyState from '../../components/ui/EmptyState';
 import Button from '../../components/ui/Button';
@@ -133,21 +134,59 @@ export default function TournamentDetailPage() {
   );
 }
 
+function TournamentResult({ tournament: t }) {
+  if (!t.winner) return null;
+  return (
+    <div className="card overflow-hidden mb-6">
+      <div className="px-5 py-3 border-b border-hairline">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-felt">Tournament result</span>
+      </div>
+      <div className="p-5 grid sm:grid-cols-2 gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-[#FFD700]/20 flex items-center justify-center text-[13px] font-bold text-[#B8860B] shrink-0">1</div>
+          <PlayerAvatar name={t.winner.name} photo={t.winner.photo_path} tier={t.winner.tier} size="sm" />
+          <div className="min-w-0">
+            <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Winner</div>
+            <div className="flex items-center gap-1.5">
+              <CountryFlagChip code={t.winner.country_code || 'PAK'} showLabel={false} size="sm" />
+              <Link to={`/players/${t.winner.id}`} className="font-semibold text-[15px] hover:underline truncate">{t.winner.name}</Link>
+            </div>
+          </div>
+        </div>
+        {t.runner_up && (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-ink-100 flex items-center justify-center text-[13px] font-bold text-ink-500 shrink-0">2</div>
+            <PlayerAvatar name={t.runner_up.name} photo={t.runner_up.photo_path} tier={t.runner_up.tier} size="sm" />
+            <div className="min-w-0">
+              <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Runner-up</div>
+              <div className="flex items-center gap-1.5">
+                <CountryFlagChip code={t.runner_up.country_code || 'PAK'} showLabel={false} size="sm" />
+                <Link to={`/players/${t.runner_up.id}`} className="font-semibold text-[15px] hover:underline truncate">{t.runner_up.name}</Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function OverviewTab({ tournament: t }) {
   return (
     <div className="grid lg:grid-cols-2 gap-8">
       <div className="space-y-6">
+        <TournamentResult tournament={t} />
         {t.description && (
           <div>
             <h3 className="font-display font-bold text-[1.25rem] mb-3">About</h3>
             <p className="text-ink-600 text-[15px] leading-relaxed">{t.description}</p>
           </div>
         )}
-        {t.prizes?.length > 0 && (
+        {t.prizes?.filter(p => Number(p.amount) > 0).length > 0 && (
           <div>
             <h3 className="font-display font-bold text-[1.25rem] mb-3">Prize pool</h3>
             <div className="card overflow-hidden divide-y divide-hairline">
-              {t.prizes.map(p => (
+              {t.prizes.filter(p => Number(p.amount) > 0).map(p => (
                 <div key={p.id} className={`flex items-center justify-between px-4 py-3 ${p.is_highlight ? 'bg-brass-tint' : ''}`}>
                   <span className="font-semibold text-[14px]">{p.position_label}</span>
                   <span className="font-display font-bold tabular-nums">PKR {Number(p.amount).toLocaleString()}</span>
@@ -222,7 +261,7 @@ function PlayersTab({ data }) {
     <div className="card overflow-hidden divide-y divide-hairline">
       {data.map((entry, i) => (
         <div key={entry.id} className="px-4 py-3">
-          <PlayerListItem player={entry.player} index={i + 1}>
+          <PlayerListItem player={entry.player} index={i + 1} to={entry.player?.id ? `/players/${entry.player.id}` : undefined}>
             {entry.seed && (
               <span className="badge bg-brass-tint text-brass-700">Seed {entry.seed}</span>
             )}
@@ -234,12 +273,13 @@ function PlayersTab({ data }) {
 }
 
 function PrizesTab({ prizes }) {
-  if (!prizes?.length) {
+  const visible = prizes?.filter(p => Number(p.amount) > 0);
+  if (!visible?.length) {
     return <EmptyState title="No prize breakdown" message="Prize details will be added by the organizer." />;
   }
   return (
     <div className="card overflow-hidden divide-y divide-hairline max-w-lg">
-      {prizes.map(p => (
+      {visible.map(p => (
         <div key={p.id} className={`flex items-center justify-between px-5 py-4 ${p.is_highlight ? 'bg-brass-tint' : ''}`}>
           <div>
             <div className="font-semibold text-[15px]">{p.position_label}</div>

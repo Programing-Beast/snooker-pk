@@ -18,6 +18,7 @@ class RoundResource extends JsonResource
             'frames_to_win' => $this->frames_to_win,
             'draw_mode' => $this->draw_mode,
             'generated_at' => $this->generated_at,
+            'elimination_prize' => $this->elimination_prize,
             'matches' => MatchResource::collection($this->whenLoaded('matches')),
         ];
     }

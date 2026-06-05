@@ -3,10 +3,13 @@
 namespace App\Services;
 
 use App\Models\Player;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class RankingService
 {
+    public function __construct(private PrizeAwardService $prizeAwardService) {}
+
     public function list(array $filters): LengthAwarePaginator
     {
         $query = Player::where('status', 'active');
@@ -20,14 +23,15 @@ class RankingService
             ->paginate($filters['per_page'] ?? 25);
     }
 
-    public function manualAdjust(int $playerId, int $points, string $reason): Player
+    public function manualAdjust(int $playerId, int $points, string $reason, ?User $adjustedBy = null): Player
     {
-        $player = Player::findOrFail($playerId);
+        $this->prizeAwardService->manualAdjust(
+            $playerId,
+            $points,
+            $reason,
+            awardedBy: $adjustedBy?->id,
+        );
 
-        $player->update([
-            'ranking_points' => $player->ranking_points + $points,
-        ]);
-
-        return $player->fresh();
+        return Player::findOrFail($playerId);
     }
 }

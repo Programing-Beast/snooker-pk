@@ -169,28 +169,28 @@ export default function ManageMatchesPage() {
                 {round.frames_to_win && <span className="text-ink-400 font-medium normal-case tracking-normal">· Best of {round.frames_to_win * 2 - 1}</span>}
                 <span className="ml-auto text-ink-400 font-medium normal-case tracking-normal">{round.matches?.length || 0} matches</span>
               </div>
-              {round.matches?.map(m => (
-                <div key={m.id}>
-                  <MatchRow match={m} />
-                  {/* Admin actions row */}
-                  <div className="flex items-center gap-2 px-[18px] py-2 border-b border-hairline bg-surface2">
-                    <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => openEdit(m)}>Schedule / Table</button>
-                    {m.status !== 'completed' && m.status !== 'walkover' && m.player1 && m.player2 && (
+              {round.matches?.map((m, i) => {
+                const isActive = m.status !== 'completed' && m.status !== 'walkover' && m.player1 && m.player2;
+                return (
+                  <MatchRow
+                    key={m.id}
+                    match={m}
+                    index={i + 1}
+                    onEdit={() => openEdit(m)}
+                    adminActions={isActive ? (
                       <>
                         <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => handleWalkover(m.id, m.player1.id)}>W/O → {m.player1.name?.split(' ').pop()}</button>
                         <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => handleWalkover(m.id, m.player2.id)}>W/O → {m.player2.name?.split(' ').pop()}</button>
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openScoreModal(m, round)}>Set Score</button>
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openDeclareModal(m, round)}>Declare Winner</button>
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => handleComplete(m.id)}>Complete</button>
+                        {m.umpire && <span className="ml-auto text-[11px] text-ink-400">Umpire: {m.umpire.name}</span>}
+                        {!m.umpire && <span className="ml-auto text-[11px] text-ink-400 italic">No umpire assigned</span>}
                       </>
-                    )}
-                    {m.umpire && <span className="ml-auto text-[11px] text-ink-400">Umpire: {m.umpire.name}</span>}
-                    {!m.umpire && m.status !== 'completed' && (
-                      <span className="ml-auto text-[11px] text-ink-400 italic">No umpire assigned</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+                    ) : null}
+                  />
+                );
+              })}
             </div>
           ))}
         </div>

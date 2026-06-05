@@ -70,4 +70,9 @@ class Tournament extends Model
     {
         return $this->entries()->where('status', 'approved');
     }
+
+    public function prizeAwards()
+    {
+        return $this->hasMany(PrizeAward::class);
+    }
 }

@@ -19,6 +19,7 @@ class StoreRoundRequest extends FormRequest
             'sort_order' => ['required', 'integer', 'min:0'],
             'frames_to_win' => ['required', 'integer', 'min:1'],
             'draw_mode' => ['nullable', 'in:fixed,random'],
+            'elimination_prize' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 }

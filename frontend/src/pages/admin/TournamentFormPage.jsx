@@ -276,15 +276,53 @@ export default function TournamentFormPage() {
 
       {/* Step 1: Prizes */}
       {step === 1 && (
-        <div className="card p-6 space-y-4 max-w-2xl">
-          {prizes.map((p, i) => (
-            <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
-              <Input label="Position" value={p.position_label} onChange={e => updateArray(setPrizes, i, 'position_label', e.target.value)} />
-              <Input label="Amount (PKR)" type="number" value={p.amount} onChange={e => updateArray(setPrizes, i, 'amount', e.target.value)} />
-              <button onClick={() => setPrizes(prev => prev.filter((_, j) => j !== i))} className="btn btn-ghost btn-sm text-bad">Remove</button>
-            </div>
-          ))}
-          <button onClick={() => setPrizes(prev => [...prev, { position_label: '', amount: '', count: 1, is_highlight: false }])} className="btn btn-ghost btn-sm">+ Add prize</button>
+        <div className="space-y-4 max-w-2xl">
+          {prizes.map((p, i) => {
+            const isSystem = p.type === 'winner' || p.type === 'runner_up';
+            return (
+              <div key={p.id || i} className={`card p-5 space-y-3 ${isSystem ? 'border-l-4 border-l-felt' : ''}`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">
+                    {isSystem ? (p.type === 'winner' ? 'Winner prize' : 'Runner-up prize') : `Prize ${i + 1}`}
+                  </span>
+                  {!isSystem && (
+                    <button onClick={() => setPrizes(prev => prev.filter((_, j) => j !== i))} className="text-[12px] text-bad hover:text-bad/80">Remove</button>
+                  )}
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <Input label="Label" value={p.position_label} onChange={e => updateArray(setPrizes, i, 'position_label', e.target.value)} disabled={isSystem} />
+                  <Input label="Amount (PKR)" type="number" value={p.amount} onChange={e => updateArray(setPrizes, i, 'amount', e.target.value)} />
+                </div>
+                {!isSystem && (
+                  <Select label="Category" value={p.type || 'custom'} onChange={e => updateArray(setPrizes, i, 'type', e.target.value)}>
+                    <option value="custom">Custom / Other</option>
+                  </Select>
+                )}
+                <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
+                  <label className="flex items-center gap-2 text-[13px] cursor-pointer">
+                    <input type="checkbox" className="accent-felt" checked={p.ranking_prize ?? true} onChange={e => updateArray(setPrizes, i, 'ranking_prize', e.target.checked)} />
+                    Counts toward ranking
+                  </label>
+                  <label className="flex items-center gap-2 text-[13px] cursor-pointer">
+                    <input type="checkbox" className="accent-felt" checked={p.multiple ?? false} onChange={e => updateArray(setPrizes, i, 'multiple', e.target.checked)} />
+                    Can be awarded multiple times
+                  </label>
+                  <label className="flex items-center gap-2 text-[13px] cursor-pointer">
+                    <input type="checkbox" className="accent-felt" checked={p.is_highlight ?? false} onChange={e => updateArray(setPrizes, i, 'is_highlight', e.target.checked)} />
+                    Highlight
+                  </label>
+                </div>
+                <Input
+                  label="Score threshold (auto-award on break ≥ this value, leave empty for manual)"
+                  type="number"
+                  value={p.score_threshold || ''}
+                  onChange={e => updateArray(setPrizes, i, 'score_threshold', e.target.value ? Number(e.target.value) : null)}
+                  placeholder="e.g. 100 for century, 50 for 50+ break"
+                />
+              </div>
+            );
+          })}
+          <button onClick={() => setPrizes(prev => [...prev, { position_label: '', amount: '', count: 1, is_highlight: false, type: 'custom', ranking_prize: true, multiple: false, score_threshold: null }])} className="btn btn-ghost btn-sm">+ Add prize</button>
           <div className="flex gap-3 pt-2">
             <Button onClick={savePrizes} disabled={saving}>{saving ? 'Saving...' : 'Next: Organizers →'}</Button>
             <Button variant="ghost" onClick={() => setStep(2)}>Skip</Button>

@@ -18,6 +18,10 @@ class PrizeResource extends JsonResource
             'note' => $this->note,
             'sort_order' => $this->sort_order,
             'is_highlight' => $this->is_highlight,
+            'type' => $this->type,
+            'ranking_prize' => $this->ranking_prize,
+            'multiple' => $this->multiple,
+            'score_threshold' => $this->score_threshold,
         ];
     }
 }

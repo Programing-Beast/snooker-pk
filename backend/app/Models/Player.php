@@ -48,4 +48,19 @@ class Player extends Model
     {
         return $this->hasMany(Match_::class, 'player2_id');
     }
+
+    public function prizeAwards()
+    {
+        return $this->hasMany(PrizeAward::class);
+    }
+
+    public function recalculateRankingPoints(): void
+    {
+        $this->update([
+            'ranking_points' => (int) $this->prizeAwards()
+                ->where('is_ranking', true)
+                ->where('status', PrizeAward::STATUS_AWARDED)
+                ->sum('amount'),
+        ]);
+    }
 }

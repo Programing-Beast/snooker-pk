@@ -2,8 +2,25 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\PrizeAward;
+
 class RankingTest extends ApiTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create baseline ledger entry to back the initial ranking_points
+        PrizeAward::create([
+            'player_id' => $this->player->id,
+            'amount' => $this->player->ranking_points,
+            'is_ranking' => true,
+            'category' => PrizeAward::CATEGORY_MANUAL_ADJUSTMENT,
+            'status' => PrizeAward::STATUS_AWARDED,
+            'reason' => 'Initial ranking points',
+            'awarded_at' => now(),
+        ]);
+    }
     public function test_list_rankings_public(): void
     {
         $response = $this->getJson('/api/rankings');
@@ -64,6 +81,16 @@ class RankingTest extends ApiTestCase
 
         $this->player->refresh();
         $this->assertEquals($originalPoints + 200, $this->player->ranking_points);
+
+        // Verify prize_awards record was created
+        $this->assertDatabaseHas('prize_awards', [
+            'player_id' => $this->player->id,
+            'amount' => '200.00',
+            'category' => 'manual_adjustment',
+            'reason' => 'Tournament win bonus',
+            'is_ranking' => true,
+            'status' => 'awarded',
+        ]);
     }
 
     public function test_adjust_ranking_negative(): void

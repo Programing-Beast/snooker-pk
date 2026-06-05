@@ -5,6 +5,8 @@ import * as entriesApi from '../../api/entries';
 import * as roundsApi from '../../api/rounds';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 import StatusBadge from '../../components/ui/StatusBadge';
+import PlayerAvatar from '../../components/ui/PlayerAvatar';
+import CountryFlagChip from '../../components/ui/CountryFlagChip';
 
 export default function AdminTournamentPage() {
   const { id } = useParams();
@@ -85,18 +87,26 @@ export default function AdminTournamentPage() {
           </div>
           <div className="p-5 grid sm:grid-cols-2 gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#FFD700]/20 flex items-center justify-center text-[13px] font-bold text-[#B8860B]">1</div>
-              <div>
+              <div className="w-8 h-8 rounded-full bg-[#FFD700]/20 flex items-center justify-center text-[13px] font-bold text-[#B8860B] shrink-0">1</div>
+              <PlayerAvatar name={tournament.winner.name} photo={tournament.winner.photo_path} tier={tournament.winner.tier} size="sm" />
+              <div className="min-w-0">
                 <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Winner</div>
-                <div className="font-semibold text-[14px]">{tournament.winner.name}</div>
+                <div className="flex items-center gap-1.5">
+                  <CountryFlagChip code={tournament.winner.country_code || 'PAK'} showLabel={false} size="sm" />
+                  <Link to={`/players/${tournament.winner.id}`} className="font-semibold text-[14px] hover:underline truncate">{tournament.winner.name}</Link>
+                </div>
               </div>
             </div>
             {tournament?.runner_up && (
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-ink-100 flex items-center justify-center text-[13px] font-bold text-ink-500">2</div>
-                <div>
+                <div className="w-8 h-8 rounded-full bg-ink-100 flex items-center justify-center text-[13px] font-bold text-ink-500 shrink-0">2</div>
+                <PlayerAvatar name={tournament.runner_up.name} photo={tournament.runner_up.photo_path} tier={tournament.runner_up.tier} size="sm" />
+                <div className="min-w-0">
                   <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Runner-up</div>
-                  <div className="font-semibold text-[14px]">{tournament.runner_up.name}</div>
+                  <div className="flex items-center gap-1.5">
+                    <CountryFlagChip code={tournament.runner_up.country_code || 'PAK'} showLabel={false} size="sm" />
+                    <Link to={`/players/${tournament.runner_up.id}`} className="font-semibold text-[14px] hover:underline truncate">{tournament.runner_up.name}</Link>
+                  </div>
                 </div>
               </div>
             )}
@@ -226,6 +236,12 @@ export default function AdminTournamentPage() {
                   <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" />
                 </svg>
                 Manage matches
+              </Link>
+              <Link to={`/admin/tournaments/${id}/awards`} className="btn btn-outline w-full justify-start gap-2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="8" r="6" /><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" />
+                </svg>
+                Award prizes
               </Link>
               <Link to={`/admin/tournaments/${id}/edit`} className="btn btn-ghost w-full justify-start gap-2.5">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

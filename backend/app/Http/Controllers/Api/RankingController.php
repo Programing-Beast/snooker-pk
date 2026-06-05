@@ -25,7 +25,7 @@ class RankingController extends Controller
         $data = $request->validated();
 
         return new PlayerResource(
-            $this->rankingService->manualAdjust($data['player_id'], $data['points'], $data['reason'])
+            $this->rankingService->manualAdjust($data['player_id'], $data['points'], $data['reason'], $request->user())
         );
     }
 }

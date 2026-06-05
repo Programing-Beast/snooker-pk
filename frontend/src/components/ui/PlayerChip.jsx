@@ -1,13 +1,16 @@
+import { Link } from 'react-router-dom';
 import PlayerAvatar from './PlayerAvatar';
 import CountryFlagChip from './CountryFlagChip';
 
-export default function PlayerChip({ player, size = 'default' }) {
+export default function PlayerChip({ player, size = 'default', to }) {
   if (!player) return <span className="text-ink-400 italic text-[13px]">TBD</span>;
 
   const big = size === 'lg';
+  const Root = to ? Link : 'span';
+  const rootProps = to ? { to } : {};
 
   return (
-    <span className={`inline-flex items-center gap-1.5 ${big ? 'text-[14px]' : 'text-[12.5px]'}`}>
+    <Root {...rootProps} className={`inline-flex items-center gap-1.5 ${big ? 'text-[14px]' : 'text-[12.5px]'}`}>
       <PlayerAvatar
         name={player.name}
         photo={player.photo}
@@ -20,6 +23,6 @@ export default function PlayerChip({ player, size = 'default' }) {
       {player.seed != null && (
         <span className="text-[10px] text-ink-400 tabular-nums">{player.seed}</span>
       )}
-    </span>
+    </Root>
   );
 }

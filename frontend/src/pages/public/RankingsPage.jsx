@@ -85,8 +85,8 @@ export default function RankingsPage() {
           vb = b.matches_played || 0;
           return (va - vb) * sortDir;
         case 'points':
-          va = Number(a.points || 0);
-          vb = Number(b.points || 0);
+          va = Number(a.ranking_points || 0);
+          vb = Number(b.ranking_points || 0);
           return (va - vb) * sortDir;
         case 'form':
           va = (a.recent_form || []).filter(f => f === 'W').length;
@@ -190,7 +190,7 @@ export default function RankingsPage() {
                     </td>
                     <td className="px-5 py-3 text-right">
                       <span className="font-display font-bold tabular-nums text-[15px]">
-                        {Number(p.points || 0).toLocaleString()}
+                        {Number(p.ranking_points || 0).toLocaleString()}
                       </span>
                     </td>
                     <td className="px-5 py-3 hidden md:table-cell">

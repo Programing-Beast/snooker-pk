@@ -19,6 +19,7 @@ class UpdateRoundRequest extends FormRequest
             'sort_order' => ['sometimes', 'integer', 'min:0'],
             'frames_to_win' => ['sometimes', 'integer', 'min:1'],
             'draw_mode' => ['nullable', 'in:fixed,random'],
+            'elimination_prize' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 }

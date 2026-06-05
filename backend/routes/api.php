@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\FrameController;
 use App\Http\Controllers\Api\MatchController;
 use App\Http\Controllers\Api\PlayerController;
 use App\Http\Controllers\Api\PlayerPhoneController;
+use App\Http\Controllers\Api\PrizeAwardController;
 use App\Http\Controllers\Api\PrizeController;
 use App\Http\Controllers\Api\RankingController;
 use App\Http\Controllers\Api\RoundController;
@@ -138,5 +139,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Rankings
         Route::post('/rankings/adjust', [RankingController::class, 'adjust']);
+
+        // Prize Awards
+        Route::get('/tournaments/{tournament}/prize-awards', [PrizeAwardController::class, 'index']);
+        Route::post('/prize-awards', [PrizeAwardController::class, 'store']);
+        Route::post('/prize-awards/bulk', [PrizeAwardController::class, 'bulk']);
+        Route::put('/prize-awards/{prizeAward}', [PrizeAwardController::class, 'update']);
+        Route::get('/players/{player}/prize-history', [PrizeAwardController::class, 'playerHistory']);
+        Route::get('/tournaments/{tournament}/eligible-players', [PrizeAwardController::class, 'eligiblePlayers']);
     });
 });

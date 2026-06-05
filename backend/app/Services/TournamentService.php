@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 
 class TournamentService
 {
+    public function __construct(private PrizeService $prizeService) {}
+
     public function list(array $filters): LengthAwarePaginator
     {
         $query = Tournament::query();
@@ -51,7 +53,11 @@ class TournamentService
             unset($data['banner']);
         }
 
-        return Tournament::create($data);
+        $tournament = Tournament::create($data);
+
+        $this->prizeService->ensureSystemPrizes($tournament);
+
+        return $tournament;
     }
 
     public function update(Tournament $tournament, array $data): Tournament

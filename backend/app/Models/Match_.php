@@ -65,4 +65,9 @@ class Match_ extends Model
     {
         return $this->hasMany(Frame::class, 'match_id')->orderBy('frame_no');
     }
+
+    public function prizeAwards()
+    {
+        return $this->hasMany(PrizeAward::class, 'match_id');
+    }
 }

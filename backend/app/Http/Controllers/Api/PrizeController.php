@@ -10,6 +10,7 @@ use App\Models\Prize;
 use App\Models\Tournament;
 use App\Services\PrizeService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class PrizeController extends Controller
 {

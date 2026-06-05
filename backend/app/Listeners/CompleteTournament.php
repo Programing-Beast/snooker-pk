@@ -3,9 +3,12 @@
 namespace App\Listeners;
 
 use App\Events\MatchCompleted;
-use App\Models\Player;
+use App\Services\PrizeAwardService;
+
 class CompleteTournament
 {
+    public function __construct(private PrizeAwardService $prizeAwardService) {}
+
     public function handle(MatchCompleted $event): void
     {
         $match = $event->match;
@@ -37,20 +40,8 @@ class CompleteTournament
             'status' => 'completed',
         ]);
 
-        // Award ranking points (= prize amount)
-        $prizes = $tournament->prizes()->get();
-
-        $winnerPrize = $prizes->first(fn ($p) => strcasecmp($p->position_label, 'Winner') === 0);
-        $runnerUpPrize = $prizes->first(fn ($p) => strcasecmp($p->position_label, 'Runner-up') === 0);
-
-        if ($winnerPrize && $winnerPrize->amount > 0) {
-            Player::where('id', $match->winner_id)
-                ->increment('ranking_points', (int) $winnerPrize->amount);
-        }
-
-        if ($runnerUpPrize && $runnerUpPrize->amount > 0 && $loserId) {
-            Player::where('id', $loserId)
-                ->increment('ranking_points', (int) $runnerUpPrize->amount);
-        }
+        // Award ranking points via ledger
+        $this->prizeAwardService->awardTournamentCompletion($match);
+        $this->prizeAwardService->awardEliminationPrize($match, $loserId);
     }
 }
