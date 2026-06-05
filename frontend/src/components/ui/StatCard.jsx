@@ -1,7 +1,7 @@
 export default function StatCard({ label, value, sub, progress, trend }) {
   return (
     <div className="card p-5">
-      <div className="seclabel text-ink-400">{label}</div>
+      <div className="seclabel text-muted">{label}</div>
       <div className="font-display font-extrabold text-[40px] leading-none tabular-nums mt-2.5">
         {value}
       </div>

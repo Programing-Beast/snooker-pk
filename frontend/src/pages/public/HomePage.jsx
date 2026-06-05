@@ -75,7 +75,7 @@ export default function HomePage() {
       )}
 
       {/* Upcoming */}
-      <section className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 bg-surface2">
+      <section className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 bg-card-alt">
         <div className="flex items-end justify-between mb-5">
           <div>
             <div className="seclabel text-felt mb-1.5">Upcoming</div>
@@ -84,7 +84,7 @@ export default function HomePage() {
           <Link to="/tournaments" className="text-[13px] font-semibold text-felt hover:text-felt-700">All tournaments →</Link>
         </div>
         {loading ? (
-          <div className="text-ink-400 text-center py-12">Loading tournaments...</div>
+          <div className="text-muted text-center py-12">Loading tournaments...</div>
         ) : (
           <div className="grid md:grid-cols-3 gap-5">
             {upcoming.slice(0, 3).map(t => <TournamentCard key={t.id} tournament={t} />)}
@@ -96,19 +96,19 @@ export default function HomePage() {
       {/* Rankings preview + Store teaser */}
       <section className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 grid lg:grid-cols-[1.1fr_0.9fr] gap-6">
         <div className="card overflow-hidden">
-          <div className="px-5 py-4 border-b border-hairline flex items-center justify-between">
+          <div className="px-5 py-4 border-b border-divider flex items-center justify-between">
             <div>
               <div className="seclabel text-felt mb-1">Rankings</div>
               <h2 className="font-display font-bold text-xl">National top 5</h2>
             </div>
             <span className="badge bg-brass-tint text-brass-700">Preview</span>
           </div>
-          <div className="divide-y divide-hairline">
+          <div className="divide-y divide-divider">
             {rankings.slice(0, 5).map((p, i) => (
               <RankingsRow key={p.id} rank={i + 1} player={p} />
             ))}
           </div>
-          <div className="px-5 py-3.5 bg-surface2 text-center">
+          <div className="px-5 py-3.5 bg-card-alt text-center">
             <Link to="/rankings" className="text-[13px] font-semibold text-felt">View full rankings →</Link>
           </div>
         </div>

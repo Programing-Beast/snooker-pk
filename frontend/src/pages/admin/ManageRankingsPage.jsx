@@ -37,7 +37,7 @@ function RankRow({ player, onAdjust }) {
 
   return (
     <div className="mb-1">
-      <section className={`flex ${rowH} w-full items-center rounded-lg overflow-hidden bg-white border border-hairline hover:shadow-e2 transition-shadow`}>
+      <section className={`flex ${rowH} w-full items-center rounded-lg overflow-hidden bg-card border border-border-subtle hover:shadow-e2 transition-shadow`}>
         {/* Rank badge */}
         <div className={`${rankBadgeBg(player.rank)} shrink-0 w-10 h-full flex items-center justify-center`}>
           <span
@@ -54,8 +54,8 @@ function RankRow({ player, onAdjust }) {
         </div>
 
         {/* Name */}
-        <Link to={`/admin/players/${player.id}/edit`} className="min-w-0 flex-1 pl-2 no-underline text-ink-900 hover:text-felt transition-colors">
-          <p className="text-[11px] font-bold text-ink-400 leading-none truncate">
+        <Link to={`/admin/players/${player.id}/edit`} className="min-w-0 flex-1 pl-2 no-underline text-heading hover:text-felt transition-colors">
+          <p className="text-[11px] font-bold text-muted leading-none truncate">
             {first || '\u00A0'}
           </p>
           <p
@@ -68,7 +68,7 @@ function RankRow({ player, onAdjust }) {
 
         {/* Points + adjust button */}
         <div className="shrink-0 flex items-center gap-2 pr-3">
-          <span className="text-[13px] font-bold text-ink-800 tabular-nums">
+          <span className="text-[13px] font-bold text-body tabular-nums">
             {Number(player.ranking_points || 0).toLocaleString()}
           </span>
           <button
@@ -118,7 +118,7 @@ function AdjustModal({ player, onClose, onSaved }) {
       <form
         onClick={e => e.stopPropagation()}
         onSubmit={handleSubmit}
-        className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6"
+        className="bg-card rounded-xl shadow-xl w-full max-w-sm mx-4 p-6"
       >
         <h3 className="font-display font-bold text-lg mb-1">Adjust Ranking Points</h3>
         <p className="text-sm text-ink-500 mb-4">{player.name}</p>
@@ -210,11 +210,11 @@ export default function ManageRankingsPage() {
           </svg>
           <input className="input pl-10" placeholder="Search players..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <p className="text-[13px] text-ink-400">Click the edit icon to adjust a player's ranking points.</p>
+        <p className="text-[13px] text-muted">Click the edit icon to adjust a player's ranking points.</p>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-ink-400">Loading...</div>
+        <div className="text-center py-12 text-muted">Loading...</div>
       ) : filtered.length > 0 ? (
         <>
           <div className="lg:hidden">
@@ -227,7 +227,7 @@ export default function ManageRankingsPage() {
           </div>
         </>
       ) : (
-        <div className="py-12 text-center text-ink-400">No players found.</div>
+        <div className="py-12 text-center text-muted">No players found.</div>
       )}
 
       {adjustPlayer && (

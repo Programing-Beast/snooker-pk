@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const requests = entries;
 
   if (loading) {
-    return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-ink-400">Loading...</div>;
+    return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-muted">Loading...</div>;
   }
 
   return (
@@ -85,7 +85,7 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="seclabel text-felt">My upcoming matches</div>
-              <span className="text-caption text-ink-400">{upcomingMatches.length}</span>
+              <span className="text-caption text-muted">{upcomingMatches.length}</span>
             </div>
             {upcomingMatches.length > 0 ? (
               <div className="grid sm:grid-cols-2 gap-4">
@@ -165,7 +165,7 @@ function UpcomingCard({ match: m, isNext, playerId }) {
     <div className="card p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="min-w-0">
-          <div className="seclabel text-ink-400 !text-[10px] truncate">{eventName}</div>
+          <div className="seclabel text-muted !text-[10px] truncate">{eventName}</div>
           <div className="font-display font-bold text-[15px]">{roundName || 'Match'}</div>
         </div>
         {isNext ? (
@@ -193,7 +193,7 @@ function UpcomingCard({ match: m, isNext, playerId }) {
         )}
       </div>
       {(when || table) && (
-        <div className="flex items-center justify-between pt-3 border-t border-hairline text-[11px] text-ink-500">
+        <div className="flex items-center justify-between pt-3 border-t border-divider text-[11px] text-ink-500">
           <span>{[when, table].filter(Boolean).join(' · ')}</span>
           <Link to={`/tournaments/${m.tournament?.slug || ''}`} className="text-[12px] font-semibold text-felt">View draw →</Link>
         </div>
@@ -212,7 +212,7 @@ function RecentRow({ match: m, playerId }) {
   const roundName = m.round?.name || '';
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b border-hairline last:border-0">
+    <div className="flex items-center gap-3 px-4 py-3 border-b border-divider last:border-0">
       <span className={`w-9 h-9 rounded-full grid place-items-center font-display font-bold text-xs shrink-0 ${won ? 'bg-ok-tint text-[#0C6B3C]' : 'bg-bad-tint text-[#9A2820]'}`}>
         {won ? 'W' : 'L'}
       </span>
@@ -221,7 +221,7 @@ function RecentRow({ match: m, playerId }) {
           <span className="text-[14px] font-semibold">vs {opponent?.name || 'Unknown'}</span>
           {opponent?.country_code && <CountryFlagChip code={opponent.country_code} showLabel={false} size="sm" />}
         </div>
-        <div className="text-[11px] text-ink-400">{[eventName, roundName].filter(Boolean).join(' · ')}</div>
+        <div className="text-[11px] text-muted">{[eventName, roundName].filter(Boolean).join(' · ')}</div>
       </div>
       <div className={`font-display font-bold tabular-nums text-[16px] ${won ? 'text-felt' : 'text-ink-500'}`}>
         {myFrames ?? 0}<span className="text-ink-300 font-medium">–</span>{oppFrames ?? 0}
@@ -238,13 +238,13 @@ function SeedRow({ entry }) {
   const stateLabel = tournamentStatus === 'live' ? 'In progress' : 'Entry approved';
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b border-hairline last:border-0">
+    <div className="flex items-center gap-3 px-4 py-3 border-b border-divider last:border-0">
       <span className="w-9 h-9 rounded-md bg-night grid place-items-center font-display font-extrabold text-white text-sm shrink-0">
         {entry.seed}
       </span>
       <div className="min-w-0 flex-1">
         <div className="text-[14px] font-semibold truncate">{tournamentName}</div>
-        <div className="text-[11px] text-ink-400">Seed {entry.seed}</div>
+        <div className="text-[11px] text-muted">Seed {entry.seed}</div>
       </div>
       <span className={`badge ${chipClass} !text-[10px]`}>
         {tournamentStatus === 'live' && <span className="dot pulse" />}
@@ -262,11 +262,11 @@ function RequestRow({ entry }) {
     : '';
 
   return (
-    <div className="px-4 py-3 border-b border-hairline last:border-0">
+    <div className="px-4 py-3 border-b border-divider last:border-0">
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <div className="text-[14px] font-semibold truncate">{tournamentName}</div>
-          <div className="text-[11px] text-ink-400">{dateStr}</div>
+          <div className="text-[11px] text-muted">{dateStr}</div>
         </div>
         <span className={`badge ${chipClass}`}>
           <span className={`dot ${entry.status === 'pending' ? 'pulse' : ''}`} />

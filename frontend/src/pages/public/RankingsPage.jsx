@@ -37,9 +37,9 @@ function RankRow({ player, isFirst }) {
   return (
     <Link
       to={`/players/${player.id}`}
-      className="block mb-1 no-underline text-ink-900"
+      className="block mb-1 no-underline text-heading"
     >
-      <section className={`flex ${rowH} w-full items-center rounded-lg overflow-hidden bg-white border border-hairline hover:shadow-e2 transition-shadow`}>
+      <section className={`flex ${rowH} w-full items-center rounded-lg overflow-hidden bg-card border border-border-subtle hover:shadow-e2 transition-shadow`}>
         {/* Rank badge — full-height left strip */}
         <div className={`${rankBadgeBg(player.rank)} shrink-0 w-10 h-full flex items-center justify-center`}>
           <span
@@ -61,7 +61,7 @@ function RankRow({ player, isFirst }) {
 
         {/* Name */}
         <div className="min-w-0 flex-1 pl-2">
-          <p className="text-[11px] font-bold text-ink-400 leading-none truncate">
+          <p className="text-[11px] font-bold text-muted leading-none truncate">
             {first || '\u00A0'}
           </p>
           <p
@@ -73,7 +73,7 @@ function RankRow({ player, isFirst }) {
         </div>
 
         {/* Points */}
-        <span className="shrink-0 pr-4 text-[13px] font-bold text-ink-800 tabular-nums">
+        <span className="shrink-0 pr-4 text-[13px] font-bold text-body tabular-nums">
           {Number(player.ranking_points || 0).toLocaleString()}
         </span>
       </section>
@@ -164,7 +164,7 @@ export default function RankingsPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-ink-400">Loading rankings...</div>
+        <div className="text-center py-16 text-muted">Loading rankings...</div>
       ) : filtered.length > 0 ? (
         <>
           {/* Mobile: single column */}

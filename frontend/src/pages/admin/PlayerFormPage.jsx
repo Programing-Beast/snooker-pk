@@ -156,7 +156,7 @@ export default function PlayerFormPage() {
 
   const phoneMatchFound = phoneSearchResults.length > 0;
 
-  if (loading) return <div className="max-w-2xl mx-auto px-6 py-16 text-center text-ink-400">Loading...</div>;
+  if (loading) return <div className="max-w-2xl mx-auto px-6 py-16 text-center text-muted">Loading...</div>;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -175,7 +175,7 @@ export default function PlayerFormPage() {
             value={phoneSearch}
             onChange={e => handlePhoneSearch(e.target.value)}
           />
-          {phoneSearching && <p className="text-[12px] text-ink-400 mt-1">Searching...</p>}
+          {phoneSearching && <p className="text-[12px] text-muted mt-1">Searching...</p>}
           {phoneMatchFound && (
             <div className="mt-2 text-[13px] text-bad bg-bad-tint px-3 py-2 rounded">
               Player already exists: {phoneSearchResults.map(p => p.name).join(', ')}
@@ -250,16 +250,16 @@ export default function PlayerFormPage() {
           {phones.length > 0 ? (
             <div className="space-y-2 mb-4">
               {phones.map(ph => (
-                <div key={ph.id} className="flex items-center gap-3 py-2 border-b border-hairline last:border-0">
+                <div key={ph.id} className="flex items-center gap-3 py-2 border-b border-divider last:border-0">
                   <span className="font-mono text-[14px] flex-1">{ph.phone}</span>
-                  <span className="text-[11px] font-medium text-ink-500 bg-surface2 px-2 py-0.5 rounded">{ph.label}</span>
+                  <span className="text-[11px] font-medium text-ink-500 bg-card-alt px-2 py-0.5 rounded">{ph.label}</span>
                   {ph.is_whatsapp && <span className="text-[11px] font-medium text-ok bg-ok-tint px-2 py-0.5 rounded">WhatsApp</span>}
                   <button type="button" className="text-bad hover:text-bad/80 text-[13px]" onClick={() => handleDeletePhone(ph.id)}>Remove</button>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-[13px] text-ink-400 mb-4">No phone numbers added yet.</p>
+            <p className="text-[13px] text-muted mb-4">No phone numbers added yet.</p>
           )}
 
           {labelOptions.length > 0 ? (
@@ -300,7 +300,7 @@ export default function PlayerFormPage() {
               {phoneError && <p className="text-[12px] text-bad mt-2">{phoneError}</p>}
             </>
           ) : (
-            <p className="text-[12px] text-ink-400">Maximum phone numbers reached (1 primary + 3 secondary).</p>
+            <p className="text-[12px] text-muted">Maximum phone numbers reached (1 primary + 3 secondary).</p>
           )}
         </div>
       )}

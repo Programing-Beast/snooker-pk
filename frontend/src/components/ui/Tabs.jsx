@@ -1,6 +1,6 @@
 export default function Tabs({ tabs, active, onChange }) {
   return (
-    <div className="flex border-b border-hairline px-2" role="tablist">
+    <div className="flex border-b border-divider px-2" role="tablist">
       {tabs.map((tab) => (
         <button
           key={tab.key}

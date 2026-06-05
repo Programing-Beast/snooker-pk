@@ -161,7 +161,7 @@ export default function AwardPrizesPage() {
     return (
       <div>
         <TournamentSubNav tournament={{ id, name: 'Loading...' }} />
-        <div className="text-center py-12 text-ink-400">Loading...</div>
+        <div className="text-center py-12 text-muted">Loading...</div>
       </div>
     );
   }
@@ -173,13 +173,13 @@ export default function AwardPrizesPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="card p-5">
-          <div className="seclabel text-ink-400">Total awarded</div>
+          <div className="seclabel text-muted">Total awarded</div>
           <div className="font-display font-extrabold text-[28px] leading-none tabular-nums mt-2">
             PKR {totalAmount.toLocaleString()}
           </div>
         </div>
         <div className="card p-5">
-          <div className="seclabel text-ink-400">Pending</div>
+          <div className="seclabel text-muted">Pending</div>
           <div className="font-display font-extrabold text-[28px] leading-none tabular-nums mt-2">
             {pendingGroups.length}
           </div>
@@ -188,7 +188,7 @@ export default function AwardPrizesPage() {
           </div>
         </div>
         <div className="card p-5">
-          <div className="seclabel text-ink-400">Awarded count</div>
+          <div className="seclabel text-muted">Awarded count</div>
           <div className="font-display font-extrabold text-[28px] leading-none tabular-nums mt-2">
             {awardedGroups.length}
           </div>
@@ -201,10 +201,10 @@ export default function AwardPrizesPage() {
           {/* Pending awards */}
           {pendingGroups.length > 0 && (
             <div className="card overflow-hidden">
-              <div className="px-5 py-3.5 border-b border-hairline">
+              <div className="px-5 py-3.5 border-b border-divider">
                 <span className="seclabel text-felt">Pending confirmation</span>
               </div>
-              <div className="divide-y divide-hairline">
+              <div className="divide-y divide-divider">
                 {pendingGroups.map(group => {
                   const key = group.ids.join('-');
                   return (
@@ -243,11 +243,11 @@ export default function AwardPrizesPage() {
 
           {/* Awarded */}
           <div className="card overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-hairline">
+            <div className="px-5 py-3.5 border-b border-divider">
               <span className="seclabel text-felt">Awarded</span>
             </div>
             {awardedGroups.length > 0 ? (
-              <div className="divide-y divide-hairline">
+              <div className="divide-y divide-divider">
                 {awardedGroups.map(group => (
                   <div key={group.ids.join('-')} className="flex items-center gap-3 px-5 py-3.5">
                     <div className="flex-1 min-w-0">
@@ -270,7 +270,7 @@ export default function AwardPrizesPage() {
                       {group.category === 'tournament_winner' ? 'winner' : group.category === 'tournament_runner_up' ? 'runner-up' : group.category === 'round_elimination' ? 'elimination' : group.category === 'score_prize' ? 'score' : group.category || 'manual'}
                     </span>
                     {group.awarded_at && (
-                      <span className="text-[11px] text-ink-400 shrink-0">
+                      <span className="text-[11px] text-muted shrink-0">
                         {new Date(group.awarded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                       </span>
                     )}
@@ -278,14 +278,14 @@ export default function AwardPrizesPage() {
                 ))}
               </div>
             ) : (
-              <div className="p-5 text-center text-ink-400 text-[13px]">No prizes awarded yet.</div>
+              <div className="p-5 text-center text-muted text-[13px]">No prizes awarded yet.</div>
             )}
           </div>
         </div>
 
         {/* Right column — Award form */}
         <div className="card overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-hairline">
+          <div className="px-5 py-3.5 border-b border-divider">
             <span className="seclabel text-felt">Award a prize</span>
           </div>
           <div className="p-5 space-y-4">
@@ -307,12 +307,12 @@ export default function AwardPrizesPage() {
                 ))}
               </select>
               {availablePrizes.length === 0 && prizes.length > 0 && (
-                <p className="text-[12px] text-ink-400 mt-1.5">All eligible prizes have been awarded.</p>
+                <p className="text-[12px] text-muted mt-1.5">All eligible prizes have been awarded.</p>
               )}
             </div>
 
             {selectedPrizeObj && (
-              <div className="bg-surface2 rounded-lg px-4 py-3 text-[13px]">
+              <div className="bg-card-alt rounded-lg px-4 py-3 text-[13px]">
                 <div className="font-semibold">{selectedPrizeObj.position_label}</div>
                 <div className="text-ink-500 mt-0.5">
                   PKR {Number(selectedPrizeObj.amount || 0).toLocaleString()}
@@ -327,11 +327,11 @@ export default function AwardPrizesPage() {
                   <label className="text-[12px] font-semibold text-ink-500 uppercase tracking-wide mb-1.5 block">
                     Select players ({totalSelected} selected)
                   </label>
-                  <div className="border border-hairline rounded-lg max-h-72 overflow-y-auto divide-y divide-hairline">
+                  <div className="border border-divider rounded-lg max-h-72 overflow-y-auto divide-y divide-divider">
                     {eligible.length > 0 ? eligible.map(player => {
                       const count = playerCounts[player.id] || 0;
                       return (
-                        <div key={player.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-surface2">
+                        <div key={player.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-card-alt">
                           {isMultiple ? (
                             <div className="flex items-center gap-1 shrink-0">
                               <button
@@ -365,7 +365,7 @@ export default function AwardPrizesPage() {
                         </div>
                       );
                     }) : (
-                      <div className="p-4 text-center text-ink-400 text-[13px]">No eligible players found.</div>
+                      <div className="p-4 text-center text-muted text-[13px]">No eligible players found.</div>
                     )}
                   </div>
                 </div>

@@ -14,7 +14,7 @@ export default function PlayerListItem({ player, index, size = 'sm', showFlag = 
   return (
     <Root {...rootProps} className="flex items-center gap-3">
       {index != null && (
-        <span className="w-6 text-center text-[12px] text-ink-400 tabular-nums shrink-0">{index}</span>
+        <span className="w-6 text-center text-[12px] text-muted tabular-nums shrink-0">{index}</span>
       )}
       <PlayerAvatar name={player.name} photo={player.photo_path || player.photo} tier={player.tier} size={size} />
       <div className="min-w-0 flex-1">

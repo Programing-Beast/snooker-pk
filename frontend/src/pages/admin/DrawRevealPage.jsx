@@ -32,7 +32,7 @@ function StateLegend({ phase }) {
         <div key={key} className="flex items-center gap-1.5">
           <span
             className={`px-2.5 py-1 rounded-full text-[10.5px] font-display font-bold uppercase tracking-wide ${
-              key === cur ? 'bg-felt text-white' : 'bg-surface2 text-ink-400'
+              key === cur ? 'bg-felt text-white' : 'bg-card-alt text-muted'
             }`}
           >
             {label}
@@ -270,34 +270,34 @@ export default function DrawRevealPage() {
           </p>
         </div>
         <div className="text-right">
-          <div className="seclabel text-ink-400 !text-[10px]">Progress</div>
+          <div className="seclabel text-muted !text-[10px]">Progress</div>
           <div className="font-display font-extrabold text-[22px] tabular-nums">
-            Match {matchNumber} <span className="text-ink-400">of {totalMatches}</span>
+            Match {matchNumber} <span className="text-muted">of {totalMatches}</span>
           </div>
         </div>
       </div>
 
       {/* State legend */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
-        <span className="seclabel text-ink-400 !text-[10px]">State</span>
+        <span className="seclabel text-muted !text-[10px]">State</span>
         <StateLegend phase={currentPhase} />
         <span className="text-[12px] text-ink-500 ml-1">{PHASE_NOTES[currentPhase]}</span>
       </div>
 
       {!poolLoaded ? (
         <div className="card grid place-items-center text-center py-20">
-          <div className="text-ink-400 text-[14px]">Loading pool&hellip;</div>
+          <div className="text-muted text-[14px]">Loading pool&hellip;</div>
         </div>
       ) : pool.length === 0 && drawn.length === 0 ? (
         <div className="card grid place-items-center text-center py-20">
           <div>
-            <div className="w-14 h-14 rounded-full bg-surface2 grid place-items-center mb-3 text-ink-300 mx-auto">
+            <div className="w-14 h-14 rounded-full bg-card-alt grid place-items-center mb-3 text-ink-300 mx-auto">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
               </svg>
             </div>
             <div className="font-display font-bold text-ink-700">No players in pool</div>
-            <p className="text-ink-400 text-[13px] mt-1">
+            <p className="text-muted text-[13px] mt-1">
               {(() => {
                 const sorted = [...rounds].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
                 const isFirst = sorted[0]?.id === activeRound?.id;
@@ -390,7 +390,7 @@ export default function DrawRevealPage() {
                   drawn.map((m, i) => (
                     <div
                       key={i}
-                      className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2.5 px-4 py-2.5 border-b border-hairline last:border-0 dropin"
+                      className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-2.5 px-4 py-2.5 border-b border-divider last:border-0 dropin"
                     >
                       <span className="font-display font-semibold text-ink-300 tabular-nums w-4 text-center text-[12px]">{i + 1}</span>
                       <div className="flex items-center gap-2 min-w-0">
@@ -405,7 +405,7 @@ export default function DrawRevealPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-8 text-center text-ink-400 text-[13px]">No matches confirmed yet.</div>
+                  <div className="px-4 py-8 text-center text-muted text-[13px]">No matches confirmed yet.</div>
                 )}
               </div>
             </div>
@@ -413,7 +413,7 @@ export default function DrawRevealPage() {
 
           {/* Right column — Remaining pool */}
           <div className="card overflow-hidden sticky top-[76px]">
-            <div className="px-4 py-3 bg-surface2 flex items-center justify-between">
+            <div className="px-4 py-3 bg-card-alt flex items-center justify-between">
               <span className="seclabel text-ink-500">Remaining pool</span>
               <span className="badge bg-felt text-white !text-[9px] tabular-nums">{pool.length}</span>
             </div>
@@ -421,16 +421,16 @@ export default function DrawRevealPage() {
               {pool.length > 0 ? pool.map(p => (
                 <div
                   key={p.id}
-                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-surface2 transition-all ${
+                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-card-alt transition-all ${
                     pair.includes(p) && currentPhase === 'settled' ? 'ring-2 ring-felt' : ''
                   }`}
                 >
                   <PlayerAvatar name={p.name} photo={p.photo} tier={p.tier} size="sm" className="!w-6 !h-6 !text-[10px]" />
                   <span className="text-[12.5px] font-semibold truncate">{p.name}</span>
-                  <span className="text-[10px] text-ink-400 ml-auto tabular-nums">{p.seed || '—'}</span>
+                  <span className="text-[10px] text-muted ml-auto tabular-nums">{p.seed || '—'}</span>
                 </div>
               )) : (
-                <div className="py-6 text-center text-ink-400 text-[13px]">Pool empty</div>
+                <div className="py-6 text-center text-muted text-[13px]">Pool empty</div>
               )}
             </div>
           </div>

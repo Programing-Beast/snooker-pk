@@ -141,9 +141,9 @@ export default function ManageEntriesPage() {
               <span className="text-[13px] font-semibold text-ink-600">Select all ({filteredPlayers.length})</span>
             </label>
           )}
-          <div className="max-h-72 overflow-y-auto divide-y divide-hairline border border-hairline rounded-lg">
+          <div className="max-h-72 overflow-y-auto divide-y divide-divider border border-border-subtle rounded-lg">
             {filteredPlayers.length === 0 && (
-              <div className="p-5 text-center text-ink-400 text-[14px]">No players available.</div>
+              <div className="p-5 text-center text-muted text-[14px]">No players available.</div>
             )}
             {filteredPlayers.map(p => (
               <label
@@ -188,7 +188,7 @@ export default function ManageEntriesPage() {
       {pending.length > 0 && (
         <div className="mb-6">
           <h2 className="font-display font-bold text-[1.1rem] mb-3">Pending ({pending.length})</h2>
-          <div className="card divide-y divide-hairline overflow-hidden">
+          <div className="card divide-y divide-divider overflow-hidden">
             {pending.map(entry => (
               <div key={entry.id} className="flex items-center gap-4 px-4 py-3">
                 <PlayerListItem player={entry.player}>
@@ -205,7 +205,7 @@ export default function ManageEntriesPage() {
       {/* Approved entries */}
       <div className="mb-6">
         <h2 className="font-display font-bold text-[1.1rem] mb-3">Approved ({approved.length})</h2>
-        <div className="card divide-y divide-hairline overflow-hidden">
+        <div className="card divide-y divide-divider overflow-hidden">
           {approved.map((entry, i) => (
             <div key={entry.id} className="flex items-center gap-4 px-4 py-3">
               <PlayerListItem player={entry.player} index={i + 1}>
@@ -224,7 +224,7 @@ export default function ManageEntriesPage() {
               </PlayerListItem>
             </div>
           ))}
-          {approved.length === 0 && <div className="p-5 text-center text-ink-400 text-[14px]">No approved entries yet.</div>}
+          {approved.length === 0 && <div className="p-5 text-center text-muted text-[14px]">No approved entries yet.</div>}
         </div>
       </div>
 
@@ -232,7 +232,7 @@ export default function ManageEntriesPage() {
       {rejected.length > 0 && (
         <div>
           <h2 className="font-display font-bold text-[1.1rem] mb-3">Rejected ({rejected.length})</h2>
-          <div className="card divide-y divide-hairline overflow-hidden">
+          <div className="card divide-y divide-divider overflow-hidden">
             {rejected.map(entry => (
               <div key={entry.id} className="flex items-center gap-4 px-4 py-3">
                 <PlayerListItem player={entry.player}>

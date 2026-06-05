@@ -159,9 +159,9 @@ export default function ManageMatchesPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-ink-400">Loading...</div>
+        <div className="text-center py-12 text-muted">Loading...</div>
       ) : rounds.length === 0 ? (
-        <div className="card p-8 text-center text-ink-400">No rounds or matches found. Generate a draw first.</div>
+        <div className="card p-8 text-center text-muted">No rounds or matches found. Generate a draw first.</div>
       ) : (
         <div className="space-y-6">
           {rounds.map(round => (
@@ -186,8 +186,8 @@ export default function ManageMatchesPage() {
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openScoreModal(m, round)}>Set Score</button>
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openDeclareModal(m, round)}>Declare Winner</button>
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => handleComplete(m.id)}>Complete</button>
-                        {m.umpire && <span className="ml-auto text-[11px] text-ink-400">Umpire: {m.umpire.name}</span>}
-                        {!m.umpire && <span className="ml-auto text-[11px] text-ink-400 italic">No umpire assigned</span>}
+                        {m.umpire && <span className="ml-auto text-[11px] text-muted">Umpire: {m.umpire.name}</span>}
+                        {!m.umpire && <span className="ml-auto text-[11px] text-muted italic">No umpire assigned</span>}
                       </>
                     ) : null}
                   />
@@ -238,7 +238,7 @@ export default function ManageMatchesPage() {
                 onChange={e => setScoreForm(f => ({ ...f, score2: e.target.value }))}
               />
               {scoreMatch.frames_to_win && (
-                <p className="text-[12px] text-ink-400">Best of {scoreMatch.frames_to_win * 2 - 1} · First to {scoreMatch.frames_to_win}</p>
+                <p className="text-[12px] text-muted">Best of {scoreMatch.frames_to_win * 2 - 1} · First to {scoreMatch.frames_to_win}</p>
               )}
               {scoreError && <p className="text-[12px] text-red-500">{scoreError}</p>}
             </div>
@@ -257,7 +257,7 @@ export default function ManageMatchesPage() {
           {declareMatch && (
             <div className="space-y-4">
               {declareMatch.frames_to_win && (
-                <p className="text-[12px] text-ink-400">Best of {declareMatch.frames_to_win * 2 - 1} · Winner gets {declareMatch.frames_to_win} frames automatically.</p>
+                <p className="text-[12px] text-muted">Best of {declareMatch.frames_to_win * 2 - 1} · Winner gets {declareMatch.frames_to_win} frames automatically.</p>
               )}
               <Input
                 label="Loser's score (optional)"
@@ -268,7 +268,7 @@ export default function ManageMatchesPage() {
                 onChange={e => setDeclareForm(f => ({ ...f, loserScore: e.target.value }))}
                 placeholder="0"
               />
-              <p className="text-[12px] text-ink-400">Select the winner below.</p>
+              <p className="text-[12px] text-muted">Select the winner below.</p>
               <div className="flex gap-2">
                 <Button
                   size="sm"

@@ -74,7 +74,7 @@ export default function ManagePlayersPage() {
 
       {/* Player grid */}
       {loading ? (
-        <div className="text-center py-12 text-ink-400">Loading...</div>
+        <div className="text-center py-12 text-muted">Loading...</div>
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-2 gap-y-0">
           {filtered.map(p => (
@@ -119,7 +119,7 @@ export default function ManagePlayersPage() {
           ))}
         </div>
       ) : (
-        <div className="py-12 text-center text-ink-400">No players found.</div>
+        <div className="py-12 text-center text-muted">No players found.</div>
       )}
     </div>
   );

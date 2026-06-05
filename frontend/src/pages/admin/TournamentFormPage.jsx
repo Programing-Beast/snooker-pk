@@ -228,7 +228,7 @@ export default function TournamentFormPage() {
             key={s}
             onClick={() => i <= step && setStep(i)}
             className={`px-4 py-2 rounded-md text-[13px] font-display font-semibold ${
-              i === step ? 'bg-felt text-white' : i < step ? 'bg-felt-50 text-felt' : 'bg-surface2 text-ink-400'
+              i === step ? 'bg-felt text-white' : i < step ? 'bg-felt-50 text-felt' : 'bg-card-alt text-muted'
             }`}
           >
             {i + 1}. {s}
@@ -282,7 +282,7 @@ export default function TournamentFormPage() {
             return (
               <div key={p.id || i} className={`card p-5 space-y-3 ${isSystem ? 'border-l-4 border-l-felt' : ''}`}>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
                     {isSystem ? (p.type === 'winner' ? 'Winner prize' : 'Runner-up prize') : `Prize ${i + 1}`}
                   </span>
                   <div className="flex items-center gap-4 ml-auto">
@@ -373,7 +373,7 @@ export default function TournamentFormPage() {
                 const player = o.user?.player;
                 const phone = player?.phones?.[0]?.phone;
                 return (
-                  <div key={o.id} className="flex items-center gap-3 py-2 border-b border-hairline last:border-0">
+                  <div key={o.id} className="flex items-center gap-3 py-2 border-b border-divider last:border-0">
                     <PlayerAvatar name={player?.name || o.user?.name} photo={player?.photo_path} size="sm" />
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-[14px] truncate">{player?.name || o.user?.name}</div>
@@ -390,7 +390,7 @@ export default function TournamentFormPage() {
           )}
 
           {/* Search by phone to add organizer */}
-          <div className="space-y-3 p-4 bg-surface2 rounded-lg">
+          <div className="space-y-3 p-4 bg-card-alt rounded-lg">
             <label className="lbl">Add organizer by phone</label>
             <input
               className="input"
@@ -400,25 +400,25 @@ export default function TournamentFormPage() {
             />
             <Input label="Role (optional)" value={orgRole} onChange={e => setOrgRole(e.target.value)} placeholder="Tournament Director" />
 
-            {phoneSearching && <p className="text-[12px] text-ink-400">Searching...</p>}
+            {phoneSearching && <p className="text-[12px] text-muted">Searching...</p>}
 
             {phoneResults.length > 0 && (
-              <div className="border border-hairline rounded-md overflow-hidden">
+              <div className="border border-border-subtle rounded-md overflow-hidden">
                 {phoneResults.map(p => {
                   const alreadyAdded = existingOrganizers.some(o => o.user_id === p.user_id);
                   return (
-                    <div key={p.id} className="flex items-center gap-3 px-3 py-2 hover:bg-surface2">
+                    <div key={p.id} className="flex items-center gap-3 px-3 py-2 hover:bg-card-alt">
                       <PlayerAvatar name={p.name} photo={p.photo_path} size="sm" />
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-[13px] truncate">{p.name}</div>
                         {p.phones?.[0]?.phone && <div className="text-[11px] text-ink-500">{p.phones[0].phone}</div>}
                       </div>
                       {alreadyAdded ? (
-                        <span className="text-[11px] text-ink-400">Already added</span>
+                        <span className="text-[11px] text-muted">Already added</span>
                       ) : p.user_id ? (
                         <Button size="sm" onClick={() => addOrganizer(p)} disabled={saving}>Add</Button>
                       ) : (
-                        <span className="text-[11px] text-ink-400">No user account</span>
+                        <span className="text-[11px] text-muted">No user account</span>
                       )}
                     </div>
                   );
@@ -440,7 +440,7 @@ export default function TournamentFormPage() {
 
             {/* Inline create player form */}
             {showInlineCreate && (
-              <div className="border border-hairline rounded-md p-3 space-y-3">
+              <div className="border border-border-subtle rounded-md p-3 space-y-3">
                 <div className="text-[13px] font-semibold">Create new player</div>
                 <Input label="Name" value={inlineForm.name} onChange={e => setInlineForm(f => ({ ...f, name: e.target.value }))} />
                 <Input label="Phone" value={inlineForm.phone} onChange={e => setInlineForm(f => ({ ...f, phone: e.target.value }))} />

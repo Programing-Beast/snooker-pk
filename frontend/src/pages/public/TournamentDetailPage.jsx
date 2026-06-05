@@ -74,8 +74,8 @@ export default function TournamentDetailPage() {
     setRequesting(false);
   }
 
-  if (loading) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-ink-400">Loading...</div>;
-  if (!tournament) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-ink-400">Tournament not found.</div>;
+  if (loading) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-muted">Loading...</div>;
+  if (!tournament) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-muted">Tournament not found.</div>;
 
   const t = tournament;
 
@@ -163,7 +163,7 @@ function OverviewTab({ tournament: t, drawData, awards }) {
       {awardedGroups.length > 0 && (
         <div>
           <h3 className="font-display font-bold text-[1.25rem] mb-3">Prizes awarded</h3>
-          <div className="card overflow-hidden divide-y divide-hairline">
+          <div className="card overflow-hidden divide-y divide-divider">
             {awardedGroups.map(group => (
               <div key={group.ids.join('-')} className="flex items-center gap-3 px-5 py-3.5">
                 <div className="flex-1 min-w-0">
@@ -176,7 +176,7 @@ function OverviewTab({ tournament: t, drawData, awards }) {
                 <div className="text-right shrink-0">
                   <div className="text-[13px] font-semibold">
                     {group.prize?.position_label || group.reason}
-                    {group.count > 1 && <span className="text-ink-400 ml-1">({group.count}x)</span>}
+                    {group.count > 1 && <span className="text-muted ml-1">({group.count}x)</span>}
                   </div>
                   <div className="font-display font-bold text-[14px] tabular-nums">
                     PKR {group.totalAmount.toLocaleString()}
@@ -206,7 +206,7 @@ function OverviewTab({ tournament: t, drawData, awards }) {
           {visiblePrizes?.length > 0 && (
             <div>
               <h3 className="font-display font-bold text-[1.25rem] mb-3">Prize pool</h3>
-              <div className="card overflow-hidden divide-y divide-hairline">
+              <div className="card overflow-hidden divide-y divide-divider">
                 {visiblePrizes.map(p => (
                   <div key={p.id} className={`flex items-center justify-between px-5 py-4 ${p.is_highlight ? 'bg-brass-tint' : ''}`}>
                     <div>
@@ -276,7 +276,7 @@ function OverviewTab({ tournament: t, drawData, awards }) {
           {t.organizers?.length > 0 && (
             <div>
               <h3 className="font-display font-bold text-[1.25rem] mb-3">Contacts</h3>
-              <div className="card divide-y divide-hairline">
+              <div className="card divide-y divide-divider">
                 {t.organizers.map(o => {
                   const player = o.user?.player;
                   const phone = player?.phones?.[0]?.phone;

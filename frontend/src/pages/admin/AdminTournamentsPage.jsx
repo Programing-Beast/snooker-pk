@@ -113,15 +113,15 @@ export default function AdminTournamentsPage() {
 
       {/* Tournament list */}
       {loading ? (
-        <div className="text-center py-12 text-ink-400">Loading...</div>
+        <div className="text-center py-12 text-muted">Loading...</div>
       ) : tournaments.length > 0 ? (
         <>
           <div className="card overflow-hidden">
             {tournaments.map(t => (
-              <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-hairline last:border-0 hover:bg-surface2 transition">
+              <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-divider last:border-0 hover:bg-card-alt transition">
                 <Link to={`/admin/tournaments/${t.id}`} className="min-w-0 flex-1">
                   <div className="font-semibold text-[14px] truncate hover:text-felt transition">{t.name}</div>
-                  <div className="text-[11px] text-ink-400">
+                  <div className="text-[11px] text-muted">
                     {t.city || '—'}
                     {t.start_date && <> · {new Date(t.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</>}
                     {' '}· {t.max_players || '—'} players
@@ -141,7 +141,7 @@ export default function AdminTournamentsPage() {
           {/* Pagination */}
           {lastPage > 1 && (
             <div className="flex items-center justify-between mt-4">
-              <span className="text-[12px] text-ink-400">
+              <span className="text-[12px] text-muted">
                 Showing {from}–{to} of {total}
               </span>
               <div className="flex gap-1.5">
@@ -161,7 +161,7 @@ export default function AdminTournamentsPage() {
                   }, [])
                   .map((p, idx) =>
                     p === '...' ? (
-                      <span key={`dot-${idx}`} className="px-1 text-ink-400 text-[12px] self-center">...</span>
+                      <span key={`dot-${idx}`} className="px-1 text-muted text-[12px] self-center">...</span>
                     ) : (
                       <button
                         key={p}
@@ -184,7 +184,7 @@ export default function AdminTournamentsPage() {
           )}
         </>
       ) : (
-        <div className="py-12 text-center text-ink-400">
+        <div className="py-12 text-center text-muted">
           {search || statusFilter ? 'No tournaments match your search.' : (
             <>No tournaments yet. <Link to="/admin/tournaments/new" className="text-felt font-semibold">Create one</Link></>
           )}

@@ -27,7 +27,7 @@ export default function PlayerCard({ player, to, overlay, seed }) {
   const card = (
     <div className="group flex flex-col items-center text-center">
       {/* Image container */}
-      <div className="relative w-[104px] h-[130px] lg:w-[156px] lg:h-[195px] rounded-2xl border border-hairline bg-ink-100 hover:bg-surface2 transition-colors duration-300 overflow-hidden">
+      <div className="relative w-[104px] h-[130px] lg:w-[156px] lg:h-[195px] rounded-2xl border border-border-subtle bg-ink-100 hover:bg-card-alt transition-colors duration-300 overflow-hidden">
         <img
           src={photo}
           alt={player.name || 'Player'}
@@ -66,7 +66,7 @@ export default function PlayerCard({ player, to, overlay, seed }) {
 
   if (href) {
     return (
-      <Link to={href} className="mt-8 flex flex-col items-center no-underline text-ink-900 hover:text-ink-900">
+      <Link to={href} className="mt-8 flex flex-col items-center no-underline text-heading hover:text-heading">
         {card}
       </Link>
     );

@@ -115,7 +115,7 @@ export default function AdminDashboardPage() {
         {stats.map(s => (
           <div key={s.k} className="card p-5">
             <div className="flex items-start justify-between">
-              <div className="seclabel text-ink-400">{s.k}</div>
+              <div className="seclabel text-muted">{s.k}</div>
               <span className={`w-9 h-9 rounded-md grid place-items-center ${STONE[s.tone]}`}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">{s.icon}</svg>
               </span>
@@ -130,18 +130,18 @@ export default function AdminDashboardPage() {
       <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6 items-start">
         {/* Tournaments list (replaces activity feed since we have real data) */}
         <div className="card overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-hairline flex items-center justify-between">
+          <div className="px-5 py-3.5 border-b border-divider flex items-center justify-between">
             <span className="seclabel text-felt">Tournaments</span>
             <Link to="/admin/tournaments/new" className="text-[12.5px] font-semibold text-felt">Create new →</Link>
           </div>
           {loading ? (
-            <div className="p-5 text-center text-ink-400">Loading...</div>
+            <div className="p-5 text-center text-muted">Loading...</div>
           ) : tournaments.length > 0 ? (
             tournaments.slice(0, 10).map(t => (
-              <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-hairline last:border-0 hover:bg-surface2 transition">
+              <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-divider last:border-0 hover:bg-card-alt transition">
                 <Link to={`/admin/tournaments/${t.id}`} className="min-w-0 flex-1">
                   <div className="font-semibold text-[14px] truncate hover:text-felt transition">{t.name}</div>
-                  <div className="text-[11px] text-ink-400">{t.city || '—'} · {t.max_players || '—'} players</div>
+                  <div className="text-[11px] text-muted">{t.city || '—'} · {t.max_players || '—'} players</div>
                 </Link>
                 <StatusBadge status={t.status || 'upcoming'} />
                 <div className="flex gap-1.5 shrink-0">
@@ -177,21 +177,21 @@ export default function AdminDashboardPage() {
 
           {/* Pending entries */}
           <div className="card overflow-hidden">
-            <div className="px-4 py-3 border-b border-hairline flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-divider flex items-center justify-between">
               <span className="seclabel text-felt">Pending entries</span>
               <span className="badge bg-warn-tint text-[#9A5B12] !text-[9px]">{pendingEntries.length} total</span>
             </div>
             {pendingEntries.length > 0 ? (
               <>
                 {pendingEntries.slice(0, 5).map(entry => (
-                  <div key={entry.id} className="flex items-center gap-3 px-4 py-3 border-b border-hairline last:border-0">
+                  <div key={entry.id} className="flex items-center gap-3 px-4 py-3 border-b border-divider last:border-0">
                     <PlayerAvatar name={entry.player?.name} photo={entry.player?.photo_path} tier={entry.player?.tier} size="sm" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-[13.5px]">{entry.player?.name || 'Unknown'}</span>
                         <CountryFlagChip code={entry.player?.country_code || 'PAK'} showLabel={false} size="sm" />
                       </div>
-                      <div className="text-[11px] text-ink-400 truncate">{entry.tournament?.name || 'Tournament'}</div>
+                      <div className="text-[11px] text-muted truncate">{entry.tournament?.name || 'Tournament'}</div>
                     </div>
                     <div className="flex gap-1.5 shrink-0">
                       <button
@@ -211,14 +211,14 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 ))}
-                <div className="px-4 py-3 bg-surface2 text-center">
+                <div className="px-4 py-3 bg-card-alt text-center">
                   <Link to={`/admin/tournaments/${tournaments[0]?.id}/entries`} className="text-[12.5px] font-semibold text-felt">
                     Open entry queue →
                   </Link>
                 </div>
               </>
             ) : (
-              <div className="p-5 text-center text-ink-400 text-[13px]">No pending entries.</div>
+              <div className="p-5 text-center text-muted text-[13px]">No pending entries.</div>
             )}
           </div>
         </div>
