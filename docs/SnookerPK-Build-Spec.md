@@ -513,3 +513,16 @@ One Vite project. `tailwind.config.js` = the Baize tokens (already in your Desig
 **Bug fixes:**
 
 - **Tournament 2 Final round data** — Cleaned up 16 bogus matches in the Final round that were created by accidental draw regeneration. Restored correct single placeholder match with semifinal winner advanced.
+
+**Backend — Event-driven match completion refactor:**
+
+- **MatchCompleted event** — New `App\Events\MatchCompleted` event dispatched by `MatchService` when a match is completed via `walkover()`, `complete()`, or `declareWinner()`. Replaces inline private method calls with Laravel's automatic event discovery.
+- **AdvanceWinner listener** — Extracted from `MatchService::advanceWinner()`. Handles non-final rounds: fills winner into next-round match slot (player1 or player2 based on bracket position), auto-sets `generated_at` when all slots in the next round are filled.
+- **CompleteTournament listener** — Extracted from `MatchService::completeTournament()`. Handles final round: sets `winner_id`, `runner_up_id`, `status=completed` on the tournament, and awards ranking points from prizes (Winner/Runner-up position labels).
+- **Tournament winner/runner-up** — Added `winner_id` and `runner_up_id` columns to tournaments table (migration). Added `winner()` and `runnerUp()` relationships to Tournament model. Both fields exposed via `TournamentResource` and `TournamentDetailResource`.
+- No behavior change — all 144 existing tests pass (370 assertions).
+
+**Frontend — Admin tournament detail enhancements:**
+
+- **Winner/runner-up card** — Admin tournament page shows a result card with gold "1" badge for winner and silver "2" badge for runner-up when the tournament is completed.
+- **Round status badges** — Improved round status display to show "Pending", "Draw ready", "In progress", or "Completed" with match progress counts (e.g. "3/4"). Now correctly counts walkovers as completed matches.

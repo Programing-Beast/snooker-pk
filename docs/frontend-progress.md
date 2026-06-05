@@ -85,6 +85,7 @@
 ### Admin Routes
 - [x] Admin dashboard (`/admin`) — stat cards, tournament list, pending entries, quick actions
 - [x] Create/edit tournament (`/admin/tournaments/new`, `/admin/tournaments/:id/edit`)
+- [x] Admin tournament detail (`/admin/tournaments/:id`) — tab navigation, winner/runner-up display card, round status badges (pending/draw ready/in progress/completed with match counts)
 - [x] Manage entries (`/admin/tournaments/:id/entries`) — bulk add players, searchable, approve/reject
 - [x] Manage players (`/admin/players`, `/admin/players/new`, `/admin/players/:id/edit`)
 - [x] Generate draw (`/admin/tournaments/:id/draw`)

@@ -66,7 +66,8 @@
 - [x] Feature tests (9 tests — preview, generate, byes, confirm, reroll, no-rounds edge case, bye advancement)
 
 ## Phase 8 — Matches + Live Scoring
-- [x] MatchService (show, update, assignUmpire, walkover, complete with winner advancement, declareWinner, board, createFrame, updateFrame, createBreak, updateBreak, deleteBreak, score cascade: breaks → frame scores → match scores)
+- [x] MatchService (show, update, assignUmpire, walkover, complete, declareWinner, board, createFrame, updateFrame, createBreak, updateBreak, deleteBreak, score cascade: breaks → frame scores → match scores)
+- [x] Match completion side-effects extracted into Laravel events: `MatchCompleted` event dispatched by MatchService; `AdvanceWinner` listener (fills next-round bracket slot, auto-sets `generated_at`); `CompleteTournament` listener (sets winner/runner-up, awards ranking points from prizes)
 - [x] UpdateMatchRequest (includes score1/score2), AssignUmpireRequest, WalkoverRequest (includes optional score1/score2), StoreFrameRequest, UpdateFrameRequest, StoreBreakRequest, UpdateBreakRequest
 - [x] MatchResource, FrameResource, BreakResource
 - [x] MatchController (show, update, assignUmpire, walkover, complete, declareWinner, board), FrameController, BreakController
@@ -94,7 +95,9 @@
 | Resources    | 14    |
 | Routes       | 58+   |
 | Models       | 11    |
-| Feature Tests| 143 (364 assertions, all passing) |
+| Events       | 1 (MatchCompleted)                |
+| Listeners    | 2 (AdvanceWinner, CompleteTournament) |
+| Feature Tests| 144 (370 assertions, all passing) |
 
 ### Remaining
 - [ ] Factories for all models
