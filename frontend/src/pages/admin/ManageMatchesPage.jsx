@@ -166,10 +166,10 @@ export default function ManageMatchesPage() {
         <div className="space-y-6">
           {rounds.map(round => (
             <div key={round.id} className="card overflow-hidden">
-              <div className="px-[18px] py-3 bg-night text-white font-display font-semibold text-[12px] tracking-[0.12em] uppercase flex items-center gap-3">
+              <div className="dark-ctx px-[18px] py-3 bg-night text-white font-display font-semibold text-[12px] tracking-[0.12em] uppercase flex items-center gap-3">
                 {round.name}
-                {round.frames_to_win && <span className="text-ink-400 font-medium normal-case tracking-normal">· Best of {round.frames_to_win * 2 - 1}</span>}
-                <span className="ml-auto text-ink-400 font-medium normal-case tracking-normal">{round.matches?.length || 0} matches</span>
+                {round.frames_to_win && <span className="text-muted font-medium normal-case tracking-normal">· Best of {round.frames_to_win * 2 - 1}</span>}
+                <span className="ml-auto text-muted font-medium normal-case tracking-normal">{round.matches?.length || 0} matches</span>
               </div>
               {round.matches?.map((m, i) => {
                 const isActive = m.status !== 'completed' && m.status !== 'walkover' && m.player1 && m.player2;

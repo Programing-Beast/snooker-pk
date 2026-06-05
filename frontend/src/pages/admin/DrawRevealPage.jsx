@@ -382,9 +382,9 @@ export default function DrawRevealPage() {
             <div>
               <div className="seclabel text-felt mb-3">Confirmed matches</div>
               <div className="card overflow-hidden">
-                <div className="px-4 py-2.5 bg-night text-white flex items-center">
+                <div className="dark-ctx px-4 py-2.5 bg-night text-white flex items-center">
                   <span className="font-display font-bold uppercase tracking-[0.1em] text-[12px]">{roundName}</span>
-                  <span className="ml-auto text-[11px] text-ink-400">{drawn.length} of {totalMatches}</span>
+                  <span className="ml-auto text-[11px] text-muted">{drawn.length} of {totalMatches}</span>
                 </div>
                 {drawn.length > 0 ? (
                   drawn.map((m, i) => (

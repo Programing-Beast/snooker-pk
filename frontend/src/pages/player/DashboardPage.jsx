@@ -51,16 +51,16 @@ export default function DashboardPage() {
   return (
     <div className="max-w-[1200px] mx-auto">
       {/* Greeting hero */}
-      <header className="relative overflow-hidden bg-night felt-grain on-felt">
+      <header className="dark-ctx relative overflow-hidden bg-night felt-grain on-felt">
         <div className="absolute inset-0" style={{ background: 'radial-gradient(600px 300px at 14% -30%, rgba(11,110,67,.6), transparent 60%)' }} />
         <div className="relative px-4 py-5 sm:px-7 sm:py-7 flex items-center gap-4">
           <PlayerAvatar name={user?.name} photo={player?.photo_path} tier={player?.tier} size="lg" />
           <div>
-            <div className="seclabel text-ink-400">Welcome back</div>
-            <h1 className="font-display font-extrabold uppercase text-white leading-none tracking-tight text-[24px] sm:text-[32px]">
+            <div className="seclabel">Welcome back</div>
+            <h1 className="font-display font-extrabold uppercase text-heading leading-none tracking-tight text-[24px] sm:text-[32px]">
               {user?.name || 'Player'}
             </h1>
-            <div className="flex items-center gap-2 mt-2 text-[12.5px] text-ink-300">
+            <div className="flex items-center gap-2 mt-2 text-[12.5px] text-body">
               <CountryFlagChip code={player?.country_code || 'PAK'} showLabel={false} size="sm" />
               {player?.tier && (
                 <span className="badge bg-felt text-white !text-[9px]">{player.tier}</span>

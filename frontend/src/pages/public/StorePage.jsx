@@ -21,13 +21,13 @@ export default function StorePage() {
       </div>
 
       {/* Store teaser banner */}
-      <div className="rounded-lg bg-night felt-grain border border-hairline-d p-7 mb-8 flex flex-col sm:flex-row items-center gap-6">
+      <div className="dark-ctx rounded-lg bg-night felt-grain border border-divider p-7 mb-8 flex flex-col sm:flex-row items-center gap-6">
         <div className="flex-1">
-          <h2 className="font-display font-bold text-2xl text-white leading-tight">Cues, chalk & cases — built for the break.</h2>
-          <p className="text-ink-300 text-[14.5px] mt-2">Get notified when the SnookerPK store launches.</p>
+          <h2 className="font-display font-bold text-2xl text-heading leading-tight">Cues, chalk & cases — built for the break.</h2>
+          <p className="text-body text-[14.5px] mt-2">Get notified when the SnookerPK store launches.</p>
         </div>
         <div className="flex gap-2.5 w-full sm:w-auto">
-          <input className="input !bg-white/10 !border-white/20 !text-white placeholder:!text-ink-400" placeholder="your@email.com" />
+          <input className="input" placeholder="your@email.com" />
           <button className="btn btn-brass whitespace-nowrap">Notify me</button>
         </div>
       </div>
