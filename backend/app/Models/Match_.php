@@ -16,7 +16,7 @@ class Match_ extends Model
         'tournament_id', 'round_id', 'position',
         'player1_id', 'player2_id', 'score1', 'score2',
         'winner_id', 'status', 'mode', 'umpire_id',
-        'table_no', 'scheduled_at', 'video_url',
+        'table_no', 'scheduled_at', 'youtube_url', 'facebook_url',
         'current_frame_no', 'note',
     ];
 
