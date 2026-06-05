@@ -44,7 +44,7 @@ export default function TournamentsPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="px-6 sm:px-9 sticky top-16 z-10 bg-canvas/95 backdrop-blur py-3 border-y border-hairline">
+      <div className="px-6 sm:px-9 sticky top-16 z-10 bg-page/95 backdrop-blur py-3 border-y border-hairline">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="inline-flex bg-surface2 rounded-md p-1 gap-1">
             {TABS.map(tab => (

@@ -50,6 +50,16 @@
   --color-panel2: #1F2D26;
   --color-hairline-d: #2B3A32;
 
+  /* ── Semantic (context-aware) ── */
+  --color-page: var(--sem-page);
+  --color-card: var(--sem-card);
+  --color-card-alt: var(--sem-card-alt);
+  --color-heading: var(--sem-heading);
+  --color-body: var(--sem-body);
+  --color-muted: var(--sem-muted);
+  --color-divider: var(--sem-divider);
+  --color-border-subtle: var(--sem-border-subtle);
+
   /* Typography */
   --font-display: 'Saira', system-ui, sans-serif;
   --font-sans: 'Hanken Grotesk', system-ui, sans-serif;
@@ -65,6 +75,30 @@
   --shadow-e2: 0 4px 10px -2px rgba(0, 0, 0, .12);
   --shadow-e3: 0 12px 26px -8px rgba(0, 0, 0, .20);
   --shadow-e4: 0 24px 50px -16px rgba(0, 0, 0, .30);
+}
+
+/* ─── Semantic surface tokens (light defaults) ─── */
+:root {
+  --sem-page: #F6F5F0;
+  --sem-card: #fff;
+  --sem-card-alt: #F1EFE8;
+  --sem-heading: #13201A;
+  --sem-body: #1F2D26;
+  --sem-muted: #95A39A;
+  --sem-divider: #E2E6DF;
+  --sem-border-subtle: #DDE4DE;
+}
+
+/* Dark context overrides — add class="dark-ctx" to any container */
+.dark-ctx {
+  --sem-page: #0C100E;
+  --sem-card: #16201A;
+  --sem-card-alt: #1F2D26;
+  --sem-heading: #fff;
+  --sem-body: #EDF0EC;
+  --sem-muted: #95A39A;
+  --sem-divider: #2B3A32;
+  --sem-border-subtle: #33433B;
 }
 
 /* Base styles */
@@ -188,8 +222,8 @@ body {
 
 /* Card */
 .card {
-  background: #fff; border-radius: var(--radius-lg);
-  border: 1px solid var(--color-hairline);
+  background: var(--sem-card); border-radius: var(--radius-lg);
+  border: 1px solid var(--sem-divider);
   box-shadow: var(--shadow-e2);
 }
 
