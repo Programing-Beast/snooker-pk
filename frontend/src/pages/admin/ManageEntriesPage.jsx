@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import * as entriesApi from '../../api/entries';
-import * as tournamentsApi from '../../api/tournaments';
-import * as playersApi from '../../api/players';
+import { useGetTournamentQuery } from '../../store/api/tournamentsApi';
+import { useGetEntriesQuery, useApproveEntryMutation, useRejectEntryMutation, useBulkAddEntriesMutation, useSetEntrySeedMutation } from '../../store/api/entriesApi';
+import { useGetPlayersQuery } from '../../store/api/playersApi';
 import { PER_PAGE_ALL } from '../../api/pagination';
 import PlayerListItem from '../../components/ui/PlayerListItem';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -13,48 +13,29 @@ import TournamentSubNav from '../../components/admin/TournamentSubNav';
 
 export default function ManageEntriesPage() {
   const { id } = useParams();
-  const [tournament, setTournament] = useState(null);
-  const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [players, setPlayers] = useState([]);
   const [showAddSection, setShowAddSection] = useState(false);
   const [search, setSearch] = useState('');
   const [checkedIds, setCheckedIds] = useState(new Set());
   const [adding, setAdding] = useState(false);
 
-  function loadEntries() {
-    return entriesApi.list(id, { per_page: PER_PAGE_ALL }).then(res => {
-      setEntries(res.data.data ?? res.data ?? []);
-    }).catch(() => {});
-  }
-
-  function loadPlayers() {
-    return playersApi.list({ per_page: PER_PAGE_ALL }).then(res => {
-      setPlayers(res.data.data || []);
-    }).catch(() => {});
-  }
-
-  useEffect(() => {
-    Promise.all([
-      tournamentsApi.show(id).then(res => setTournament(res.data.data ?? res.data)).catch(() => {}),
-      loadEntries(),
-      loadPlayers(),
-    ]).finally(() => setLoading(false));
-  }, [id]);
+  const { data: tournament } = useGetTournamentQuery(id);
+  const { data: entries = [], isLoading } = useGetEntriesQuery({ tournamentId: id, params: { per_page: PER_PAGE_ALL } });
+  const { data: players = [] } = useGetPlayersQuery({ per_page: PER_PAGE_ALL });
+  const [approveEntry] = useApproveEntryMutation();
+  const [rejectEntry] = useRejectEntryMutation();
+  const [bulkAddEntries] = useBulkAddEntriesMutation();
+  const [setEntrySeed] = useSetEntrySeedMutation();
 
   async function approve(entryId) {
-    await entriesApi.approve(entryId);
-    loadEntries();
+    await approveEntry(entryId).unwrap();
   }
 
   async function reject(entryId) {
-    await entriesApi.reject(entryId);
-    loadEntries();
+    await rejectEntry(entryId).unwrap();
   }
 
   async function setSeed(entryId, seed) {
-    await entriesApi.setSeed(entryId, { seed: seed || null });
-    loadEntries();
+    await setEntrySeed({ id: entryId, data: { seed: seed || null }, tournamentId: id }).unwrap();
   }
 
   const enteredPlayerIds = new Set(
@@ -87,8 +68,7 @@ export default function ManageEntriesPage() {
     if (ids.length === 0) return;
     setAdding(true);
     try {
-      await entriesApi.bulkAdd(id, ids);
-      await loadEntries();
+      await bulkAddEntries({ tournamentId: Number(id), playerIds: ids }).unwrap();
       setCheckedIds(new Set());
       setSearch('');
     } catch { /* ignore */ }

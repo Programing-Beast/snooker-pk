@@ -1,27 +1,14 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import * as tournamentsApi from '../../api/tournaments';
-import * as rankingsApi from '../../api/rankings';
+import { useGetTournamentsQuery } from '../../store/api/tournamentsApi';
+import { useGetRankingsQuery } from '../../store/api/rankingsApi';
 import TournamentCard from '../../components/ui/TournamentCard';
 import RankingsRow from '../../components/ui/RankingsRow';
 import FeltHero from '../../components/ui/FeltHero';
 import StoreTeaser from '../../components/ui/StoreTeaser';
 
 export default function HomePage() {
-  const [tournaments, setTournaments] = useState([]);
-  const [rankings, setRankings] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.allSettled([
-      tournamentsApi.list({ per_page: 6 }),
-      rankingsApi.list({ per_page: 5 }),
-    ]).then(([t, r]) => {
-      if (t.status === 'fulfilled') setTournaments(t.value.data.data || []);
-      if (r.status === 'fulfilled') setRankings(r.value.data.data || []);
-      setLoading(false);
-    });
-  }, []);
+  const { data: tournaments = [], isLoading } = useGetTournamentsQuery({ per_page: 6 });
+  const { data: rankings = [] } = useGetRankingsQuery({ per_page: 5 });
 
   const live = tournaments.filter(t => t.status === 'live');
   const upcoming = tournaments.filter(t => t.status === 'upcoming');
@@ -82,7 +69,7 @@ export default function HomePage() {
           </div>
           <Link to="/tournaments" className="text-[13px] font-semibold text-felt hover:text-felt-700">All tournaments →</Link>
         </div>
-        {loading ? (
+        {isLoading ? (
           <div className="text-muted text-center py-12">Loading tournaments...</div>
         ) : (
           <div className="grid md:grid-cols-3 gap-5">

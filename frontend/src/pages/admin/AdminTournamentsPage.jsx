@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import * as tournamentsApi from '../../api/tournaments';
+import { useGetTournamentsQuery } from '../../store/api/tournamentsApi';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
@@ -17,49 +17,35 @@ const SORT_OPTIONS = [
 const PER_PAGE = 15;
 
 export default function AdminTournamentsPage() {
-  const [tournaments, setTournaments] = useState([]);
-  const [meta, setMeta] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sort, setSort] = useState('start_date:desc');
   const [page, setPage] = useState(1);
   const searchDebounce = useRef(null);
 
-  const fetchTournaments = useCallback((params) => {
-    setLoading(true);
-    const [sort_by, sort_dir] = (params.sort || sort).split(':');
-    const query = {
-      per_page: PER_PAGE,
-      page: params.page ?? page,
-      sort_by,
-      sort_dir,
-    };
-    const s = params.search ?? search;
-    if (s.trim()) query.search = s.trim();
-    const st = params.status ?? statusFilter;
-    if (st) query.status = st;
+  const [sort_by, sort_dir] = sort.split(':');
+  const queryParams = {
+    per_page: PER_PAGE,
+    page,
+    sort_by,
+    sort_dir,
+  };
+  if (debouncedSearch.trim()) queryParams.search = debouncedSearch.trim();
+  if (statusFilter) queryParams.status = statusFilter;
 
-    tournamentsApi.list(query)
-      .then(res => {
-        setTournaments(res.data.data || []);
-        setMeta(res.data.meta || null);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [search, statusFilter, sort, page]);
+  const { data: result, isLoading } = useGetTournamentsQuery(queryParams);
 
-  // Initial load and refetch when filters/sort/page change (except search, which is debounced)
-  useEffect(() => {
-    fetchTournaments({});
-  }, [statusFilter, sort, page]);
+  // Handle the response - could be array or { data, meta } from Laravel pagination
+  const tournaments = Array.isArray(result) ? result : (result?.data || result || []);
+  const meta = Array.isArray(result) ? null : (result?.meta || null);
 
   function handleSearch(value) {
     setSearch(value);
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
     searchDebounce.current = setTimeout(() => {
       setPage(1);
-      fetchTournaments({ search: value, page: 1 });
+      setDebouncedSearch(value);
     }, 350);
   }
 
@@ -112,7 +98,7 @@ export default function AdminTournamentsPage() {
       </div>
 
       {/* Tournament list */}
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-12 text-muted">Loading...</div>
       ) : tournaments.length > 0 ? (
         <>

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import * as tournamentsApi from '../../api/tournaments';
-import * as entriesApi from '../../api/entries';
-import * as prizeAwardsApi from '../../api/prizeAwards';
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useGetTournamentQuery, useGetTournamentDrawQuery, useGetTournamentPlayersQuery } from '../../store/api/tournamentsApi';
+import { useGetMyEntriesQuery, useRequestEntryMutation } from '../../store/api/entriesApi';
+import { useGetPrizeAwardsQuery } from '../../store/api/prizeAwardsApi';
 import { useAuth } from '../../context/AuthContext';
 import Tabs from '../../components/ui/Tabs';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -26,56 +26,31 @@ const DETAIL_TABS = [
 
 export default function TournamentDetailPage() {
   const { slug } = useParams();
-  const { isAuthenticated, user } = useAuth();
-  const [tournament, setTournament] = useState(null);
-  const [drawData, setDrawData] = useState(null);
-  const [playersData, setPlayersData] = useState(null);
+  const { isAuthenticated } = useAuth();
   const [tab, setTab] = useState('overview');
-  const [loading, setLoading] = useState(true);
-  const [awards, setAwards] = useState([]);
-  const [entryStatus, setEntryStatus] = useState(null);
   const [requesting, setRequesting] = useState(false);
 
-  useEffect(() => {
-    tournamentsApi.show(slug)
-      .then(res => {
-        const t = res.data.data ?? res.data;
-        setTournament(t);
-        return t;
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [slug]);
+  const { data: tournament, isLoading } = useGetTournamentQuery(slug);
+  const { data: drawData } = useGetTournamentDrawQuery(tournament?.id, { skip: !tournament?.id });
+  const { data: playersData } = useGetTournamentPlayersQuery(tournament?.id, { skip: !tournament?.id });
+  const { data: awards = [] } = useGetPrizeAwardsQuery(tournament?.id, { skip: !tournament?.id });
+  const { data: myEntries = [] } = useGetMyEntriesQuery(undefined, { skip: !isAuthenticated });
+  const [requestEntry] = useRequestEntryMutation();
 
-  useEffect(() => {
-    if (!tournament) return;
-    tournamentsApi.draw(tournament.id).then(res => setDrawData(res.data.data ?? res.data)).catch(() => {});
-    tournamentsApi.players(tournament.id).then(res => setPlayersData(res.data.data ?? res.data)).catch(() => {});
-    prizeAwardsApi.list(tournament.id).then(res => setAwards(res.data.data ?? res.data ?? [])).catch(() => {});
-  }, [tournament]);
+  const entryStatus = Array.isArray(myEntries)
+    ? myEntries.find(e => e.tournament_id === tournament?.id)?.status || null
+    : null;
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    entriesApi.mine()
-      .then(res => {
-        const entries = res.data.data ?? res.data;
-        const mine = Array.isArray(entries) ? entries.find(e => e.tournament_id === tournament?.id) : null;
-        setEntryStatus(mine?.status || null);
-      })
-      .catch(() => {});
-  }, [isAuthenticated, tournament]);
-
-  async function requestEntry() {
+  async function handleRequestEntry() {
     if (!tournament) return;
     setRequesting(true);
     try {
-      await entriesApi.request({ tournament_id: tournament.id });
-      setEntryStatus('pending');
+      await requestEntry({ tournament_id: tournament.id }).unwrap();
     } catch { /* ignore */ }
     setRequesting(false);
   }
 
-  if (loading) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-muted">Loading...</div>;
+  if (isLoading) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-muted">Loading...</div>;
   if (!tournament) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-muted">Tournament not found.</div>;
 
   const t = tournament;
@@ -107,7 +82,7 @@ export default function TournamentDetailPage() {
             ) : t.entry_status === 'closed' ? (
               <span className="badge bg-ink-100 text-ink-600">Entries closed</span>
             ) : (
-              <Button variant="brass" size="lg" onClick={requestEntry} disabled={requesting}>
+              <Button variant="brass" size="lg" onClick={handleRequestEntry} disabled={requesting}>
                 {requesting ? 'Requesting...' : 'Request Entry'}
               </Button>
             )}
@@ -130,7 +105,7 @@ export default function TournamentDetailPage() {
 
 function OverviewTab({ tournament: t, drawData, awards }) {
   const drawRounds = Array.isArray(drawData) ? drawData : drawData?.rounds || [];
-  const awardedGroups = groupAwards(awards.filter(a => a.status === 'awarded'));
+  const awardedGroups = groupAwards((awards || []).filter(a => a.status === 'awarded'));
   const visiblePrizes = t.prizes?.filter(p => Number(p.amount) > 0);
 
   // Build MatchResultHero data for completed tournaments
@@ -359,4 +334,3 @@ function PlayersTab({ data }) {
     </div>
   );
 }
-

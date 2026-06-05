@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import * as rankingsApi from '../../api/rankings';
+import { useGetRankingsQuery } from '../../store/api/rankingsApi';
 import EmptyState from '../../components/ui/EmptyState';
 import defaultPhoto from '../../assets/default-player.png';
 
@@ -82,17 +82,9 @@ function RankRow({ player, isFirst }) {
 }
 
 export default function RankingsPage() {
-  const [rankings, setRankings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: rankings = [], isLoading } = useGetRankingsQuery({ per_page: 100 });
   const [tierFilter, setTierFilter] = useState('');
   const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    rankingsApi.list({ per_page: 100 })
-      .then(res => setRankings(res.data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
 
   const filtered = useMemo(() => {
     // Only players with points, cap at top 64
@@ -163,7 +155,7 @@ export default function RankingsPage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-16 text-muted">Loading rankings...</div>
       ) : filtered.length > 0 ? (
         <>

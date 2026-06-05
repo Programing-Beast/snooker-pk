@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import * as entriesApi from '../../api/entries';
-import * as playersApi from '../../api/players';
+import { useGetMyEntriesQuery } from '../../store/api/entriesApi';
+import { useGetPlayerUpcomingQuery, useGetPlayerHistoryQuery } from '../../store/api/playersApi';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import EmptyState from '../../components/ui/EmptyState';
@@ -22,28 +21,17 @@ const SEEDCHIP = {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [entries, setEntries] = useState([]);
-  const [upcomingMatches, setUpcoming] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const playerId = user?.player?.id;
 
-  useEffect(() => {
-    const playerId = user?.player?.id;
-    Promise.allSettled([
-      entriesApi.mine(),
-      playerId ? playersApi.upcoming(playerId) : Promise.resolve({ data: { data: [] } }),
-      playerId ? playersApi.history(playerId) : Promise.resolve({ data: { data: [] } }),
-    ]).then(([e, u, h]) => {
-      if (e.status === 'fulfilled') setEntries(e.value.data.data ?? e.value.data ?? []);
-      if (u.status === 'fulfilled') setUpcoming(u.value.data.data ?? u.value.data ?? []);
-      if (h.status === 'fulfilled') setHistory(h.value.data.data ?? h.value.data ?? []);
-      setLoading(false);
-    });
-  }, [user]);
+  const { data: entries = [], isLoading: entriesLoading } = useGetMyEntriesQuery();
+  const { data: upcomingMatches = [] } = useGetPlayerUpcomingQuery(playerId, { skip: !playerId });
+  const { data: history = [] } = useGetPlayerHistoryQuery(playerId, { skip: !playerId });
 
   const player = user?.player;
   const seedings = entries.filter(e => e.seed && e.status === 'approved');
   const requests = entries;
+
+  const loading = entriesLoading;
 
   if (loading) {
     return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-muted">Loading...</div>;

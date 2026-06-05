@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import * as tournamentsApi from '../../api/tournaments';
-import * as playersApi from '../../api/players';
-import * as entriesApi from '../../api/entries';
+import { useGetTournamentsQuery } from '../../store/api/tournamentsApi';
+import { useGetPlayersQuery } from '../../store/api/playersApi';
+import { useGetEntriesQuery } from '../../store/api/entriesApi';
+import { useApproveEntryMutation, useRejectEntryMutation } from '../../store/api/entriesApi';
 import StatusBadge from '../../components/ui/StatusBadge';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
@@ -15,55 +15,30 @@ const STONE = {
 };
 
 export default function AdminDashboardPage() {
-  const [tournaments, setTournaments] = useState([]);
-  const [playerCount, setPlayerCount] = useState(0);
-  const [pendingEntries, setPendingEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: tournaments = [], isLoading } = useGetTournamentsQuery({ per_page: 50 });
+  const { data: playersData } = useGetPlayersQuery({ per_page: 1 });
 
-  useEffect(() => {
-    Promise.allSettled([
-      tournamentsApi.list({ per_page: 50 }),
-      playersApi.list({ per_page: 1 }),
-    ]).then(([t, p]) => {
-      if (t.status === 'fulfilled') {
-        const list = t.value.data.data || [];
-        setTournaments(list);
-        // Load pending entries for all tournaments
-        loadPendingEntries(list);
-      }
-      if (p.status === 'fulfilled') {
-        setPlayerCount(p.value.data.meta?.total || p.value.data.total || (p.value.data.data || []).length);
-      }
-      setLoading(false);
-    });
-  }, []);
+  // Find first active tournament to load its pending entries
+  const activeTournaments = tournaments.filter(t => t.status === 'live' || t.status === 'upcoming');
+  const firstActiveId = activeTournaments[0]?.id;
 
-  function loadPendingEntries(tournamentList) {
-    const live = tournamentList.filter(t => t.status === 'live' || t.status === 'upcoming');
-    if (live.length === 0) return;
-    // Load entries for first active tournament to show pending
-    const first = live[0];
-    entriesApi.list(first.id, { per_page: 50 })
-      .then(res => {
-        const all = res.data.data || [];
-        setPendingEntries(all.filter(e => e.status === 'pending'));
-      })
-      .catch(() => {});
-  }
+  const { data: entriesData = [] } = useGetEntriesQuery(
+    { tournamentId: firstActiveId, params: { per_page: 50 } },
+    { skip: !firstActiveId }
+  );
+  const [approveEntry] = useApproveEntryMutation();
+  const [rejectEntry] = useRejectEntryMutation();
 
-  async function approveEntry(entryId) {
-    try {
-      await entriesApi.approve(entryId);
-      setPendingEntries(prev => prev.filter(e => e.id !== entryId));
-    } catch { /* ignore */ }
-  }
+  const pendingEntries = Array.isArray(entriesData) ? entriesData.filter(e => e.status === 'pending') : [];
 
-  async function rejectEntry(entryId) {
-    try {
-      await entriesApi.reject(entryId);
-      setPendingEntries(prev => prev.filter(e => e.id !== entryId));
-    } catch { /* ignore */ }
-  }
+  // Player count from meta or data
+  const playerCount = (() => {
+    if (!playersData) return 0;
+    if (playersData.meta?.total) return playersData.meta.total;
+    if (playersData.total) return playersData.total;
+    if (Array.isArray(playersData)) return playersData.length;
+    return 0;
+  })();
 
   const live = tournaments.filter(t => t.status === 'live');
   const upcoming = tournaments.filter(t => t.status === 'upcoming');
@@ -100,6 +75,14 @@ export default function AdminDashboardPage() {
     },
   ];
 
+  async function handleApprove(entryId) {
+    try { await approveEntry(entryId).unwrap(); } catch { /* ignore */ }
+  }
+
+  async function handleReject(entryId) {
+    try { await rejectEntry(entryId).unwrap(); } catch { /* ignore */ }
+  }
+
   return (
     <div>
       {/* Header */}
@@ -128,13 +111,13 @@ export default function AdminDashboardPage() {
 
       {/* Main content */}
       <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6 items-start">
-        {/* Tournaments list (replaces activity feed since we have real data) */}
+        {/* Tournaments list */}
         <div className="card overflow-hidden">
           <div className="px-5 py-3.5 border-b border-divider flex items-center justify-between">
             <span className="seclabel text-felt">Tournaments</span>
             <Link to="/admin/tournaments/new" className="text-[12.5px] font-semibold text-felt">Create new →</Link>
           </div>
-          {loading ? (
+          {isLoading ? (
             <div className="p-5 text-center text-muted">Loading...</div>
           ) : tournaments.length > 0 ? (
             tournaments.slice(0, 10).map(t => (
@@ -195,14 +178,14 @@ export default function AdminDashboardPage() {
                     </div>
                     <div className="flex gap-1.5 shrink-0">
                       <button
-                        onClick={() => approveEntry(entry.id)}
+                        onClick={() => handleApprove(entry.id)}
                         className="w-8 h-8 rounded-md bg-ok-tint text-ok grid place-items-center hover:brightness-95"
                         title="Approve"
                       >
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M5 12l5 5L20 6" /></svg>
                       </button>
                       <button
-                        onClick={() => rejectEntry(entry.id)}
+                        onClick={() => handleReject(entry.id)}
                         className="w-8 h-8 rounded-md bg-bad-tint text-bad grid place-items-center hover:brightness-95"
                         title="Reject"
                       >
@@ -211,11 +194,13 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 ))}
-                <div className="px-4 py-3 bg-card-alt text-center">
-                  <Link to={`/admin/tournaments/${tournaments[0]?.id}/entries`} className="text-[12.5px] font-semibold text-felt">
-                    Open entry queue →
-                  </Link>
-                </div>
+                {firstActiveId && (
+                  <div className="px-4 py-3 bg-card-alt text-center">
+                    <Link to={`/admin/tournaments/${firstActiveId}/entries`} className="text-[12.5px] font-semibold text-felt">
+                      Open entry queue →
+                    </Link>
+                  </div>
+                )}
               </>
             ) : (
               <div className="p-5 text-center text-muted text-[13px]">No pending entries.</div>

@@ -1,35 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import * as playersApi from '../../api/players';
+import { useGetPlayersQuery, useUpdatePlayerMutation } from '../../store/api/playersApi';
 import PlayerCard from '../../components/ui/PlayerCard';
 import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
 
 export default function ManagePlayersPage() {
   const navigate = useNavigate();
-  const [players, setPlayers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  function loadPlayers() {
-    const params = { per_page: 100 };
-    if (statusFilter) params.status = statusFilter;
-    playersApi.list(params)
-      .then(res => setPlayers(res.data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }
+  const params = { per_page: 100 };
+  if (statusFilter) params.status = statusFilter;
 
-  useEffect(() => { loadPlayers(); }, [statusFilter]);
+  const { data: players = [], isLoading } = useGetPlayersQuery(params);
+  const [updatePlayer] = useUpdatePlayerMutation();
 
   async function toggleStatus(e, p) {
     e.preventDefault();
     e.stopPropagation();
     const newStatus = p.status === 'active' ? 'inactive' : 'active';
     try {
-      await playersApi.update(p.id, { status: newStatus });
-      loadPlayers();
+      await updatePlayer({ id: p.id, data: { status: newStatus } }).unwrap();
     } catch { /* ignore */ }
   }
 
@@ -73,7 +65,7 @@ export default function ManagePlayersPage() {
       </div>
 
       {/* Player grid */}
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-12 text-muted">Loading...</div>
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-2 gap-y-0">

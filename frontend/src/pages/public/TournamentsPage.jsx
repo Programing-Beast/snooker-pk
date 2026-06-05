@@ -1,22 +1,14 @@
-import { useEffect, useState } from 'react';
-import * as tournamentsApi from '../../api/tournaments';
+import { useState } from 'react';
+import { useGetTournamentsQuery } from '../../store/api/tournamentsApi';
 import TournamentCard from '../../components/ui/TournamentCard';
 import EmptyState from '../../components/ui/EmptyState';
 
 const TABS = ['all', 'upcoming', 'live', 'completed'];
 
 export default function TournamentsPage() {
-  const [tournaments, setTournaments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: tournaments = [], isLoading } = useGetTournamentsQuery({ per_page: 50 });
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    tournamentsApi.list({ per_page: 50 })
-      .then(res => setTournaments(res.data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
 
   const filtered = tournaments.filter(t => {
     if (filter !== 'all' && t.status !== filter) return false;
@@ -77,7 +69,7 @@ export default function TournamentsPage() {
 
       {/* Grid */}
       <div className="px-6 sm:px-9 py-7">
-        {loading ? (
+        {isLoading ? (
           <div className="text-center py-16 text-muted">Loading tournaments...</div>
         ) : filtered.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

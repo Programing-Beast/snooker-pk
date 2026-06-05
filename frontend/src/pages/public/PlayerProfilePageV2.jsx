@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import * as playersApi from '../../api/players';
+import { useGetPlayerQuery, useGetPlayerHistoryQuery, useGetPlayerUpcomingQuery } from '../../store/api/playersApi';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import EmptyState from '../../components/ui/EmptyState';
 import defaultPhoto from '../../assets/default-player.png';
@@ -93,25 +92,11 @@ function WinRateDonut({ winRate, wins, matchesPlayed }) {
 
 export default function PlayerProfilePageV2() {
   const { id } = useParams();
-  const [player, setPlayer] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [upcomingMatches, setUpcoming] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: player, isLoading } = useGetPlayerQuery(id);
+  const { data: history = [] } = useGetPlayerHistoryQuery(id);
+  const { data: upcomingMatches = [] } = useGetPlayerUpcomingQuery(id);
 
-  useEffect(() => {
-    Promise.allSettled([
-      playersApi.show(id),
-      playersApi.history(id),
-      playersApi.upcoming(id),
-    ]).then(([p, h, u]) => {
-      if (p.status === 'fulfilled') setPlayer(p.value.data.data ?? p.value.data);
-      if (h.status === 'fulfilled') setHistory(h.value.data.data ?? h.value.data ?? []);
-      if (u.status === 'fulfilled') setUpcoming(u.value.data.data ?? u.value.data ?? []);
-      setLoading(false);
-    });
-  }, [id]);
-
-  if (loading) {
+  if (isLoading) {
     return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-ink-400">Loading...</div>;
   }
   if (!player) {

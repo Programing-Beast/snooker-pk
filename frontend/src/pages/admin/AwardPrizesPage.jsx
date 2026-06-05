@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import * as tournamentsApi from '../../api/tournaments';
-import * as prizesApi from '../../api/prizes';
-import * as prizeAwardsApi from '../../api/prizeAwards';
+import { useGetTournamentQuery } from '../../store/api/tournamentsApi';
+import { useGetPrizesQuery } from '../../store/api/prizesApi';
+import { useGetPrizeAwardsQuery, useUpdatePrizeAwardMutation, useBulkPrizeAwardMutation, useGetEligiblePlayersQuery } from '../../store/api/prizeAwardsApi';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 import PlayerListItem from '../../components/ui/PlayerListItem';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -11,11 +11,12 @@ import EmptyState from '../../components/ui/EmptyState';
 
 export default function AwardPrizesPage() {
   const { id } = useParams();
-  const [tournament, setTournament] = useState(null);
-  const [prizes, setPrizes] = useState([]);
-  const [awards, setAwards] = useState([]);
-  const [eligible, setEligible] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: tournament, isLoading: tLoading } = useGetTournamentQuery(id);
+  const { data: prizes = [] } = useGetPrizesQuery(id);
+  const { data: awards = [] } = useGetPrizeAwardsQuery(id);
+  const { data: eligible = [] } = useGetEligiblePlayersQuery({ tournamentId: id });
+  const [updatePrizeAward] = useUpdatePrizeAwardMutation();
+  const [bulkPrizeAward] = useBulkPrizeAwardMutation();
 
   // Award form state
   const [selectedPrize, setSelectedPrize] = useState('');
@@ -23,20 +24,7 @@ export default function AwardPrizesPage() {
   const [awarding, setAwarding] = useState(false);
   const [confirming, setConfirming] = useState(null);
 
-  function loadAwards() {
-    return prizeAwardsApi.list(id).then(res => {
-      setAwards(res.data.data ?? res.data ?? []);
-    }).catch(() => {});
-  }
-
-  useEffect(() => {
-    Promise.all([
-      tournamentsApi.show(id).then(res => setTournament(res.data.data ?? res.data)).catch(() => {}),
-      prizesApi.list(id).then(res => setPrizes(res.data.data ?? res.data ?? [])).catch(() => {}),
-      loadAwards(),
-      prizeAwardsApi.eligiblePlayers(id).then(res => setEligible(res.data.data ?? res.data ?? [])).catch(() => {}),
-    ]).finally(() => setLoading(false));
-  }, [id]);
+  const loading = tLoading;
 
   function awardSortKey(a) {
     if (a.category === 'tournament_winner' || a.prize?.type === 'winner') return 0;
@@ -46,7 +34,6 @@ export default function AwardPrizesPage() {
   const sortByCategory = (a, b) => awardSortKey(a) - awardSortKey(b);
   const totalAmount = awards.reduce((sum, a) => sum + Number(a.amount || 0), 0);
 
-  // Group awards by player + prize into consolidated rows
   function groupAwards(list) {
     const map = new Map();
     for (const a of list) {
@@ -73,9 +60,6 @@ export default function AwardPrizesPage() {
   const selectedPrizeObj = prizes.find(p => String(p.id) === String(selectedPrize));
   const isMultiple = selectedPrizeObj?.multiple;
 
-  // Filter prizes available in the dropdown:
-  // - Exclude system prizes (winner/runner_up) — those are auto-awarded
-  // - Exclude non-multiple prizes that already have a pending or awarded record
   const availablePrizes = useMemo(() => {
     return prizes.filter(p => {
       if (p.type === 'winner' || p.type === 'runner_up') return false;
@@ -87,7 +71,6 @@ export default function AwardPrizesPage() {
     });
   }, [prizes, awards]);
 
-  // Total selected count across all players
   const totalSelected = useMemo(() => {
     return Object.values(playerCounts).reduce((sum, c) => sum + c, 0);
   }, [playerCounts]);
@@ -97,9 +80,8 @@ export default function AwardPrizesPage() {
     setConfirming(key);
     try {
       for (const awardId of ids) {
-        await prizeAwardsApi.update(awardId, { status: 'awarded' });
+        await updatePrizeAward({ id: awardId, data: { status: 'awarded' }, tournamentId: id }).unwrap();
       }
-      await loadAwards();
     } catch { /* ignore */ }
     setConfirming(null);
   }
@@ -108,19 +90,17 @@ export default function AwardPrizesPage() {
     if (!selectedPrize || totalSelected === 0) return;
     setAwarding(true);
     try {
-      // Build player_ids array with duplicates for multiple counts
       const playerIds = [];
       for (const [playerId, count] of Object.entries(playerCounts)) {
         for (let i = 0; i < count; i++) {
           playerIds.push(Number(playerId));
         }
       }
-      await prizeAwardsApi.bulk({
+      await bulkPrizeAward({
         tournament_id: Number(id),
         prize_id: Number(selectedPrize),
         player_ids: playerIds,
-      });
-      await loadAwards();
+      }).unwrap();
       setPlayerCounts({});
       setSelectedPrize('');
     } catch { /* ignore */ }
@@ -268,7 +248,7 @@ export default function AwardPrizesPage() {
                       </div>
                     </div>
                     <span className={`badge ${group.category === 'score_prize' ? 'bg-brass-tint text-brass-700' : group.category === 'round_elimination' ? 'bg-ok-tint text-[#0C6B3C]' : group.category === 'tournament_winner' ? 'bg-felt-50 text-felt' : group.category === 'tournament_runner_up' ? 'bg-felt-50 text-felt' : 'bg-ink-100 text-ink-600'}`}>
-                      {group.category === 'tournament_winner' ? 'winner' : group.category === 'tournament_runner_up' ? 'runner-up' : group.category === 'round_elimination' ? 'elimination' : group.category === 'score_prize' ? 'score' : group.category || 'manual'}
+                        {group.category === 'tournament_winner' ? 'winner' : group.category === 'tournament_runner_up' ? 'runner-up' : group.category === 'round_elimination' ? 'elimination' : group.category === 'score_prize' ? 'score' : group.category || 'manual'}
                     </span>
                     {group.awarded_at && (
                       <span className="text-[11px] text-muted shrink-0">

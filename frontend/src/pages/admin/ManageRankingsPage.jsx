@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import * as rankingsApi from '../../api/rankings';
+import { useGetRankingsQuery, useAdjustRankingMutation } from '../../store/api/rankingsApi';
 import Button from '../../components/ui/Button';
 import defaultPhoto from '../../assets/default-player.png';
 
@@ -19,7 +19,7 @@ function splitName(name) {
   return { first: parts.slice(0, -1).join(' '), last: parts[parts.length - 1] };
 }
 
-/* WST-style rank badge colors — tiers at 1, 8, 16, 32, 64 */
+/* WST-style rank badge colors */
 function rankBadgeBg(rank) {
   if (rank === 1) return 'bg-[#111]';
   if (rank <= 8) return 'bg-[#ff80d0]';
@@ -38,7 +38,6 @@ function RankRow({ player, onAdjust }) {
   return (
     <div className="mb-1">
       <section className={`flex ${rowH} w-full items-center rounded-lg overflow-hidden bg-card border border-border-subtle hover:shadow-e2 transition-shadow`}>
-        {/* Rank badge */}
         <div className={`${rankBadgeBg(player.rank)} shrink-0 w-10 h-full flex items-center justify-center`}>
           <span
             className="font-bold text-white text-xs tabular-nums"
@@ -47,13 +46,9 @@ function RankRow({ player, onAdjust }) {
             {player.rank}
           </span>
         </div>
-
-        {/* Photo */}
         <div className={`shrink-0 overflow-hidden ${isFirst ? 'w-[100px] h-[142%] self-end' : 'w-[70px] h-full self-start'}`}>
           <img src={photo} alt={player.name} className="w-full h-full object-cover object-top" />
         </div>
-
-        {/* Name */}
         <Link to={`/admin/players/${player.id}/edit`} className="min-w-0 flex-1 pl-2 no-underline text-heading hover:text-felt transition-colors">
           <p className="text-[11px] font-bold text-muted leading-none truncate">
             {first || '\u00A0'}
@@ -65,8 +60,6 @@ function RankRow({ player, onAdjust }) {
             {last}
           </p>
         </Link>
-
-        {/* Points + adjust button */}
         <div className="shrink-0 flex items-center gap-2 pr-3">
           <span className="text-[13px] font-bold text-body tabular-nums">
             {Number(player.ranking_points || 0).toLocaleString()}
@@ -87,8 +80,8 @@ function RankRow({ player, onAdjust }) {
   );
 }
 
-/* Adjust modal */
 function AdjustModal({ player, onClose, onSaved }) {
+  const [adjustRanking] = useAdjustRankingMutation();
   const [points, setPoints] = useState('');
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
@@ -104,10 +97,10 @@ function AdjustModal({ player, onClose, onSaved }) {
     setSaving(true);
     setError('');
     try {
-      await rankingsApi.adjust({ player_id: player.id, points: val, reason: reason.trim() });
+      await adjustRanking({ player_id: player.id, points: val, reason: reason.trim() }).unwrap();
       onSaved();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to adjust points.');
+      setError(err.data?.message || 'Failed to adjust points.');
     } finally {
       setSaving(false);
     }
@@ -157,22 +150,11 @@ function AdjustModal({ player, onClose, onSaved }) {
 }
 
 export default function ManageRankingsPage() {
-  const [rankings, setRankings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: rankings = [], isLoading } = useGetRankingsQuery({ per_page: 100 });
   const [search, setSearch] = useState('');
   const [adjustPlayer, setAdjustPlayer] = useState(null);
 
-  function loadRankings() {
-    rankingsApi.list({ per_page: 100 })
-      .then(res => setRankings(res.data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => { loadRankings(); }, []);
-
   const filtered = useMemo(() => {
-    // Only players with points, cap at top 64
     let data = rankings
       .filter(p => Number(p.ranking_points || 0) > 0)
       .slice(0, 64)
@@ -213,7 +195,7 @@ export default function ManageRankingsPage() {
         <p className="text-[13px] text-muted">Click the edit icon to adjust a player's ranking points.</p>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-12 text-muted">Loading...</div>
       ) : filtered.length > 0 ? (
         <>
@@ -234,7 +216,7 @@ export default function ManageRankingsPage() {
         <AdjustModal
           player={adjustPlayer}
           onClose={() => setAdjustPlayer(null)}
-          onSaved={() => { setAdjustPlayer(null); loadRankings(); }}
+          onSaved={() => setAdjustPlayer(null)}
         />
       )}
     </div>

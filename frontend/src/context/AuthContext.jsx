@@ -1,47 +1,42 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import * as authApi from '../api/auth';
+import { createContext, useContext, useEffect, useCallback, useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  selectUser,
+  selectToken,
+  selectAuthLoading,
+  bootstrap,
+  login as loginThunk,
+  register as registerThunk,
+  logout as logoutThunk,
+} from '../store/authSlice';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('token'));
-  const [loading, setLoading] = useState(!!localStorage.getItem('token'));
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+  const token = useSelector(selectToken);
+  const loading = useSelector(selectAuthLoading);
 
   useEffect(() => {
-    if (!token) { setLoading(false); return; }
-    authApi.getMe()
-      .then((res) => setUser(res.data.data ?? res.data))
-      .catch(() => { localStorage.removeItem('token'); setToken(null); })
-      .finally(() => setLoading(false));
-  }, [token]);
+    if (token && !user) {
+      dispatch(bootstrap());
+    }
+  }, [token, user, dispatch]);
 
   const login = useCallback(async (email, password) => {
-    const res = await authApi.login({ email, password });
-    const t = res.data.token;
-    localStorage.setItem('token', t);
-    setToken(t);
-    const me = await authApi.getMe();
-    setUser(me.data.data ?? me.data);
-    return me.data.data ?? me.data;
-  }, []);
+    const result = await dispatch(loginThunk({ email, password })).unwrap();
+    return result;
+  }, [dispatch]);
 
   const register = useCallback(async (data) => {
-    const res = await authApi.register(data);
-    const t = res.data.token;
-    localStorage.setItem('token', t);
-    setToken(t);
-    const me = await authApi.getMe();
-    setUser(me.data.data ?? me.data);
-    return me.data.data ?? me.data;
-  }, []);
+    const result = await dispatch(registerThunk(data)).unwrap();
+    return result;
+  }, [dispatch]);
 
   const logout = useCallback(async () => {
-    try { await authApi.logout(); } catch { /* ignore */ }
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-  }, []);
+    await dispatch(logoutThunk());
+  }, [dispatch]);
 
   const hasRole = useCallback((role) => {
     if (!user) return false;
@@ -49,13 +44,13 @@ export function AuthProvider({ children }) {
     return roles.includes(role);
   }, [user]);
 
-  const value = {
+  const value = useMemo(() => ({
     user, token, loading, login, register, logout, hasRole,
     isAdmin: hasRole('admin'),
     isPlayer: hasRole('player'),
     isUmpire: hasRole('umpire'),
     isAuthenticated: !!user,
-  };
+  }), [user, token, loading, login, register, logout, hasRole]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

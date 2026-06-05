@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import * as drawsApi from '../../api/draws';
-import * as entriesApi from '../../api/entries';
-import * as roundsApi from '../../api/rounds';
-import * as tournamentsApi from '../../api/tournaments';
+import { useGetTournamentQuery, useGetTournamentDrawQuery } from '../../store/api/tournamentsApi';
+import { useGetRoundsQuery, useUpdateRoundMutation } from '../../store/api/roundsApi';
+import { useGetEntriesQuery } from '../../store/api/entriesApi';
+import { useGenerateDrawMutation, useConfirmDrawMutation } from '../../store/api/drawsApi';
 import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
 import PlayerChip from '../../components/ui/PlayerChip';
@@ -34,46 +34,39 @@ function bestOfFromFrames(ftw) {
 export default function DrawGeneratePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [tournament, setTournament] = useState(null);
-  const [rounds, setRounds] = useState([]);
-  const [drawData, setDrawData] = useState([]); // full draw rounds with matches
-  const [entryCount, setEntryCount] = useState(0);
+
+  const { data: tournament } = useGetTournamentQuery(id);
+  const { data: rounds = [], refetch: refetchRounds } = useGetRoundsQuery(id);
+  const { data: drawData = [], refetch: refetchDraw } = useGetTournamentDrawQuery(id);
+  const { data: entriesData = [] } = useGetEntriesQuery({ tournamentId: id, params: { status: 'approved', per_page: 200 } });
+
+  const [updateRound] = useUpdateRoundMutation();
+  const [generateDraw] = useGenerateDrawMutation();
+  const [confirmDraw] = useConfirmDrawMutation();
+
   const [selectedRoundId, setSelectedRoundId] = useState(null);
   const [drawMode, setDrawMode] = useState('fixed');
   const [bestOf, setBestOf] = useState(7);
   const [byeMode, setByeMode] = useState('seeds');
   const [generated, setGenerated] = useState(null);
   const [generating, setGenerating] = useState(false);
-  const [confirming, setConfirming] = useState(false);
+  const [confirmingDraw, setConfirmingDraw] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Load tournament, rounds, draw data, and entry count on mount
+  const entryCount = (() => {
+    if (Array.isArray(entriesData)) return entriesData.filter(e => e.status === 'approved').length;
+    if (entriesData?.meta?.total) return entriesData.meta.total;
+    return 0;
+  })();
+
+  // Initialize selected round when rounds load
   useEffect(() => {
-    tournamentsApi.show(id).then(res => {
-      setTournament(res.data.data ?? res.data);
-    }).catch(() => {});
-
-    roundsApi.list(id).then(res => {
-      const r = res.data.data ?? res.data ?? [];
-      setRounds(r);
-      if (r.length) {
-        setSelectedRoundId(r[0].id);
-        loadRoundSettings(r[0]);
-      }
-    }).catch(() => {});
-
-    // Load full draw data (rounds with matches) to show existing matches
-    tournamentsApi.draw(id).then(res => {
-      setDrawData(res.data.data ?? res.data ?? []);
-    }).catch(() => {});
-
-    // Load approved entry count for pool size
-    entriesApi.list(id, { status: 'approved', per_page: 200 }).then(res => {
-      const entries = res.data.data ?? res.data ?? [];
-      setEntryCount(res.data.meta?.total ?? entries.length);
-    }).catch(() => {});
-  }, [id]);
+    if (rounds.length && !selectedRoundId) {
+      setSelectedRoundId(rounds[0].id);
+      loadRoundSettings(rounds[0]);
+    }
+  }, [rounds]);
 
   function loadRoundSettings(round) {
     setDrawMode(round.draw_mode || 'fixed');
@@ -88,8 +81,8 @@ export default function DrawGeneratePage() {
   const selectedRoundIdx = sortedRounds.findIndex(r => r.id === selectedRoundId);
   const prevRound = selectedRoundIdx > 0 ? sortedRounds[selectedRoundIdx - 1] : null;
 
-  // Compute pool size: first round = approved entries, later rounds = prev round match count (= winners)
-  const prevRoundDraw = prevRound ? drawData.find(r => r.id === prevRound.id) : null;
+  const drawRoundsArr = Array.isArray(drawData) ? drawData : drawData?.rounds || [];
+  const prevRoundDraw = prevRound ? drawRoundsArr.find(r => r.id === prevRound.id) : null;
   const prevRoundMatchCount = prevRoundDraw?.matches?.length || 0;
   const poolSize = isFirstRound ? entryCount : prevRoundMatchCount;
   const poolSource = isFirstRound
@@ -98,13 +91,11 @@ export default function DrawGeneratePage() {
   const byes = poolSize > 0 ? nextPow2(poolSize) - poolSize : 0;
   const matchCount = poolSize > 0 ? Math.floor(poolSize / 2) : 0;
 
-  // Load existing matches for the selected round from draw data
-  const existingRoundDraw = drawData.find(r => r.id === selectedRoundId);
+  const existingRoundDraw = drawRoundsArr.find(r => r.id === selectedRoundId);
   const existingMatches = existingRoundDraw?.matches?.filter(m => m.player1 || m.player2) || [];
   const existingByes = existingRoundDraw?.matches?.filter(m => m.is_bye) || [];
   const isAlreadyGenerated = selectedRound?.generated_at || existingMatches.length > 0;
 
-  // Show existing matches OR freshly generated ones
   const displayMatches = generated
     ? (generated.matches || [])
     : existingMatches.filter(m => !m.is_bye);
@@ -124,10 +115,7 @@ export default function DrawGeneratePage() {
     if (!selectedRoundId) return;
     setSaving(true);
     try {
-      await roundsApi.update(selectedRoundId, { [field]: value });
-      setRounds(prev => prev.map(r =>
-        r.id === selectedRoundId ? { ...r, [field]: value } : r
-      ));
+      await updateRound({ id: selectedRoundId, data: { [field]: value }, tournamentId: id }).unwrap();
     } catch { /* ignore */ }
     setSaving(false);
   }
@@ -146,7 +134,6 @@ export default function DrawGeneratePage() {
 
   async function handleGenerate() {
     if (drawMode === 'random') {
-      // Save settings then navigate to reveal page
       await persistSetting('draw_mode', 'random');
       await persistSetting('frames_to_win', framesToWin(bestOf));
       navigate(`/admin/tournaments/${id}/reveal?round=${selectedRoundId}`);
@@ -162,35 +149,26 @@ export default function DrawGeneratePage() {
       }
       const payload = { tournament_id: Number(id), mode: drawMode };
       if (selectedRoundId) payload.round_id = selectedRoundId;
-      const res = await drawsApi.generate(payload);
-      setGenerated(res.data.data ?? res.data);
-      // Refresh rounds (may have been auto-created) and draw data
-      roundsApi.list(id).then(res => {
-        const r = res.data.data ?? res.data ?? [];
-        setRounds(r);
-        if (r.length && !selectedRoundId) {
-          setSelectedRoundId(r[0].id);
-          loadRoundSettings(r[0]);
-        }
-      }).catch(() => {});
-      tournamentsApi.draw(id).then(r => setDrawData(r.data.data ?? r.data ?? [])).catch(() => {});
+      const res = await generateDraw(payload).unwrap();
+      setGenerated(res.data ?? res);
+      refetchRounds();
+      refetchDraw();
     } catch (err) {
-      const msg = err.response?.data?.message || Object.values(err.response?.data?.errors || {}).flat()[0] || 'Failed to generate draw.';
+      const msg = err.data?.message || Object.values(err.data?.errors || {}).flat()[0] || 'Failed to generate draw.';
       setError(msg);
     }
     setGenerating(false);
   }
 
   async function handleConfirm() {
-    setConfirming(true);
+    setConfirmingDraw(true);
     try {
-      await drawsApi.confirm({ tournament_id: Number(id), round_id: selectedRoundId });
+      await confirmDraw({ tournament_id: Number(id), round_id: selectedRoundId }).unwrap();
       setGenerated(null);
-      // Refresh rounds and draw data to pick up generated_at timestamp
-      roundsApi.list(id).then(res => setRounds(res.data.data ?? res.data ?? [])).catch(() => {});
-      tournamentsApi.draw(id).then(r => setDrawData(r.data.data ?? r.data ?? [])).catch(() => {});
+      refetchRounds();
+      refetchDraw();
     } catch { /* ignore */ }
-    setConfirming(false);
+    setConfirmingDraw(false);
   }
 
   function handleClear() {
@@ -222,7 +200,7 @@ export default function DrawGeneratePage() {
 
       {/* 2-column layout */}
       <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
-        {/* Left column — config cards */}
+        {/* Left column */}
         <div className="space-y-5">
           {/* Card 1: Round selector */}
           <div className="card p-5">
@@ -343,7 +321,6 @@ export default function DrawGeneratePage() {
 
             {hasMatches ? (
               <div className="card overflow-hidden">
-                {/* Dark header */}
                 <div className="dark-ctx px-5 py-3 bg-night text-white flex items-center gap-3">
                   <span className="font-display font-bold uppercase tracking-[0.1em] text-[13px]">
                     {selectedRound?.name}
@@ -356,7 +333,6 @@ export default function DrawGeneratePage() {
                   </span>
                 </div>
 
-                {/* Match rows */}
                 {displayMatches.map((m, i) => (
                   <div
                     key={m.id || m.position || i}
@@ -375,7 +351,6 @@ export default function DrawGeneratePage() {
                   </div>
                 ))}
 
-                {/* Bye rows */}
                 {displayByes.map((p, i) => {
                   const player = p.player1 || p;
                   return (
@@ -393,7 +368,7 @@ export default function DrawGeneratePage() {
                   );
                 })}
 
-                {/* Footer: published vs unpublished */}
+                {/* Footer */}
                 {selectedRound?.generated_at && !generated ? (
                   <div className="flex items-center gap-2 px-5 py-3 bg-card-alt border-t border-divider">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="text-ok shrink-0">
@@ -420,9 +395,9 @@ export default function DrawGeneratePage() {
                       size="sm"
                       className="ml-auto"
                       onClick={handleConfirm}
-                      disabled={confirming}
+                      disabled={confirmingDraw}
                     >
-                      {confirming ? 'Publishing...' : 'Publish round'}
+                      {confirmingDraw ? 'Publishing...' : 'Publish round'}
                     </Button>
                   </div>
                 ) : (
@@ -432,9 +407,9 @@ export default function DrawGeneratePage() {
                       size="sm"
                       className="ml-auto"
                       onClick={handleConfirm}
-                      disabled={confirming}
+                      disabled={confirmingDraw}
                     >
-                      {confirming ? 'Publishing...' : 'Publish round'}
+                      {confirmingDraw ? 'Publishing...' : 'Publish round'}
                     </Button>
                   </div>
                 )}
@@ -489,7 +464,6 @@ export default function DrawGeneratePage() {
               <span className="font-display font-semibold text-[13px]">Best of {bestOf}</span>
             </div>
 
-            {/* Mode badge */}
             <div className="rounded-md bg-card-alt px-3 py-2 text-[12px] text-ink-500 flex items-center gap-2">
               <span className={`badge ${drawMode === 'fixed' ? 'bg-felt text-white' : 'bg-brass-tint text-brass-700'} !text-[9px]`}>
                 {drawMode === 'fixed' ? 'Fixed' : 'Random'}
@@ -497,7 +471,6 @@ export default function DrawGeneratePage() {
               {drawMode === 'fixed' ? 'Pairs instantly on generate.' : 'Opens the live reveal screen.'}
             </div>
 
-            {/* Action button */}
             {drawMode === 'fixed' ? (
               <Button
                 className="w-full"

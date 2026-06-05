@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import * as matchesApi from '../../api/matches';
+import { useGetMatchQuery } from '../../store/api/matchesApi';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import MatchResultHero from '../../components/ui/MatchResultHero';
 import defaultPhoto from '../../assets/default-player.png';
@@ -107,7 +107,6 @@ function PlayerPhotosRow({ match }) {
 function FramesTab({ match }) {
   const m = match;
   const frames = m.frames || [];
-  const winnerId = m.winner?.id;
   const p1Id = m.player1?.id;
   const p2Id = m.player2?.id;
 
@@ -210,18 +209,10 @@ function MatchTab({ match }) {
 /* ── Main page ── */
 export default function MatchDetailPage() {
   const { id } = useParams();
-  const [match, setMatch] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: match, isLoading } = useGetMatchQuery(id);
   const [tab, setTab] = useState('frames');
 
-  useEffect(() => {
-    matchesApi.show(id)
-      .then(res => setMatch(res.data.data ?? res.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-night flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-felt border-t-transparent rounded-full animate-spin" />

@@ -1,29 +1,19 @@
-import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import * as tournamentsApi from '../../api/tournaments';
-import * as entriesApi from '../../api/entries';
-import * as roundsApi from '../../api/rounds';
+import { useGetTournamentQuery, useGetTournamentDrawQuery } from '../../store/api/tournamentsApi';
+import { useGetEntriesQuery } from '../../store/api/entriesApi';
+import { useGetRoundsQuery } from '../../store/api/roundsApi';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 import MatchResultHero from '../../components/ui/MatchResultHero';
 import StatusBadge from '../../components/ui/StatusBadge';
 
 export default function AdminTournamentPage() {
   const { id } = useParams();
-  const [tournament, setTournament] = useState(null);
-  const [entries, setEntries] = useState([]);
-  const [rounds, setRounds] = useState([]);
-  const [drawData, setDrawData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: tournament, isLoading: tLoading } = useGetTournamentQuery(id);
+  const { data: entries = [] } = useGetEntriesQuery({ tournamentId: id, params: { per_page: 200 } });
+  const { data: rounds = [] } = useGetRoundsQuery(id);
+  const { data: drawData = [] } = useGetTournamentDrawQuery(id);
 
-  useEffect(() => {
-    Promise.all([
-      tournamentsApi.show(id).then(res => setTournament(res.data.data ?? res.data)).catch(() => {}),
-      entriesApi.list(id, { per_page: 200 }).then(res => setEntries(res.data.data ?? res.data ?? [])).catch(() => {}),
-      roundsApi.list(id).then(res => setRounds(res.data.data ?? res.data ?? [])).catch(() => {}),
-      tournamentsApi.draw(id).then(res => setDrawData(res.data.data ?? res.data ?? [])).catch(() => {}),
-    ]).finally(() => setLoading(false));
-  }, [id]);
-
+  const loading = tLoading;
   const approved = entries.filter(e => e.status === 'approved');
   const pending = entries.filter(e => e.status === 'pending');
   const sortedRounds = [...rounds].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
@@ -78,7 +68,7 @@ export default function AdminTournamentPage() {
         </div>
       </div>
 
-      {/* Winner & Runner-up — match-style result */}
+      {/* Winner & Runner-up */}
       {tournament?.winner && (() => {
         const wId = tournament.winner_id ?? tournament.winner?.id;
         const finalRound = drawRounds[drawRounds.length - 1];
@@ -104,18 +94,13 @@ export default function AdminTournamentPage() {
       })()}
 
       <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6 items-start">
-        {/* Left column — Tournament info */}
+        {/* Left column */}
         <div className="space-y-6">
           {/* Info card */}
           <div className="card overflow-hidden">
             <div className="px-5 py-3.5 border-b border-divider flex items-center justify-between">
               <span className="seclabel text-felt">Tournament info</span>
-              <Link
-                to={`/admin/tournaments/${id}/edit`}
-                className="text-[12.5px] font-semibold text-felt"
-              >
-                Edit →
-              </Link>
+              <Link to={`/admin/tournaments/${id}/edit`} className="text-[12.5px] font-semibold text-felt">Edit →</Link>
             </div>
             <div className="p-5 space-y-3">
               <div className="flex items-center justify-between">
@@ -200,7 +185,7 @@ export default function AdminTournamentPage() {
           </div>
         </div>
 
-        {/* Right column — Quick actions */}
+        {/* Right column */}
         <div className="space-y-6">
           <div>
             <div className="seclabel text-felt mb-3">Quick actions</div>

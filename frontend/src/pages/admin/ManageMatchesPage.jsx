@@ -1,22 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import * as tournamentsApi from '../../api/tournaments';
-import * as matchesApi from '../../api/matches';
-import * as roundsApi from '../../api/rounds';
+import { useGetTournamentQuery, useGetTournamentDrawQuery } from '../../store/api/tournamentsApi';
+import { useUpdateMatchMutation, useWalkoverMatchMutation, useCompleteMatchMutation, useDeclareWinnerMutation } from '../../store/api/matchesApi';
 import MatchRow from '../../components/ui/MatchRow';
 import EmptyState from '../../components/ui/EmptyState';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
 import Modal, { ModalBody, ModalFooter } from '../../components/ui/Modal';
 import RoundHeader from '../../components/ui/RoundHeader';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 
 export default function ManageMatchesPage() {
   const { id } = useParams();
-  const [tournament, setTournament] = useState(null);
-  const [drawData, setDrawData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: tournament } = useGetTournamentQuery(id);
+  const { data: drawData, isLoading } = useGetTournamentDrawQuery(id);
+  const [updateMatch] = useUpdateMatchMutation();
+  const [walkoverMatch] = useWalkoverMatchMutation();
+  const [completeMatch] = useCompleteMatchMutation();
+  const [declareWinner] = useDeclareWinnerMutation();
+
   const [editMatch, setEditMatch] = useState(null);
   const [editForm, setEditForm] = useState({ scheduled_at: '', table_no: '', youtube_url: '', facebook_url: '' });
   const [saving, setSaving] = useState(false);
@@ -29,18 +31,8 @@ export default function ManageMatchesPage() {
 
   // Declare Winner modal state
   const [declareMatch, setDeclareMatch] = useState(null);
-  const [declareForm, setDeclareForm] = useState({ score1: '', score2: '' });
+  const [declareForm, setDeclareForm] = useState({ loserScore: '' });
   const [declareSaving, setDeclareSaving] = useState(false);
-
-  function loadData() {
-    tournamentsApi.draw(id).then(res => setDrawData(res.data.data ?? res.data)).catch(() => {});
-  }
-
-  useEffect(() => {
-    tournamentsApi.show(id).then(res => setTournament(res.data.data ?? res.data)).catch(() => {});
-    loadData();
-    setLoading(false);
-  }, [id]);
 
   function openEdit(match) {
     setEditMatch(match);
@@ -56,21 +48,18 @@ export default function ManageMatchesPage() {
     if (!editMatch) return;
     setSaving(true);
     try {
-      await matchesApi.update(editMatch.id, editForm);
-      loadData();
+      await updateMatch({ id: editMatch.id, data: editForm, tournamentId: id }).unwrap();
       setEditMatch(null);
     } catch { /* ignore */ }
     setSaving(false);
   }
 
   async function handleWalkover(matchId, winnerId) {
-    await matchesApi.walkover(matchId, { winner_id: winnerId });
-    loadData();
+    await walkoverMatch({ id: matchId, data: { winner_id: winnerId }, tournamentId: id }).unwrap();
   }
 
   async function handleComplete(matchId) {
-    await matchesApi.complete(matchId);
-    loadData();
+    await completeMatch(matchId).unwrap();
   }
 
   // Set Score modal helpers
@@ -114,12 +103,11 @@ export default function ManageMatchesPage() {
 
     setScoreSaving(true);
     try {
-      await matchesApi.update(scoreMatch.id, { score1: s1, score2: s2 });
-      await matchesApi.complete(scoreMatch.id);
-      loadData();
+      await updateMatch({ id: scoreMatch.id, data: { score1: s1, score2: s2 }, tournamentId: id }).unwrap();
+      await completeMatch(scoreMatch.id).unwrap();
       setScoreMatch(null);
     } catch (err) {
-      setScoreError(err.response?.data?.message || 'Failed to complete match.');
+      setScoreError(err.data?.message || 'Failed to complete match.');
     }
     setScoreSaving(false);
   }
@@ -136,16 +124,15 @@ export default function ManageMatchesPage() {
     try {
       const ftw = declareMatch.frames_to_win;
       const isP1Winner = winnerId === declareMatch.player1?.id;
-      const payload = { winner_id: winnerId };
-
-      // Auto-set scores: winner gets frames_to_win, loser gets entered score or 0
       const loserScore = parseInt(declareForm.loserScore, 10);
       const loserVal = isNaN(loserScore) || loserScore < 0 ? 0 : (ftw ? Math.min(loserScore, ftw - 1) : loserScore);
-      payload.score1 = isP1Winner ? (ftw || 0) : loserVal;
-      payload.score2 = isP1Winner ? loserVal : (ftw || 0);
+      const payload = {
+        winner_id: winnerId,
+        score1: isP1Winner ? (ftw || 0) : loserVal,
+        score2: isP1Winner ? loserVal : (ftw || 0),
+      };
 
-      await matchesApi.declareWinner(declareMatch.id, payload);
-      loadData();
+      await declareWinner({ id: declareMatch.id, data: payload, tournamentId: id }).unwrap();
       setDeclareMatch(null);
     } catch { /* ignore */ }
     setDeclareSaving(false);
@@ -160,7 +147,7 @@ export default function ManageMatchesPage() {
         <h1 className="font-display font-bold text-[1.5rem]">Manage matches</h1>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="text-center py-12 text-muted">Loading...</div>
       ) : rounds.length === 0 ? (
         <EmptyState title="No rounds or matches found" message="Generate a draw first." />

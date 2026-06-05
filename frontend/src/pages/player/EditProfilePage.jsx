@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import * as playersApi from '../../api/players';
+import { useUpdatePlayerMutation } from '../../store/api/playersApi';
 import * as playerPhonesApi from '../../api/playerPhones';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -28,6 +28,7 @@ export default function EditProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const toastRef = useRef(null);
+  const [updatePlayer] = useUpdatePlayerMutation();
   const [form, setForm] = useState({
     name: '', country_code: 'PAK', city: '', bio: '', address: '',
   });
@@ -107,12 +108,12 @@ export default function EditProfilePage() {
       Object.entries(form).forEach(([k, v]) => { if (v) data.append(k, v); });
       if (photo) data.append('photo', photo);
 
-      await playersApi.update(user.player.id, data);
+      await updatePlayer({ id: user.player.id, data }).unwrap();
       setSaved(true);
       setShowToast(true);
       toastRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (err) {
-      const d = err.response?.data;
+      const d = err.data;
       if (d?.errors) setErrors(d.errors);
       else setErrors({ general: [d?.message || 'Failed to save'] });
     } finally {
