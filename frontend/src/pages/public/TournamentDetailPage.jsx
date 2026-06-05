@@ -2,25 +2,25 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import * as tournamentsApi from '../../api/tournaments';
 import * as entriesApi from '../../api/entries';
+import * as prizeAwardsApi from '../../api/prizeAwards';
 import { useAuth } from '../../context/AuthContext';
 import Tabs from '../../components/ui/Tabs';
 import StatusBadge from '../../components/ui/StatusBadge';
 import MatchRow from '../../components/ui/MatchRow';
+import MatchResultHero from '../../components/ui/MatchResultHero';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import PlayerListItem from '../../components/ui/PlayerListItem';
 import PlayerCard from '../../components/ui/PlayerCard';
 import EmptyState from '../../components/ui/EmptyState';
 import Button from '../../components/ui/Button';
+import PageBanner from '../../components/ui/PageBanner';
 
-const STORAGE_URL = import.meta.env.VITE_STORAGE_URL || '/storage';
 
 const DETAIL_TABS = [
-  { key: 'draw', label: 'Draw' },
   { key: 'overview', label: 'Overview' },
+  { key: 'draw', label: 'Draw' },
   { key: 'players', label: 'Players' },
-  { key: 'prizes', label: 'Prizes' },
-  { key: 'info', label: 'Info' },
 ];
 
 export default function TournamentDetailPage() {
@@ -29,8 +29,9 @@ export default function TournamentDetailPage() {
   const [tournament, setTournament] = useState(null);
   const [drawData, setDrawData] = useState(null);
   const [playersData, setPlayersData] = useState(null);
-  const [tab, setTab] = useState('draw');
+  const [tab, setTab] = useState('overview');
   const [loading, setLoading] = useState(true);
+  const [awards, setAwards] = useState([]);
   const [entryStatus, setEntryStatus] = useState(null);
   const [requesting, setRequesting] = useState(false);
 
@@ -49,6 +50,7 @@ export default function TournamentDetailPage() {
     if (!tournament) return;
     tournamentsApi.draw(tournament.id).then(res => setDrawData(res.data.data ?? res.data)).catch(() => {});
     tournamentsApi.players(tournament.id).then(res => setPlayersData(res.data.data ?? res.data)).catch(() => {});
+    prizeAwardsApi.list(tournament.id).then(res => setAwards(res.data.data ?? res.data ?? [])).catch(() => {});
   }, [tournament]);
 
   useEffect(() => {
@@ -76,20 +78,12 @@ export default function TournamentDetailPage() {
   if (!tournament) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-ink-400">Tournament not found.</div>;
 
   const t = tournament;
-  const bannerUrl = t.banner_path ? `${STORAGE_URL}/${t.banner_path}` : null;
 
   return (
     <div className="max-w-[1200px] mx-auto">
       {/* Tournament header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-felt-400 to-felt-900">
-        {bannerUrl && (
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-30"
-            style={{ backgroundImage: `url(${bannerUrl})` }}
-          />
-        )}
-        <div className="absolute inset-0 felt-grain opacity-30 mix-blend-overlay" />
-        <div className="relative px-6 sm:px-9 py-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <PageBanner bannerPath={t.banner_path}>
+        <div className="px-6 sm:px-9 py-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <StatusBadge status={t.status || 'upcoming'} />
             <h1 className="font-display font-extrabold text-white text-[28px] sm:text-[34px] uppercase leading-tight mt-3">{t.name}</h1>
@@ -118,117 +112,215 @@ export default function TournamentDetailPage() {
             )}
           </div>
         </div>
-      </div>
+      </PageBanner>
 
       {/* Tabs */}
       <Tabs tabs={DETAIL_TABS} active={tab} onChange={setTab} />
 
       {/* Tab content */}
       <div className="px-6 sm:px-9 py-8">
+        {tab === 'overview' && <OverviewTab tournament={t} drawData={drawData} awards={awards} />}
         {tab === 'draw' && <DrawTab data={drawData} />}
-        {tab === 'overview' && <OverviewTab tournament={t} />}
         {tab === 'players' && <PlayersTab data={playersData} />}
-        {tab === 'prizes' && <PrizesTab prizes={t.prizes} />}
-        {tab === 'info' && <InfoTab tournament={t} />}
       </div>
     </div>
   );
 }
 
-function TournamentResult({ tournament: t }) {
-  if (!t.winner) return null;
+function OverviewTab({ tournament: t, drawData, awards }) {
+  const drawRounds = Array.isArray(drawData) ? drawData : drawData?.rounds || [];
+  const awardedGroups = groupAwards(awards.filter(a => a.status === 'awarded'));
+  const visiblePrizes = t.prizes?.filter(p => Number(p.amount) > 0);
+
+  // Build MatchResultHero data for completed tournaments
+  let heroProps = null;
+  if (t.winner) {
+    const wId = t.winner_id ?? t.winner?.id;
+    const finalRound = drawRounds[drawRounds.length - 1];
+    const finalMatch = finalRound?.matches?.find(m => String(m.winner_id) === String(wId))
+      || finalRound?.matches?.[0] || null;
+    const p1IsWinner = finalMatch && String(finalMatch.player1_id) === String(wId);
+    heroProps = {
+      player1: t.winner,
+      player2: t.runner_up,
+      p1Frames: finalMatch ? (p1IsWinner ? finalMatch.player1_frames : finalMatch.player2_frames) : null,
+      p2Frames: finalMatch ? (p1IsWinner ? finalMatch.player2_frames : finalMatch.player1_frames) : null,
+      winnerId: wId,
+      label: 'Final',
+    };
+  }
+
   return (
-    <div className="card overflow-hidden mb-6">
-      <div className="px-5 py-3 border-b border-hairline">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-felt">Tournament result</span>
-      </div>
-      <div className="p-5 grid sm:grid-cols-2 gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#FFD700]/20 flex items-center justify-center text-[13px] font-bold text-[#B8860B] shrink-0">1</div>
-          <PlayerAvatar name={t.winner.name} photo={t.winner.photo_path} tier={t.winner.tier} size="sm" />
-          <div className="min-w-0">
-            <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Winner</div>
-            <div className="flex items-center gap-1.5">
-              <CountryFlagChip code={t.winner.country_code || 'PAK'} showLabel={false} size="sm" />
-              <Link to={`/players/${t.winner.id}`} className="font-semibold text-[15px] hover:underline truncate">{t.winner.name}</Link>
-            </div>
+    <div className="space-y-8">
+      {/* Match Result Hero */}
+      {heroProps && (
+        <div className="py-4">
+          <MatchResultHero {...heroProps} dark={false} />
+        </div>
+      )}
+
+      {/* Prize Awards */}
+      {awardedGroups.length > 0 && (
+        <div>
+          <h3 className="font-display font-bold text-[1.25rem] mb-3">Prizes awarded</h3>
+          <div className="card overflow-hidden divide-y divide-hairline">
+            {awardedGroups.map(group => (
+              <div key={group.ids.join('-')} className="flex items-center gap-3 px-5 py-3.5">
+                <div className="flex-1 min-w-0">
+                  <PlayerListItem
+                    player={group.player}
+                    to={group.player?.id ? `/players/${group.player.id}` : undefined}
+                    showTier={false}
+                  />
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-[13px] font-semibold">
+                    {group.prize?.position_label || group.reason}
+                    {group.count > 1 && <span className="text-ink-400 ml-1">({group.count}x)</span>}
+                  </div>
+                  <div className="font-display font-bold text-[14px] tabular-nums">
+                    PKR {group.totalAmount.toLocaleString()}
+                  </div>
+                </div>
+                <span className={`badge ${group.category === 'score_prize' ? 'bg-brass-tint text-brass-700' : group.category === 'round_elimination' ? 'bg-ok-tint text-[#0C6B3C]' : group.category === 'tournament_winner' ? 'bg-felt-50 text-felt' : group.category === 'tournament_runner_up' ? 'bg-felt-50 text-felt' : 'bg-ink-100 text-ink-600'}`}>
+                  {group.category === 'tournament_winner' ? 'winner' : group.category === 'tournament_runner_up' ? 'runner-up' : group.category === 'round_elimination' ? 'elimination' : group.category === 'score_prize' ? 'score' : group.category || 'prize'}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
-        {t.runner_up && (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-ink-100 flex items-center justify-center text-[13px] font-bold text-ink-500 shrink-0">2</div>
-            <PlayerAvatar name={t.runner_up.name} photo={t.runner_up.photo_path} tier={t.runner_up.tier} size="sm" />
-            <div className="min-w-0">
-              <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Runner-up</div>
-              <div className="flex items-center gap-1.5">
-                <CountryFlagChip code={t.runner_up.country_code || 'PAK'} showLabel={false} size="sm" />
-                <Link to={`/players/${t.runner_up.id}`} className="font-semibold text-[15px] hover:underline truncate">{t.runner_up.name}</Link>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+      )}
 
-function OverviewTab({ tournament: t }) {
-  return (
-    <div className="grid lg:grid-cols-2 gap-8">
-      <div className="space-y-6">
-        <TournamentResult tournament={t} />
-        {t.description && (
-          <div>
-            <h3 className="font-display font-bold text-[1.25rem] mb-3">About</h3>
-            <p className="text-ink-600 text-[15px] leading-relaxed">{t.description}</p>
-          </div>
-        )}
-        {t.prizes?.filter(p => Number(p.amount) > 0).length > 0 && (
-          <div>
-            <h3 className="font-display font-bold text-[1.25rem] mb-3">Prize pool</h3>
-            <div className="card overflow-hidden divide-y divide-hairline">
-              {t.prizes.filter(p => Number(p.amount) > 0).map(p => (
-                <div key={p.id} className={`flex items-center justify-between px-4 py-3 ${p.is_highlight ? 'bg-brass-tint' : ''}`}>
-                  <span className="font-semibold text-[14px]">{p.position_label}</span>
-                  <span className="font-display font-bold tabular-nums">PKR {Number(p.amount).toLocaleString()}</span>
-                </div>
-              ))}
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Left column */}
+        <div className="space-y-6">
+          {/* About */}
+          {t.description && (
+            <div>
+              <h3 className="font-display font-bold text-[1.25rem] mb-3">About</h3>
+              <p className="text-ink-600 text-[15px] leading-relaxed">{t.description}</p>
             </div>
-          </div>
-        )}
-      </div>
-      <div className="space-y-6">
-        {t.organizers?.length > 0 && (
-          <div>
-            <h3 className="font-display font-bold text-[1.25rem] mb-3">Organizers</h3>
-            <div className="card divide-y divide-hairline">
-              {t.organizers.map(o => {
-                const player = o.user?.player;
-                const phone = player?.phones?.[0]?.phone;
-                return (
-                  <div key={o.id} className="flex items-center gap-3 px-4 py-3">
-                    <PlayerAvatar name={player?.name || o.user?.name} photo={player?.photo_path} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-[14px]">{player?.name || o.user?.name}</div>
-                      {o.role && <div className="text-[12px] text-ink-500">{o.role}</div>}
-                      {phone && <div className="text-[13px] text-ink-600 mt-0.5">{phone}</div>}
+          )}
+
+          {/* Prize pool */}
+          {visiblePrizes?.length > 0 && (
+            <div>
+              <h3 className="font-display font-bold text-[1.25rem] mb-3">Prize pool</h3>
+              <div className="card overflow-hidden divide-y divide-hairline">
+                {visiblePrizes.map(p => (
+                  <div key={p.id} className={`flex items-center justify-between px-5 py-4 ${p.is_highlight ? 'bg-brass-tint' : ''}`}>
+                    <div>
+                      <div className="font-semibold text-[15px]">{p.position_label}</div>
+                      {p.note && <div className="text-[12px] text-ink-500 mt-0.5">{p.note}</div>}
+                    </div>
+                    <div className="text-right">
+                      <div className="font-display font-bold text-[18px] tabular-nums">PKR {Number(p.amount).toLocaleString()}</div>
+                      {p.count > 1 && <div className="text-[12px] text-ink-500">&times; {p.count}</div>}
                     </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Venue */}
+          {(t.venue || t.city) && (
+            <div>
+              <h3 className="font-display font-bold text-[1.25rem] mb-3">Venue</h3>
+              <div className="card p-4 space-y-1.5 text-[14px]">
+                {t.venue && <div className="font-semibold">{t.venue}</div>}
+                {t.city && <div className="text-ink-500">{t.city}, Pakistan</div>}
+                {t.address && <div className="text-ink-500">{t.address}</div>}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right column */}
+        <div className="space-y-6">
+          {/* Schedule */}
+          {(t.start_date || t.end_date) && (
+            <div>
+              <h3 className="font-display font-bold text-[1.25rem] mb-3">Schedule</h3>
+              <div className="card p-4 space-y-2 text-[14px]">
+                {t.start_date && (
+                  <div className="flex justify-between">
+                    <span className="text-ink-500">Start</span>
+                    <span className="font-semibold">{new Date(t.start_date).toLocaleDateString('en-PK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  </div>
+                )}
+                {t.end_date && (
+                  <div className="flex justify-between">
+                    <span className="text-ink-500">End</span>
+                    <span className="font-semibold">{new Date(t.end_date).toLocaleDateString('en-PK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Tournament details */}
+          <div>
+            <h3 className="font-display font-bold text-[1.25rem] mb-3">Tournament details</h3>
+            <div className="card p-4 space-y-2 text-[14px]">
+              <div className="flex justify-between"><span className="text-ink-500">Format</span><span className="font-semibold">Knockout</span></div>
+              <div className="flex justify-between"><span className="text-ink-500">Draw size</span><span className="font-semibold">{t.max_players || '—'}</span></div>
+              <div className="flex justify-between"><span className="text-ink-500">Entry status</span><span className="font-semibold capitalize">{t.entry_status || 'Open'}</span></div>
+              {t.rounds?.length > 0 && (
+                <div className="flex justify-between"><span className="text-ink-500">Rounds</span><span className="font-semibold">{t.rounds.length}</span></div>
+              )}
             </div>
           </div>
-        )}
-        <div>
-          <h3 className="font-display font-bold text-[1.25rem] mb-3">Details</h3>
-          <div className="card p-4 space-y-2 text-[14px]">
-            <div className="flex justify-between"><span className="text-ink-500">Format</span><span className="font-semibold">Knockout</span></div>
-            <div className="flex justify-between"><span className="text-ink-500">Draw size</span><span className="font-semibold">{t.max_players || '—'}</span></div>
-          </div>
+
+          {/* Organizers / Contacts */}
+          {t.organizers?.length > 0 && (
+            <div>
+              <h3 className="font-display font-bold text-[1.25rem] mb-3">Contacts</h3>
+              <div className="card divide-y divide-hairline">
+                {t.organizers.map(o => {
+                  const player = o.user?.player;
+                  const phone = player?.phones?.[0]?.phone;
+                  return (
+                    <div key={o.id} className="flex items-center gap-3 px-4 py-3">
+                      <PlayerAvatar name={player?.name || o.user?.name} photo={player?.photo_path} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-[14px]">{player?.name || o.user?.name}</div>
+                        {o.role && <div className="text-[12px] text-ink-500">{o.role}</div>}
+                      </div>
+                      {phone && (
+                        <a href={`tel:${phone}`} className="text-[13px] text-felt font-semibold">{phone}</a>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+function groupAwards(list) {
+  const map = new Map();
+  for (const a of list) {
+    const key = `${a.player_id}-${a.prize_id || a.category}`;
+    if (map.has(key)) {
+      const g = map.get(key);
+      g.ids.push(a.id);
+      g.count += 1;
+      g.totalAmount += Number(a.amount || 0);
+    } else {
+      map.set(key, { ...a, ids: [a.id], count: 1, totalAmount: Number(a.amount || 0) });
+    }
+  }
+  const order = (a) => {
+    if (a.category === 'tournament_winner') return 0;
+    if (a.category === 'tournament_runner_up') return 1;
+    return 2;
+  };
+  return [...map.values()].sort((a, b) => order(a) - order(b));
 }
 
 function DrawTab({ data }) {
@@ -271,113 +363,3 @@ function PlayersTab({ data }) {
   );
 }
 
-function PrizesTab({ prizes }) {
-  const visible = prizes?.filter(p => Number(p.amount) > 0);
-  if (!visible?.length) {
-    return <EmptyState title="No prize breakdown" message="Prize details will be added by the organizer." />;
-  }
-  return (
-    <div className="card overflow-hidden divide-y divide-hairline max-w-lg">
-      {visible.map(p => (
-        <div key={p.id} className={`flex items-center justify-between px-5 py-4 ${p.is_highlight ? 'bg-brass-tint' : ''}`}>
-          <div>
-            <div className="font-semibold text-[15px]">{p.position_label}</div>
-            {p.note && <div className="text-[12px] text-ink-500 mt-0.5">{p.note}</div>}
-          </div>
-          <div className="text-right">
-            <div className="font-display font-bold text-[18px] tabular-nums">PKR {Number(p.amount).toLocaleString()}</div>
-            {p.count > 1 && <div className="text-[12px] text-ink-500">× {p.count}</div>}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function InfoTab({ tournament: t }) {
-  return (
-    <div className="grid lg:grid-cols-2 gap-8">
-      <div className="space-y-6">
-        {/* Venue */}
-        <div>
-          <h3 className="font-display font-bold text-[1.25rem] mb-3">Venue</h3>
-          <div className="card overflow-hidden">
-            <div className="h-40 bg-ink-200 grid place-items-center text-ink-400 text-[13px]">
-              <div className="text-center">
-                <svg className="mx-auto mb-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                  <circle cx="12" cy="9" r="2.5" />
-                </svg>
-                Map coming soon
-              </div>
-            </div>
-            <div className="p-4 space-y-1.5 text-[14px]">
-              {t.venue && <div className="font-semibold">{t.venue}</div>}
-              {t.city && <div className="text-ink-500">{t.city}, Pakistan</div>}
-              {t.address && <div className="text-ink-500">{t.address}</div>}
-            </div>
-          </div>
-        </div>
-
-        {/* Dates */}
-        <div>
-          <h3 className="font-display font-bold text-[1.25rem] mb-3">Schedule</h3>
-          <div className="card p-4 space-y-2 text-[14px]">
-            {t.start_date && (
-              <div className="flex justify-between">
-                <span className="text-ink-500">Start</span>
-                <span className="font-semibold">{new Date(t.start_date).toLocaleDateString('en-PK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
-              </div>
-            )}
-            {t.end_date && (
-              <div className="flex justify-between">
-                <span className="text-ink-500">End</span>
-                <span className="font-semibold">{new Date(t.end_date).toLocaleDateString('en-PK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        {/* Contacts */}
-        {t.organizers?.length > 0 && (
-          <div>
-            <h3 className="font-display font-bold text-[1.25rem] mb-3">Contacts</h3>
-            <div className="card divide-y divide-hairline">
-              {t.organizers.map(o => {
-                const player = o.user?.player;
-                const phone = player?.phones?.[0]?.phone;
-                return (
-                  <div key={o.id} className="flex items-center gap-3 px-4 py-3">
-                    <PlayerAvatar name={player?.name || o.user?.name} photo={player?.photo_path} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-[14px]">{player?.name || o.user?.name}</div>
-                      {o.role && <div className="text-[12px] text-ink-500">{o.role}</div>}
-                    </div>
-                    {phone && (
-                      <a href={`tel:${phone}`} className="text-[13px] text-felt font-semibold">{phone}</a>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Tournament details */}
-        <div>
-          <h3 className="font-display font-bold text-[1.25rem] mb-3">Tournament details</h3>
-          <div className="card p-4 space-y-2 text-[14px]">
-            <div className="flex justify-between"><span className="text-ink-500">Format</span><span className="font-semibold">Knockout</span></div>
-            <div className="flex justify-between"><span className="text-ink-500">Draw size</span><span className="font-semibold">{t.max_players || '—'}</span></div>
-            <div className="flex justify-between"><span className="text-ink-500">Entry status</span><span className="font-semibold capitalize">{t.entry_status || 'Open'}</span></div>
-            {t.rounds?.length > 0 && (
-              <div className="flex justify-between"><span className="text-ink-500">Rounds</span><span className="font-semibold">{t.rounds.length}</span></div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

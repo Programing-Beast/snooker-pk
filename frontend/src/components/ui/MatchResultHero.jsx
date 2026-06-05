@@ -47,8 +47,8 @@ export default function MatchResultHero({
 
   const textPrimary = dark ? 'text-white' : 'text-ink-900';
   const textMuted = 'text-ink-400';
-  const borderWin = 'border-2 border-brass shadow-[0_0_20px_rgba(194,161,77,0.3)]';
-  const borderLose = dark ? 'border-2 border-ink-700' : 'border-2 border-ink-200';
+  const photoWin = 'bg-[#F2C31A] border-2 border-[#F2C31A] shadow-[0_0_30px_rgba(242,195,26,0.4)]';
+  const photoLose = dark ? 'border-2 border-ink-700' : 'border-2 border-ink-200';
 
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 sm:gap-6">
@@ -66,8 +66,8 @@ export default function MatchResultHero({
             <CountryFlagChip code={player1?.country_code || 'PAK'} showLabel={false} size="sm" />
           </div>
         </div>
-        <div className={`shrink-0 w-24 h-32 sm:w-28 sm:h-36 rounded-xl overflow-hidden ${p1Won ? borderWin : borderLose}`}>
-          <img src={p1Photo} alt={player1?.name} className="h-full w-full object-cover object-top" />
+        <div className={`shrink-0 w-24 h-32 sm:w-28 sm:h-36 rounded-xl overflow-hidden ${p1Won ? photoWin + ' p-1' : photoLose}`}>
+          <img src={p1Photo} alt={player1?.name} className={`h-full w-full object-cover object-top ${p1Won ? 'rounded-lg' : ''}`} />
         </div>
       </div>
 
@@ -86,8 +86,8 @@ export default function MatchResultHero({
 
       {/* Player 2 — left-aligned */}
       <div className="flex items-center gap-3 sm:gap-5">
-        <div className={`shrink-0 w-24 h-32 sm:w-28 sm:h-36 rounded-xl overflow-hidden ${p2Won ? borderWin : borderLose}`}>
-          <img src={p2Photo} alt={player2?.name} className="h-full w-full object-cover object-top" />
+        <div className={`shrink-0 w-24 h-32 sm:w-28 sm:h-36 rounded-xl overflow-hidden ${p2Won ? photoWin + ' p-1' : photoLose}`}>
+          <img src={p2Photo} alt={player2?.name} className={`h-full w-full object-cover object-top ${p2Won ? 'rounded-lg' : ''}`} />
         </div>
         <div className="uppercase">
           <p className={`text-xs sm:text-sm ${textMuted} tracking-wide`}>{p2Name.first}</p>
