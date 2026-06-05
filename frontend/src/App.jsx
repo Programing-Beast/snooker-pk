@@ -12,9 +12,10 @@ import RegisterPage from './pages/auth/RegisterPage';
 import HomePage from './pages/public/HomePage';
 import TournamentsPage from './pages/public/TournamentsPage';
 import TournamentDetailPage from './pages/public/TournamentDetailPage';
-import PlayerProfilePage from './pages/public/PlayerProfilePage';
+import PlayerProfilePage from './pages/public/PlayerProfilePageV2';
 import RankingsPage from './pages/public/RankingsPage';
 import StorePage from './pages/public/StorePage';
+import MatchDetailPage from './pages/public/MatchDetailPage';
 
 // Player pages
 import DashboardPage from './pages/player/DashboardPage';
@@ -31,6 +32,7 @@ import DrawRevealPage from './pages/admin/DrawRevealPage';
 import ManageMatchesPage from './pages/admin/ManageMatchesPage';
 import AdminTournamentPage from './pages/admin/AdminTournamentPage';
 import AwardPrizesPage from './pages/admin/AwardPrizesPage';
+import ManageRankingsPage from './pages/admin/ManageRankingsPage';
 
 // Umpire
 import UmpireBoardPage from './pages/umpire/UmpireBoardPage';
@@ -54,6 +56,7 @@ export default function App() {
             <Route path="/players/:id" element={<PlayerProfilePage />} />
             <Route path="/rankings" element={<RankingsPage />} />
             <Route path="/store" element={<StorePage />} />
+            <Route path="/matches/:id" element={<MatchDetailPage />} />
           </Route>
 
           {/* Player pages (authenticated) */}
@@ -77,6 +80,7 @@ export default function App() {
                 <Route path="/admin/tournaments/:id/reveal" element={<DrawRevealPage />} />
                 <Route path="/admin/tournaments/:id/matches" element={<ManageMatchesPage />} />
                 <Route path="/admin/tournaments/:id/awards" element={<AwardPrizesPage />} />
+                <Route path="/admin/rankings" element={<ManageRankingsPage />} />
                 <Route path="/admin/players" element={<ManagePlayersPage />} />
                 <Route path="/admin/players/new" element={<PlayerFormPage />} />
                 <Route path="/admin/players/:id/edit" element={<PlayerFormPage />} />
