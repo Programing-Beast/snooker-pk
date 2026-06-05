@@ -4,6 +4,8 @@ import * as tournamentsApi from '../../api/tournaments';
 import * as rankingsApi from '../../api/rankings';
 import TournamentCard from '../../components/ui/TournamentCard';
 import RankingsRow from '../../components/ui/RankingsRow';
+import FeltHero from '../../components/ui/FeltHero';
+import StoreTeaser from '../../components/ui/StoreTeaser';
 
 export default function HomePage() {
   const [tournaments, setTournaments] = useState([]);
@@ -27,9 +29,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero */}
-      <header className="dark-ctx relative overflow-hidden bg-night felt-grain">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(800px 420px at 22% -10%, rgba(11,110,67,.55), transparent 60%)' }} />
-        <div className="relative max-w-[1200px] mx-auto px-6 sm:px-9 pt-12 pb-10 grid lg:grid-cols-2 gap-9 items-center">
+      <FeltHero gradient="800px 420px at 22% -10%, rgba(11,110,67,.55)" className="max-w-[1200px] mx-auto px-6 sm:px-9 pt-12 pb-10 grid lg:grid-cols-2 gap-9 items-center">
           <div>
             <div className="flex items-center gap-2.5 seclabel text-felt-400 mb-5">
               <span className="w-1.5 h-1.5 rounded-full bg-live pulse" /> Pakistan's home of snooker
@@ -55,8 +55,7 @@ export default function HomePage() {
               <span key={c} className="ball w-10 h-10" style={{ background: c }} />
             ))}
           </div>
-        </div>
-      </header>
+      </FeltHero>
 
       {/* Live now */}
       {live.length > 0 && (
@@ -114,37 +113,8 @@ export default function HomePage() {
         </div>
 
         {/* Store teaser */}
-        <div className="dark-ctx rounded-lg overflow-hidden relative bg-night felt-grain border border-divider flex flex-col justify-between p-7">
-          <div className="relative">
-            <span className="badge bg-brass-tint text-brass-700 mb-4"><span className="dot" />Store · coming soon</span>
-            <h2 className="font-display font-bold text-2xl text-heading leading-tight">
-              Cues, chalk & cases —<br />built for the break.
-            </h2>
-            <p className="text-body text-[14.5px] mt-3 max-w-xs">
-              The SnookerPK store launches soon with pro equipment from trusted Pakistani retailers.
-            </p>
-          </div>
-          <div className="relative flex gap-2.5 mt-6">
-            <input className="input" placeholder="Email me at launch" />
-            <button className="btn btn-brass whitespace-nowrap">Notify me</button>
-          </div>
-        </div>
+        <StoreTeaser />
       </section>
-
-      {/* Footer */}
-      <footer className="dark-ctx bg-night px-6 sm:px-9 py-8">
-        <div className="max-w-[1200px] mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <span className="font-display font-extrabold text-white uppercase tracking-tight">Snooker<span className="text-live">PK</span></span>
-            <p className="text-muted text-[12.5px] mt-1.5">Pakistan's first dedicated snooker platform.</p>
-          </div>
-          <div className="flex gap-7 text-[13px] text-body">
-            <Link to="/tournaments" className="hover:text-heading">Tournaments</Link>
-            <Link to="/rankings" className="hover:text-heading">Rankings</Link>
-            <Link to="/store" className="hover:text-heading">Store</Link>
-          </div>
-        </div>
-      </footer>
     </>
   );
 }

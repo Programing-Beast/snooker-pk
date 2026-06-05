@@ -1,4 +1,5 @@
 import ProductCard from '../../components/ui/ProductCard';
+import StoreTeaser from '../../components/ui/StoreTeaser';
 
 const PLACEHOLDER_PRODUCTS = [
   { name: 'Pro Maple Snooker Cue — 9.5mm', brand: 'Cue Masters', price: 14500 },
@@ -21,16 +22,7 @@ export default function StorePage() {
       </div>
 
       {/* Store teaser banner */}
-      <div className="dark-ctx rounded-lg bg-night felt-grain border border-divider p-7 mb-8 flex flex-col sm:flex-row items-center gap-6">
-        <div className="flex-1">
-          <h2 className="font-display font-bold text-2xl text-heading leading-tight">Cues, chalk & cases — built for the break.</h2>
-          <p className="text-body text-[14.5px] mt-2">Get notified when the SnookerPK store launches.</p>
-        </div>
-        <div className="flex gap-2.5 w-full sm:w-auto">
-          <input className="input" placeholder="your@email.com" />
-          <button className="btn btn-brass whitespace-nowrap">Notify me</button>
-        </div>
-      </div>
+      <StoreTeaser compact />
 
       {/* Placeholder products */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

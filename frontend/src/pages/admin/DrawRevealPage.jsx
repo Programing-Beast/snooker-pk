@@ -8,6 +8,7 @@ import * as entriesApi from '../../api/entries';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import Button from '../../components/ui/Button';
+import EmptyState from '../../components/ui/EmptyState';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 
 const PHASE_NOTES = {
@@ -405,7 +406,7 @@ export default function DrawRevealPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-8 text-center text-muted text-[13px]">No matches confirmed yet.</div>
+                  <EmptyState title="No matches confirmed yet" message="Confirmed matches will appear here." />
                 )}
               </div>
             </div>
@@ -430,7 +431,7 @@ export default function DrawRevealPage() {
                   <span className="text-[10px] text-muted ml-auto tabular-nums">{p.seed || '—'}</span>
                 </div>
               )) : (
-                <div className="py-6 text-center text-muted text-[13px]">Pool empty</div>
+                <EmptyState title="Pool empty" message="No players remaining in the pool." />
               )}
             </div>
           </div>

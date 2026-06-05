@@ -6,6 +6,7 @@ import * as playersApi from '../../api/players';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import EmptyState from '../../components/ui/EmptyState';
+import FeltHero from '../../components/ui/FeltHero';
 
 const REQCHIP = {
   approved: 'bg-ok-tint text-[#0C6B3C]',
@@ -51,9 +52,7 @@ export default function DashboardPage() {
   return (
     <div className="max-w-[1200px] mx-auto">
       {/* Greeting hero */}
-      <header className="dark-ctx relative overflow-hidden bg-night felt-grain on-felt">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(600px 300px at 14% -30%, rgba(11,110,67,.6), transparent 60%)' }} />
-        <div className="relative px-4 py-5 sm:px-7 sm:py-7 flex items-center gap-4">
+      <FeltHero gradient="600px 300px at 14% -30%, rgba(11,110,67,.6)" onFelt className="px-4 py-5 sm:px-7 sm:py-7 flex items-center gap-4">
           <PlayerAvatar name={user?.name} photo={player?.photo_path} tier={player?.tier} size="lg" />
           <div>
             <div className="seclabel">Welcome back</div>
@@ -74,8 +73,7 @@ export default function DashboardPage() {
             <Link to="/profile/edit" className="btn btn-onfelt">Edit profile</Link>
             <Link to="/tournaments" className="btn btn-brass">Find tournaments</Link>
           </div>
-        </div>
-      </header>
+      </FeltHero>
 
       {/* Main content */}
       <div className="px-4 py-4 sm:px-7 sm:py-7 grid sm:grid-cols-[1.4fr_1fr] gap-7 items-start">
@@ -94,7 +92,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="card p-5 text-center text-ink-500 text-[14px]">No upcoming matches.</div>
+              <EmptyState title="No upcoming matches" message="Your upcoming matches will appear here." />
             )}
           </div>
 
@@ -125,7 +123,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="card p-5 text-center text-ink-500 text-[14px]">No current seedings.</div>
+              <EmptyState title="No current seedings" message="Your seedings will appear here when assigned." />
             )}
           </div>
 

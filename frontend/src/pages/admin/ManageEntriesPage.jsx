@@ -8,6 +8,7 @@ import PlayerListItem from '../../components/ui/PlayerListItem';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import EmptyState from '../../components/ui/EmptyState';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 
 export default function ManageEntriesPage() {
@@ -143,7 +144,7 @@ export default function ManageEntriesPage() {
           )}
           <div className="max-h-72 overflow-y-auto divide-y divide-divider border border-border-subtle rounded-lg">
             {filteredPlayers.length === 0 && (
-              <div className="p-5 text-center text-muted text-[14px]">No players available.</div>
+              <EmptyState title="No players available" message="All players have already been added." />
             )}
             {filteredPlayers.map(p => (
               <label
@@ -224,7 +225,7 @@ export default function ManageEntriesPage() {
               </PlayerListItem>
             </div>
           ))}
-          {approved.length === 0 && <div className="p-5 text-center text-muted text-[14px]">No approved entries yet.</div>}
+          {approved.length === 0 && <EmptyState title="No approved entries yet" message="Approve pending entries to see them here." />}
         </div>
       </div>
 

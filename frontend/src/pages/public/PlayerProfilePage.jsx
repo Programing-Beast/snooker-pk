@@ -5,6 +5,7 @@ import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import MatchRow from '../../components/ui/MatchRow';
 import EmptyState from '../../components/ui/EmptyState';
+import FeltHero from '../../components/ui/FeltHero';
 
 const RESCHIP = {
   win: 'bg-felt text-white',
@@ -47,9 +48,7 @@ export default function PlayerProfilePage() {
   return (
     <div className="max-w-[1200px] mx-auto">
       {/* Felt header */}
-      <header className="dark-ctx relative overflow-hidden bg-night felt-grain on-felt">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(640px 320px at 16% -20%, rgba(11,110,67,.6), transparent 60%)' }} />
-        <div className="relative px-4 pt-5 pb-5 sm:px-7 sm:pt-8 sm:pb-7 flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
+      <FeltHero gradient="640px 320px at 16% -20%, rgba(11,110,67,.6)" onFelt className="px-4 pt-5 pb-5 sm:px-7 sm:pt-8 sm:pb-7 flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
           <div className="flex items-end gap-4">
             <PlayerAvatar name={player.name} photo={player.photo_path} tier={player.tier} size="xl" className="shadow-e3" />
             <div className="pb-0 sm:pb-1">
@@ -70,8 +69,7 @@ export default function PlayerProfilePage() {
               </div>
             </div>
           </div>
-        </div>
-      </header>
+      </FeltHero>
 
       {/* Body */}
       <div className="px-4 py-4 sm:px-7 sm:py-7 grid sm:grid-cols-[1.5fr_1fr] gap-7 items-start">

@@ -13,6 +13,7 @@ import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import PlayerListItem from '../../components/ui/PlayerListItem';
 import PlayerCard from '../../components/ui/PlayerCard';
 import EmptyState from '../../components/ui/EmptyState';
+import RoundHeader from '../../components/ui/RoundHeader';
 import Button from '../../components/ui/Button';
 import PageBanner from '../../components/ui/PageBanner';
 
@@ -332,11 +333,7 @@ function DrawTab({ data }) {
     <div className="space-y-6">
       {rounds.map(round => (
         <div key={round.id} className="card overflow-hidden">
-          <div className="dark-ctx px-[18px] py-3 bg-night text-white font-display font-semibold text-[12px] tracking-[0.12em] uppercase flex items-center gap-3">
-            {round.name}
-            {round.sub_label && <span className="text-muted font-medium normal-case tracking-normal">· {round.sub_label}</span>}
-            <span className="ml-auto text-muted font-medium normal-case tracking-normal">{round.matches?.length || 0} matches</span>
-          </div>
+          <RoundHeader name={round.name} subtitle={round.sub_label} detail={`${round.matches?.length || 0} matches`} />
           <div>
             {round.matches?.map((m, i) => <MatchRow key={m.id} match={m} index={i + 1} />)}
           </div>

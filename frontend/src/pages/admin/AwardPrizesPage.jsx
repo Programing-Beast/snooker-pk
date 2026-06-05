@@ -7,6 +7,7 @@ import TournamentSubNav from '../../components/admin/TournamentSubNav';
 import PlayerListItem from '../../components/ui/PlayerListItem';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
+import EmptyState from '../../components/ui/EmptyState';
 
 export default function AwardPrizesPage() {
   const { id } = useParams();
@@ -278,7 +279,7 @@ export default function AwardPrizesPage() {
                 ))}
               </div>
             ) : (
-              <div className="p-5 text-center text-muted text-[13px]">No prizes awarded yet.</div>
+              <EmptyState title="No prizes awarded yet" message="Awarded prizes will appear here." />
             )}
           </div>
         </div>

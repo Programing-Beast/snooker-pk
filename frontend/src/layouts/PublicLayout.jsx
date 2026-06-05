@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import TopNav from '../components/ui/TopNav';
+import Footer from '../components/ui/Footer';
 import MobileTabBar from '../components/ui/MobileTabBar';
 
 export default function PublicLayout() {
@@ -9,6 +10,7 @@ export default function PublicLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
+      <Footer />
       <MobileTabBar />
     </div>
   );
