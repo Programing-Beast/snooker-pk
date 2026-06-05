@@ -41,10 +41,12 @@
 - [x] TournamentCard
 - [x] StatCard (with progress bar and trend)
 - [x] ProductCard
+- [x] MatchResultHero (two-player hero with PortraitCard gold/dark portraits, frame scores)
 - [x] MatchRow (flat, bye/walkover/live/scheduled states, frame scores)
 - [x] PlayerListItem (avatar, name, city, phone, country flag)
 - [x] RankingsRow
 - [x] Modal
+- [x] PortraitCard (layered portrait with gold/dark radial gradient treatment for winner/loser)
 - [x] EmptyState (title, message, optional action)
 - [x] Tabs
 - [x] TopNav (sticky, responsive, notification bell, avatar+name for logged-in users)

@@ -1,6 +1,6 @@
 # Claude Context — SnookerPK Project
 
-Last updated: 2026-06-04
+Last updated: 2026-06-05
 
 ## Project Overview
 
@@ -90,7 +90,7 @@ AuthContext provides auth state, login/logout/register, role checks
 | Directory | Contents |
 |---|---|
 | `src/api/` | 15 API modules (Axios client + auth, players, tournaments, entries, draws, matches, etc.) |
-| `src/components/ui/` | 19 shared components (Button, Input, Select, PlayerAvatar, StatusBadge, MatchRow, TopNav, MobileTabBar, etc.) |
+| `src/components/ui/` | 21 shared components (Button, Input, Select, PlayerAvatar, StatusBadge, PortraitCard, MatchResultHero, MatchRow, TopNav, MobileTabBar, etc.) |
 | `src/context/` | AuthContext (login, logout, register, me, hasRole) |
 | `src/layouts/` | PublicLayout (TopNav + MobileTabBar), AdminLayout (sidebar) |
 | `src/pages/public/` | 6 pages (Home, Tournaments, TournamentDetail, PlayerProfile, Rankings, Store) |
@@ -135,7 +135,7 @@ php artisan serve         # runs on :8000
 
 cd /Users/haiderali/projects/snooker-pk/frontend
 npm run dev               # runs on :3000 (proxies /api + /storage to :8000)
-npm run build             # 143 modules, ~437 KB JS + ~52 KB CSS
+npm run build             # 184 modules, ~598 KB JS + ~63 KB CSS
 ```
 
 Next work: Polish remaining pages (umpire board API integration, home page live match banner, tournament form wizard review step, match management inline scoring).
