@@ -27,6 +27,8 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/players', [PlayerController::class, 'index']);
 Route::get('/players/{player}', [PlayerController::class, 'show']);
+Route::get('/players/{player}/history', [PlayerController::class, 'history']);
+Route::get('/players/{player}/upcoming', [PlayerController::class, 'upcoming']);
 
 Route::get('/tournaments', [TournamentController::class, 'index']);
 Route::get('/tournaments/{slug}', [TournamentController::class, 'show'])->where('slug', '[a-zA-Z0-9\-]+');
@@ -51,8 +53,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Player — own profile
     Route::put('/players/{player}', [PlayerController::class, 'update']);
-    Route::get('/players/{player}/history', [PlayerController::class, 'history']);
-    Route::get('/players/{player}/upcoming', [PlayerController::class, 'upcoming']);
 
     // Player phones — authenticated (admin or own player, enforced in request)
     Route::get('/players/{player}/phones', [PlayerPhoneController::class, 'index']);

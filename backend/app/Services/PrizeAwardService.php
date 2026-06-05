@@ -50,7 +50,7 @@ class PrizeAwardService
                 'amount' => $winnerPrize->amount,
                 'is_ranking' => $winnerPrize->ranking_prize,
                 'category' => PrizeAward::CATEGORY_TOURNAMENT_WINNER,
-                'status' => PrizeAward::STATUS_AWARDED,
+                'status' => PrizeAward::STATUS_PENDING,
             ]);
         }
 
@@ -63,7 +63,7 @@ class PrizeAwardService
                 'amount' => $runnerUpPrize->amount,
                 'is_ranking' => $runnerUpPrize->ranking_prize,
                 'category' => PrizeAward::CATEGORY_TOURNAMENT_RUNNER_UP,
-                'status' => PrizeAward::STATUS_AWARDED,
+                'status' => PrizeAward::STATUS_PENDING,
             ]);
         }
     }

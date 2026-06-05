@@ -1,0 +1,195 @@
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import * as tournamentsApi from '../../api/tournaments';
+import StatusBadge from '../../components/ui/StatusBadge';
+import Select from '../../components/ui/Select';
+import Button from '../../components/ui/Button';
+
+const SORT_OPTIONS = [
+  { value: 'start_date:desc', label: 'Date (newest)' },
+  { value: 'start_date:asc', label: 'Date (oldest)' },
+  { value: 'name:asc', label: 'Name (A-Z)' },
+  { value: 'name:desc', label: 'Name (Z-A)' },
+  { value: 'created_at:desc', label: 'Created (newest)' },
+  { value: 'created_at:asc', label: 'Created (oldest)' },
+];
+
+const PER_PAGE = 15;
+
+export default function AdminTournamentsPage() {
+  const [tournaments, setTournaments] = useState([]);
+  const [meta, setMeta] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [sort, setSort] = useState('start_date:desc');
+  const [page, setPage] = useState(1);
+  const searchDebounce = useRef(null);
+
+  const fetchTournaments = useCallback((params) => {
+    setLoading(true);
+    const [sort_by, sort_dir] = (params.sort || sort).split(':');
+    const query = {
+      per_page: PER_PAGE,
+      page: params.page ?? page,
+      sort_by,
+      sort_dir,
+    };
+    const s = params.search ?? search;
+    if (s.trim()) query.search = s.trim();
+    const st = params.status ?? statusFilter;
+    if (st) query.status = st;
+
+    tournamentsApi.list(query)
+      .then(res => {
+        setTournaments(res.data.data || []);
+        setMeta(res.data.meta || null);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [search, statusFilter, sort, page]);
+
+  // Initial load and refetch when filters/sort/page change (except search, which is debounced)
+  useEffect(() => {
+    fetchTournaments({});
+  }, [statusFilter, sort, page]);
+
+  function handleSearch(value) {
+    setSearch(value);
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    searchDebounce.current = setTimeout(() => {
+      setPage(1);
+      fetchTournaments({ search: value, page: 1 });
+    }, 350);
+  }
+
+  function handleStatusChange(value) {
+    setStatusFilter(value);
+    setPage(1);
+  }
+
+  function handleSortChange(value) {
+    setSort(value);
+    setPage(1);
+  }
+
+  const lastPage = meta?.last_page || 1;
+  const from = meta?.from || 0;
+  const to = meta?.to || 0;
+  const total = meta?.total || 0;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <div className="seclabel text-felt mb-1.5">Admin</div>
+          <h1 className="font-display font-bold text-[1.5rem]">Tournaments</h1>
+        </div>
+        <Link to="/admin/tournaments/new">
+          <Button>+ New tournament</Button>
+        </Link>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="relative max-w-[280px] flex-1">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
+          </svg>
+          <input className="input pl-10" placeholder="Search tournaments..." value={search} onChange={e => handleSearch(e.target.value)} />
+        </div>
+        <Select value={statusFilter} onChange={e => handleStatusChange(e.target.value)}>
+          <option value="">All statuses</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="live">Live</option>
+          <option value="completed">Completed</option>
+        </Select>
+        <Select value={sort} onChange={e => handleSortChange(e.target.value)}>
+          {SORT_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </Select>
+      </div>
+
+      {/* Tournament list */}
+      {loading ? (
+        <div className="text-center py-12 text-ink-400">Loading...</div>
+      ) : tournaments.length > 0 ? (
+        <>
+          <div className="card overflow-hidden">
+            {tournaments.map(t => (
+              <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-hairline last:border-0 hover:bg-surface2 transition">
+                <Link to={`/admin/tournaments/${t.id}`} className="min-w-0 flex-1">
+                  <div className="font-semibold text-[14px] truncate hover:text-felt transition">{t.name}</div>
+                  <div className="text-[11px] text-ink-400">
+                    {t.city || '—'}
+                    {t.start_date && <> · {new Date(t.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</>}
+                    {' '}· {t.max_players || '—'} players
+                  </div>
+                </Link>
+                <StatusBadge status={t.status || 'upcoming'} />
+                <div className="flex gap-1.5 shrink-0">
+                  <Link to={`/admin/tournaments/${t.id}/entries`} className="btn btn-ghost btn-sm text-[11px]">Entries</Link>
+                  <Link to={`/admin/tournaments/${t.id}/draw`} className="btn btn-ghost btn-sm text-[11px]">Draw</Link>
+                  <Link to={`/admin/tournaments/${t.id}/matches`} className="btn btn-ghost btn-sm text-[11px]">Matches</Link>
+                  <Link to={`/admin/tournaments/${t.id}/edit`} className="btn btn-ghost btn-sm text-[11px]">Edit</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {lastPage > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <span className="text-[12px] text-ink-400">
+                Showing {from}–{to} of {total}
+              </span>
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="btn btn-ghost btn-sm text-[12px] disabled:opacity-30"
+                >
+                  ← Prev
+                </button>
+                {Array.from({ length: lastPage }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === lastPage || Math.abs(p - page) <= 1)
+                  .reduce((acc, p, idx, arr) => {
+                    if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, idx) =>
+                    p === '...' ? (
+                      <span key={`dot-${idx}`} className="px-1 text-ink-400 text-[12px] self-center">...</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`btn btn-sm text-[12px] min-w-[32px] ${p === page ? 'btn-primary' : 'btn-ghost'}`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+                <button
+                  onClick={() => setPage(p => Math.min(lastPage, p + 1))}
+                  disabled={page >= lastPage}
+                  className="btn btn-ghost btn-sm text-[12px] disabled:opacity-30"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="py-12 text-center text-ink-400">
+          {search || statusFilter ? 'No tournaments match your search.' : (
+            <>No tournaments yet. <Link to="/admin/tournaments/new" className="text-felt font-semibold">Create one</Link></>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -48,8 +48,8 @@ export default function TournamentFormPage() {
 
   // Prizes
   const [prizes, setPrizes] = useState([
-    { position_label: 'Winner', amount: '', count: 1, is_highlight: true },
-    { position_label: 'Runner-up', amount: '', count: 1, is_highlight: false },
+    { position_label: 'Winner', amount: '', count: 1, is_highlight: true, type: 'winner', ranking_prize: true },
+    { position_label: 'Runner-up', amount: '', count: 1, is_highlight: false, type: 'runner_up', ranking_prize: true },
   ]);
 
   // Organizers
@@ -281,44 +281,77 @@ export default function TournamentFormPage() {
             const isSystem = p.type === 'winner' || p.type === 'runner_up';
             return (
               <div key={p.id || i} className={`card p-5 space-y-3 ${isSystem ? 'border-l-4 border-l-felt' : ''}`}>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-wrap">
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-400">
                     {isSystem ? (p.type === 'winner' ? 'Winner prize' : 'Runner-up prize') : `Prize ${i + 1}`}
                   </span>
-                  {!isSystem && (
-                    <button onClick={() => setPrizes(prev => prev.filter((_, j) => j !== i))} className="text-[12px] text-bad hover:text-bad/80">Remove</button>
-                  )}
+                  <div className="flex items-center gap-4 ml-auto">
+                    <label className="flex items-center gap-1.5 text-[12px] text-ink-500 cursor-pointer select-none">
+                      Ranking
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={p.ranking_prize ?? true}
+                        onClick={() => updateArray(setPrizes, i, 'ranking_prize', !(p.ranking_prize ?? true))}
+                        className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${(p.ranking_prize ?? true) ? 'bg-felt' : 'bg-ink-200'}`}
+                      >
+                        <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform mt-0.5 ${(p.ranking_prize ?? true) ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
+                      </button>
+                    </label>
+                    {!isSystem && (
+                      <label className="flex items-center gap-1.5 text-[12px] text-ink-500 cursor-pointer select-none">
+                        Multiple
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={p.multiple ?? false}
+                          onClick={() => updateArray(setPrizes, i, 'multiple', !(p.multiple ?? false))}
+                          className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${(p.multiple ?? false) ? 'bg-felt' : 'bg-ink-200'}`}
+                        >
+                          <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform mt-0.5 ${(p.multiple ?? false) ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
+                        </button>
+                      </label>
+                    )}
+                    {!isSystem && (
+                      <label className="flex items-center gap-1.5 text-[12px] text-ink-500 cursor-pointer select-none">
+                        Scoring
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={!!p.score_threshold}
+                          onClick={() => {
+                            if (p.score_threshold) {
+                              updateArray(setPrizes, i, 'score_threshold', null);
+                            } else {
+                              updateArray(setPrizes, i, 'score_threshold', 50);
+                            }
+                          }}
+                          className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${p.score_threshold ? 'bg-felt' : 'bg-ink-200'}`}
+                        >
+                          <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform mt-0.5 ${p.score_threshold ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
+                        </button>
+                      </label>
+                    )}
+                    {!isSystem && (
+                      <button onClick={() => setPrizes(prev => prev.filter((_, j) => j !== i))} className="text-[12px] text-bad hover:text-bad/80">Remove</button>
+                    )}
+                  </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-3">
                   <Input label="Label" value={p.position_label} onChange={e => updateArray(setPrizes, i, 'position_label', e.target.value)} disabled={isSystem} />
                   <Input label="Amount (PKR)" type="number" value={p.amount} onChange={e => updateArray(setPrizes, i, 'amount', e.target.value)} />
                 </div>
-                {!isSystem && (
-                  <Select label="Category" value={p.type || 'custom'} onChange={e => updateArray(setPrizes, i, 'type', e.target.value)}>
-                    <option value="custom">Custom / Other</option>
+                {!isSystem && !!p.score_threshold && (
+                  <Select
+                    label="Score threshold"
+                    value={p.score_threshold}
+                    onChange={e => updateArray(setPrizes, i, 'score_threshold', Number(e.target.value))}
+                  >
+                    <option value={50}>50+</option>
+                    <option value={70}>70+</option>
+                    <option value={100}>100+</option>
                   </Select>
                 )}
-                <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
-                  <label className="flex items-center gap-2 text-[13px] cursor-pointer">
-                    <input type="checkbox" className="accent-felt" checked={p.ranking_prize ?? true} onChange={e => updateArray(setPrizes, i, 'ranking_prize', e.target.checked)} />
-                    Counts toward ranking
-                  </label>
-                  <label className="flex items-center gap-2 text-[13px] cursor-pointer">
-                    <input type="checkbox" className="accent-felt" checked={p.multiple ?? false} onChange={e => updateArray(setPrizes, i, 'multiple', e.target.checked)} />
-                    Can be awarded multiple times
-                  </label>
-                  <label className="flex items-center gap-2 text-[13px] cursor-pointer">
-                    <input type="checkbox" className="accent-felt" checked={p.is_highlight ?? false} onChange={e => updateArray(setPrizes, i, 'is_highlight', e.target.checked)} />
-                    Highlight
-                  </label>
-                </div>
-                <Input
-                  label="Score threshold (auto-award on break ≥ this value, leave empty for manual)"
-                  type="number"
-                  value={p.score_threshold || ''}
-                  onChange={e => updateArray(setPrizes, i, 'score_threshold', e.target.value ? Number(e.target.value) : null)}
-                  placeholder="e.g. 100 for century, 50 for 50+ break"
-                />
               </div>
             );
           })}

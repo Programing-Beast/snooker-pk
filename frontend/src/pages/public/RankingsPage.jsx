@@ -1,33 +1,89 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import * as rankingsApi from '../../api/rankings';
-import PlayerAvatar from '../../components/ui/PlayerAvatar';
-import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import EmptyState from '../../components/ui/EmptyState';
+import defaultPhoto from '../../assets/default-player.png';
 
-function FormPills({ form }) {
-  if (!form?.length) return null;
+const STORAGE_URL = import.meta.env.VITE_STORAGE_URL || '/storage';
+
+function resolvePhoto(photo) {
+  if (!photo) return defaultPhoto;
+  if (photo.startsWith('http') || photo.startsWith('/')) return photo;
+  return `${STORAGE_URL}/${photo}`;
+}
+
+function splitName(name) {
+  if (!name) return { first: '', last: 'TBD' };
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return { first: '', last: parts[0] };
+  return { first: parts.slice(0, -1).join(' '), last: parts[parts.length - 1] };
+}
+
+/* WST-style rank badge colors — tiers at 1, 8, 16, 32, 64 */
+function rankBadgeBg(rank) {
+  if (rank === 1) return 'bg-[#111]';
+  if (rank <= 8) return 'bg-[#ff80d0]';
+  if (rank <= 16) return 'bg-[#3F51FF]';
+  if (rank <= 32) return 'bg-[#9B553D]';
+  if (rank <= 64) return 'bg-[#5C6B5C]';
+  return 'bg-ink-500';
+}
+
+function RankRow({ player, isFirst }) {
+  const { first, last } = splitName(player.name);
+  const photo = resolvePhoto(player.photo_path);
+  const rowH = isFirst ? 'h-[80px]' : 'h-[56px]';
+
   return (
-    <div className="flex gap-1">
-      {form.map((f, i) => (
-        <span
-          key={i}
-          className={`w-5 h-5 rounded-[5px] grid place-items-center text-[10px] font-display font-bold ${
-            f === 'W' ? 'bg-ok-tint text-[#0C6B3C]' : 'bg-bad-tint text-[#9A2820]'
-          }`}
-        >
-          {f}
+    <Link
+      to={`/players/${player.id}`}
+      className="block mb-1 no-underline text-ink-900"
+    >
+      <section className={`flex ${rowH} w-full items-center rounded-lg overflow-hidden bg-white border border-hairline hover:shadow-e2 transition-shadow`}>
+        {/* Rank badge — full-height left strip */}
+        <div className={`${rankBadgeBg(player.rank)} shrink-0 w-10 h-full flex items-center justify-center`}>
+          <span
+            className="font-bold text-white text-xs tabular-nums"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {player.rank}
+          </span>
+        </div>
+
+        {/* Player photo */}
+        <div className={`shrink-0 overflow-hidden ${isFirst ? 'w-[100px] h-[142%] self-end' : 'w-[70px] h-full self-start'}`}>
+          <img
+            src={photo}
+            alt={player.name}
+            className="w-full h-full object-cover object-top"
+          />
+        </div>
+
+        {/* Name */}
+        <div className="min-w-0 flex-1 pl-2">
+          <p className="text-[11px] font-bold text-ink-400 leading-none truncate">
+            {first || '\u00A0'}
+          </p>
+          <p
+            className="text-sm font-bold tracking-wide uppercase leading-snug truncate"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {last}
+          </p>
+        </div>
+
+        {/* Points */}
+        <span className="shrink-0 pr-4 text-[13px] font-bold text-ink-800 tabular-nums">
+          {Number(player.ranking_points || 0).toLocaleString()}
         </span>
-      ))}
-    </div>
+      </section>
+    </Link>
   );
 }
 
 export default function RankingsPage() {
   const [rankings, setRankings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortKey, setSortKey] = useState('rank');
-  const [sortDir, setSortDir] = useState(1);
   const [tierFilter, setTierFilter] = useState('');
   const [search, setSearch] = useState('');
 
@@ -38,22 +94,12 @@ export default function RankingsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  function handleSort(key) {
-    if (sortKey === key) {
-      setSortDir(d => d * -1);
-    } else {
-      setSortKey(key);
-      setSortDir(key === 'rank' ? 1 : -1);
-    }
-  }
-
-  function arrow(key) {
-    if (sortKey === key) return <span className="text-felt">{sortDir > 0 ? '▲' : '▼'}</span>;
-    return <span className="text-ink-300">↕</span>;
-  }
-
   const filtered = useMemo(() => {
-    let data = rankings.map((p, i) => ({ ...p, rank: i + 1 }));
+    // Only players with points, cap at top 64
+    let data = rankings
+      .filter(p => Number(p.ranking_points || 0) > 0)
+      .slice(0, 64)
+      .map((p, i) => ({ ...p, rank: i + 1 }));
 
     if (tierFilter) {
       data = data.filter(p => {
@@ -74,45 +120,28 @@ export default function RankingsPage() {
     return data;
   }, [rankings, tierFilter, search]);
 
-  const sorted = useMemo(() => {
-    return [...filtered].sort((a, b) => {
-      let va, vb;
-      switch (sortKey) {
-        case 'name':
-          return (a.name || '').localeCompare(b.name || '') * sortDir;
-        case 'played':
-          va = a.matches_played || 0;
-          vb = b.matches_played || 0;
-          return (va - vb) * sortDir;
-        case 'points':
-          va = Number(a.ranking_points || 0);
-          vb = Number(b.ranking_points || 0);
-          return (va - vb) * sortDir;
-        case 'form':
-          va = (a.recent_form || []).filter(f => f === 'W').length;
-          vb = (b.recent_form || []).filter(f => f === 'W').length;
-          return (va - vb) * sortDir;
-        default: // rank
-          return (a.rank - b.rank) * sortDir;
-      }
-    });
-  }, [filtered, sortKey, sortDir]);
-
-  const isDefaultSort = sortKey === 'rank' && sortDir === 1;
+  // Split into 3 columns for desktop
+  const colSize = Math.ceil(filtered.length / 3);
+  const col1 = filtered.slice(0, colSize);
+  const col2 = filtered.slice(colSize, colSize * 2);
+  const col3 = filtered.slice(colSize * 2);
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-8">
       {/* Header */}
-      <div className="flex items-end justify-between mb-5">
-        <div>
-          <div className="seclabel text-felt mb-1.5">Leaderboard</div>
-          <h1 className="font-display font-extrabold uppercase text-[2.125rem] leading-none">National Rankings</h1>
-          <p className="text-ink-500 text-[14px] mt-2">Official SnookerPK national player rankings.</p>
-        </div>
+      <div className="text-center mb-6">
+        <div className="seclabel text-felt mb-1.5">Leaderboard</div>
+        <h1
+          className="font-extrabold uppercase text-[2rem] leading-none tracking-tight"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          National Rankings
+        </h1>
+        <p className="text-ink-500 text-[14px] mt-2">Official SnookerPK national player rankings.</p>
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-2.5 mb-5">
+      <div className="flex flex-wrap items-center justify-center gap-2.5 mb-8">
         <select className="input w-auto" defaultValue="">
           <option value="">2025–26 Season</option>
         </select>
@@ -121,7 +150,7 @@ export default function RankingsPage() {
           <option value="pro">Pro only</option>
           <option value="amateur">Amateur only</option>
         </select>
-        <div className="relative ml-auto w-64 hidden sm:block">
+        <div className="relative w-64">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
           </svg>
@@ -136,74 +165,20 @@ export default function RankingsPage() {
 
       {loading ? (
         <div className="text-center py-16 text-ink-400">Loading rankings...</div>
-      ) : sorted.length > 0 ? (
-        <div className="card overflow-hidden">
-          {/* Sortable table */}
-          <table className="w-full text-[14px]">
-            <thead>
-              <tr className="bg-surface2 text-left">
-                <th className="px-5 py-3 cursor-pointer select-none seclabel text-ink-500 !text-[10px] w-16" onClick={() => handleSort('rank')}>
-                  Rank {arrow('rank')}
-                </th>
-                <th className="px-5 py-3 cursor-pointer select-none seclabel text-ink-500 !text-[10px]" onClick={() => handleSort('name')}>
-                  Player {arrow('name')}
-                </th>
-                <th className="px-5 py-3 cursor-pointer select-none seclabel text-ink-500 !text-[10px] text-right hidden sm:table-cell" onClick={() => handleSort('played')}>
-                  Played {arrow('played')}
-                </th>
-                <th className="px-5 py-3 cursor-pointer select-none seclabel text-ink-500 !text-[10px] text-right" onClick={() => handleSort('points')}>
-                  Points {arrow('points')}
-                </th>
-                <th className="px-5 py-3 cursor-pointer select-none seclabel text-ink-500 !text-[10px] text-right w-40 hidden md:table-cell" onClick={() => handleSort('form')}>
-                  Recent form {arrow('form')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map(p => {
-                const isTop3 = isDefaultSort && p.rank <= 3;
-                const isPro = (p.tier || '').toLowerCase() === 'pro' || (p.tier || '').toLowerCase() === 'professional';
-                return (
-                  <tr
-                    key={p.id}
-                    className={`border-b border-hairline last:border-0 hover:bg-surface2 transition ${isTop3 ? 'bg-brass-tint/30' : ''}`}
-                  >
-                    <td className="px-5 py-3">
-                      <span className={`font-display font-extrabold tabular-nums ${
-                        p.rank === 1 ? 'text-brass-700' : p.rank <= 3 ? 'text-felt' : 'text-ink-500'
-                      }`}>
-                        {p.rank}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3">
-                      <Link to={`/players/${p.id}`} className="flex items-center gap-2.5">
-                        <PlayerAvatar name={p.name} photo={p.photo_path} tier={p.tier} size="sm" />
-                        <CountryFlagChip code={p.country_code || 'PAK'} showLabel={false} size="sm" />
-                        <span className="font-bold">{p.name}</span>
-                        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${isPro ? 'bg-felt text-white' : 'bg-ink-100 text-ink-600'}`}>
-                          {isPro ? 'Pro' : 'Am'}
-                        </span>
-                      </Link>
-                    </td>
-                    <td className="px-5 py-3 text-right tabular-nums text-ink-600 hidden sm:table-cell">
-                      {p.matches_played || '—'}
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <span className="font-display font-bold tabular-nums text-[15px]">
-                        {Number(p.ranking_points || 0).toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 hidden md:table-cell">
-                      <div className="flex justify-end">
-                        <FormPills form={p.recent_form} />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+      ) : filtered.length > 0 ? (
+        <>
+          {/* Mobile: single column */}
+          <div className="lg:hidden">
+            {filtered.map((p, i) => <RankRow key={p.id} player={p} isFirst={i === 0} />)}
+          </div>
+
+          {/* Desktop: 3-column grid */}
+          <div className="hidden lg:grid lg:grid-cols-3 gap-x-4">
+            <div>{col1.map((p, i) => <RankRow key={p.id} player={p} isFirst={i === 0} />)}</div>
+            <div>{col2.map(p => <RankRow key={p.id} player={p} />)}</div>
+            <div>{col3.map(p => <RankRow key={p.id} player={p} />)}</div>
+          </div>
+        </>
       ) : (
         <EmptyState title="No rankings yet" message="Rankings will be populated once tournaments conclude." />
       )}

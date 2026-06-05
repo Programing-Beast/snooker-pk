@@ -9,6 +9,7 @@ import MatchRow from '../../components/ui/MatchRow';
 import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import PlayerListItem from '../../components/ui/PlayerListItem';
+import PlayerCard from '../../components/ui/PlayerCard';
 import EmptyState from '../../components/ui/EmptyState';
 import Button from '../../components/ui/Button';
 
@@ -258,15 +259,13 @@ function PlayersTab({ data }) {
     return <EmptyState title="No players yet" message="Players will appear here once entries are approved." />;
   }
   return (
-    <div className="card overflow-hidden divide-y divide-hairline">
-      {data.map((entry, i) => (
-        <div key={entry.id} className="px-4 py-3">
-          <PlayerListItem player={entry.player} index={i + 1} to={entry.player?.id ? `/players/${entry.player.id}` : undefined}>
-            {entry.seed && (
-              <span className="badge bg-brass-tint text-brass-700">Seed {entry.seed}</span>
-            )}
-          </PlayerListItem>
-        </div>
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-2 gap-y-0">
+      {data.map((entry) => (
+        <PlayerCard
+          key={entry.id}
+          player={entry.player}
+          seed={entry.seed}
+        />
       ))}
     </div>
   );

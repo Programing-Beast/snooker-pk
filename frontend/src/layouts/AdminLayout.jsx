@@ -3,8 +3,9 @@ import { useAuth } from '../context/AuthContext';
 
 const NAV = [
   { to: '/admin', label: 'Dashboard', icon: 'M3 11l9-8 9 8M5 10v10h14V10' },
-  { to: '/admin/tournaments/new', label: 'New Tournament', icon: 'M12 5v14M5 12h14' },
+  { to: '/admin/tournaments', label: 'Tournaments', icon: 'M3 4h18M3 10h18M3 16h18' },
   { to: '/admin/players', label: 'Players', icon: 'M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2M12 3a4 4 0 110 8 4 4 0 010-8zM17 11h6' },
+  { to: '/admin/rankings', label: 'Rankings', icon: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' },
 ];
 
 export default function AdminLayout() {

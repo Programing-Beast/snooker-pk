@@ -4,9 +4,8 @@ import * as tournamentsApi from '../../api/tournaments';
 import * as entriesApi from '../../api/entries';
 import * as roundsApi from '../../api/rounds';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
+import MatchResultHero from '../../components/ui/MatchResultHero';
 import StatusBadge from '../../components/ui/StatusBadge';
-import PlayerAvatar from '../../components/ui/PlayerAvatar';
-import CountryFlagChip from '../../components/ui/CountryFlagChip';
 
 export default function AdminTournamentPage() {
   const { id } = useParams();
@@ -79,40 +78,30 @@ export default function AdminTournamentPage() {
         </div>
       </div>
 
-      {/* Winner & Runner-up */}
-      {tournament?.winner && (
-        <div className="card overflow-hidden mb-6">
-          <div className="px-5 py-3.5 border-b border-hairline">
-            <span className="seclabel text-felt">Tournament result</span>
+      {/* Winner & Runner-up — match-style result */}
+      {tournament?.winner && (() => {
+        const wId = tournament.winner_id ?? tournament.winner?.id;
+        const finalRound = drawRounds[drawRounds.length - 1];
+        const finalMatch = finalRound?.matches?.find(m => String(m.winner_id) === String(wId))
+          || finalRound?.matches?.[0] || null;
+        const p1IsWinner = finalMatch && String(finalMatch.player1_id) === String(wId);
+        const winnerFrames = finalMatch ? (p1IsWinner ? finalMatch.player1_frames : finalMatch.player2_frames) : null;
+        const runnerFrames = finalMatch ? (p1IsWinner ? finalMatch.player2_frames : finalMatch.player1_frames) : null;
+
+        return (
+          <div className="mb-6 py-4">
+            <MatchResultHero
+              player1={tournament.winner}
+              player2={tournament.runner_up}
+              p1Frames={winnerFrames}
+              p2Frames={runnerFrames}
+              winnerId={wId}
+              label="Final"
+              dark={false}
+            />
           </div>
-          <div className="p-5 grid sm:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#FFD700]/20 flex items-center justify-center text-[13px] font-bold text-[#B8860B] shrink-0">1</div>
-              <PlayerAvatar name={tournament.winner.name} photo={tournament.winner.photo_path} tier={tournament.winner.tier} size="sm" />
-              <div className="min-w-0">
-                <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Winner</div>
-                <div className="flex items-center gap-1.5">
-                  <CountryFlagChip code={tournament.winner.country_code || 'PAK'} showLabel={false} size="sm" />
-                  <Link to={`/players/${tournament.winner.id}`} className="font-semibold text-[14px] hover:underline truncate">{tournament.winner.name}</Link>
-                </div>
-              </div>
-            </div>
-            {tournament?.runner_up && (
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-ink-100 flex items-center justify-center text-[13px] font-bold text-ink-500 shrink-0">2</div>
-                <PlayerAvatar name={tournament.runner_up.name} photo={tournament.runner_up.photo_path} tier={tournament.runner_up.tier} size="sm" />
-                <div className="min-w-0">
-                  <div className="text-[11px] text-ink-400 uppercase tracking-wide font-semibold">Runner-up</div>
-                  <div className="flex items-center gap-1.5">
-                    <CountryFlagChip code={tournament.runner_up.country_code || 'PAK'} showLabel={false} size="sm" />
-                    <Link to={`/players/${tournament.runner_up.id}`} className="font-semibold text-[14px] hover:underline truncate">{tournament.runner_up.name}</Link>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6 items-start">
         {/* Left column — Tournament info */}

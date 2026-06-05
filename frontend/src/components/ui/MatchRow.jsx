@@ -57,11 +57,11 @@ function MatchInfo({ index, date, tableNo }) {
   );
 }
 
-function ActionIcons({ onEdit }) {
+function ActionIcons({ matchId, onEdit, navigate }) {
   return (
     <div className="shrink-0 hidden md:flex items-center gap-1.5">
       {/* Match Centre */}
-      <button className="w-8 h-8 rounded-full bg-felt text-white grid place-items-center hover:bg-felt-700 transition" title="Match Centre">
+      <button className="w-8 h-8 rounded-full bg-felt text-white grid place-items-center hover:bg-felt-700 transition" title="Match Centre" onClick={(e) => { e.stopPropagation(); navigate('/matches/' + matchId); }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
           <path fillRule="evenodd" clipRule="evenodd" d="M14.33 2.38c-1.04-1.84-3.62-1.84-4.66 0L.36 18.88C-.67 20.71.62 23 2.69 23h18.62c2.07 0 3.36-2.29 2.33-4.13L14.33 2.38ZM14.75 6.75a2.75 2.75 0 11-5.5 0 2.75 2.75 0 015.5 0ZM8.75 15.5a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5ZM5.25 21.5a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5Zm6.5 0a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5Zm9.25-2.75a2.75 2.75 0 11-5.5 0 2.75 2.75 0 015.5 0Zm-3-3.25a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5Z" />
         </svg>
@@ -132,7 +132,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
           <span className="badge bg-ink-100 text-ink-500 tracking-[0.1em] text-[10px] uppercase shrink-0">Bye</span>
           <div className="w-16 shrink-0" />
         </div>
-        <ActionIcons onEdit={onEdit} />
+        <ActionIcons matchId={m.id} onEdit={onEdit} navigate={navigate} />
       </div>
     );
   }
@@ -168,7 +168,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
             </div>
           </div>
         </div>
-        <ActionIcons onEdit={onEdit} />
+        <ActionIcons matchId={m.id} onEdit={onEdit} navigate={navigate} />
       </div>
     );
   }
@@ -228,7 +228,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
         {isLive && <StatusBadge status="live" pulse>Live</StatusBadge>}
 
         {/* Right — action icons */}
-        <ActionIcons onEdit={onEdit} />
+        <ActionIcons matchId={m.id} onEdit={onEdit} navigate={navigate} />
       </div>
 
       {/* Admin actions (below match row, no grey background) */}

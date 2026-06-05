@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Match_;
 use App\Models\Player;
+use App\Models\Tournament;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -62,8 +63,13 @@ class PlayerService
         $player->setAttribute('matches_played', $total);
         $player->setAttribute('wins', $wins);
         $player->setAttribute('win_rate', $total > 0 ? round($wins / $total * 100) : null);
-        $player->setAttribute('titles_count', null);
-        $player->setAttribute('high_break', null);
+        $titlesCount = Tournament::where('winner_id', $player->id)->count();
+        $player->setAttribute('titles_count', $titlesCount);
+
+        $highBreak = \App\Models\Break_::where('player_id', $player->id)
+            ->where('is_foul_turn', false)
+            ->max('points');
+        $player->setAttribute('high_break', $highBreak);
 
         return $player;
     }

@@ -32,6 +32,7 @@ import DrawRevealPage from './pages/admin/DrawRevealPage';
 import ManageMatchesPage from './pages/admin/ManageMatchesPage';
 import AdminTournamentPage from './pages/admin/AdminTournamentPage';
 import AwardPrizesPage from './pages/admin/AwardPrizesPage';
+import AdminTournamentsPage from './pages/admin/AdminTournamentsPage';
 import ManageRankingsPage from './pages/admin/ManageRankingsPage';
 
 // Umpire
@@ -72,6 +73,7 @@ export default function App() {
             <Route element={<RoleRoute role="admin" />}>
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/tournaments" element={<AdminTournamentsPage />} />
                 <Route path="/admin/tournaments/new" element={<TournamentFormPage />} />
                 <Route path="/admin/tournaments/:id/edit" element={<TournamentFormPage />} />
                 <Route path="/admin/tournaments/:id" element={<AdminTournamentPage />} />
