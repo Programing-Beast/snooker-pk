@@ -332,10 +332,10 @@ function DrawTab({ data }) {
     <div className="space-y-6">
       {rounds.map(round => (
         <div key={round.id} className="card overflow-hidden">
-          <div className="px-[18px] py-3 bg-night text-white font-display font-semibold text-[12px] tracking-[0.12em] uppercase flex items-center gap-3">
+          <div className="dark-ctx px-[18px] py-3 bg-night text-white font-display font-semibold text-[12px] tracking-[0.12em] uppercase flex items-center gap-3">
             {round.name}
-            {round.sub_label && <span className="text-ink-400 font-medium normal-case tracking-normal">· {round.sub_label}</span>}
-            <span className="ml-auto text-ink-400 font-medium normal-case tracking-normal">{round.matches?.length || 0} matches</span>
+            {round.sub_label && <span className="text-muted font-medium normal-case tracking-normal">· {round.sub_label}</span>}
+            <span className="ml-auto text-muted font-medium normal-case tracking-normal">{round.matches?.length || 0} matches</span>
           </div>
           <div>
             {round.matches?.map((m, i) => <MatchRow key={m.id} match={m} index={i + 1} />)}

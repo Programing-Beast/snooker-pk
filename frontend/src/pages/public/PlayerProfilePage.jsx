@@ -47,7 +47,7 @@ export default function PlayerProfilePage() {
   return (
     <div className="max-w-[1200px] mx-auto">
       {/* Felt header */}
-      <header className="relative overflow-hidden bg-night felt-grain on-felt">
+      <header className="dark-ctx relative overflow-hidden bg-night felt-grain on-felt">
         <div className="absolute inset-0" style={{ background: 'radial-gradient(640px 320px at 16% -20%, rgba(11,110,67,.6), transparent 60%)' }} />
         <div className="relative px-4 pt-5 pb-5 sm:px-7 sm:pt-8 sm:pb-7 flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
           <div className="flex items-end gap-4">
@@ -61,10 +61,10 @@ export default function PlayerProfilePage() {
                   <span className="badge bg-brass-tint text-brass-700">Rank #{player.ranking_position}</span>
                 )}
               </div>
-              <h1 className="font-display font-extrabold uppercase text-white leading-none tracking-tight text-[24px] sm:text-[38px]">
+              <h1 className="font-display font-extrabold uppercase text-heading leading-none tracking-tight text-[24px] sm:text-[38px]">
                 {player.name}
               </h1>
-              <div className="flex items-center gap-2 mt-2 text-ink-300 text-[13px]">
+              <div className="flex items-center gap-2 mt-2 text-body text-[13px]">
                 <CountryFlagChip code={player.country_code || 'PAK'} showLabel={false} />
                 <span>{player.city || 'Pakistan'}, {player.country_code || 'PAK'}</span>
               </div>

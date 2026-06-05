@@ -129,7 +129,7 @@ export default function PlayerProfilePageV2() {
     <div>
       {/* ─── Section 1: Hero Banner ─── */}
       <section
-        className="bg-night relative overflow-hidden"
+        className="dark-ctx bg-night relative overflow-hidden"
         style={{ backgroundImage: `url(${playerHeroBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-12 sm:py-16 flex justify-center relative z-10">
@@ -417,15 +417,15 @@ export default function PlayerProfilePageV2() {
       })()}
 
       {/* ─── Section 8: Bio ─── */}
-      <section className="bg-night">
+      <section className="dark-ctx bg-night">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 sm:py-12">
           <h2
-            className="text-2xl sm:text-3xl font-extrabold uppercase text-white mb-6"
+            className="text-2xl sm:text-3xl font-extrabold uppercase text-heading mb-6"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             Bio
           </h2>
-          <p className="text-ink-300 leading-relaxed">
+          <p className="text-body leading-relaxed">
             {player.bio || 'No bio available.'}
           </p>
         </div>

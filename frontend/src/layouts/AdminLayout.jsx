@@ -14,8 +14,8 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-page flex">
       {/* Sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 bg-night border-r border-hairline-d shrink-0">
-        <div className="px-5 h-16 flex items-center border-b border-hairline-d">
+      <aside className="dark-ctx hidden lg:flex flex-col w-60 bg-night border-r border-divider shrink-0">
+        <div className="px-5 h-16 flex items-center border-b border-divider">
           <span className="font-display font-extrabold text-white uppercase tracking-tight">
             Snooker<span className="text-live">PK</span>
           </span>
@@ -29,7 +29,7 @@ export default function AdminLayout() {
               end={item.to === '/admin'}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] font-medium transition ${
-                  isActive ? 'bg-white/10 text-white' : 'text-ink-400 hover:text-white hover:bg-white/5'
+                  isActive ? 'bg-interactive text-heading' : 'text-muted hover:text-heading hover:bg-interactive'
                 }`
               }
             >
@@ -40,27 +40,27 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="px-4 py-4 border-t border-hairline-d">
+        <div className="px-4 py-4 border-t border-divider">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-felt grid place-items-center font-display font-bold text-white text-xs ring-2 ring-brass">
               {user?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'AD'}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-semibold text-white truncate">{user?.name || 'Admin'}</div>
-              <button onClick={logout} className="text-[11px] text-ink-400 hover:text-live transition">Sign out</button>
+              <div className="text-[13px] font-semibold text-heading truncate">{user?.name || 'Admin'}</div>
+              <button onClick={logout} className="text-[11px] text-muted hover:text-live transition">Sign out</button>
             </div>
           </div>
         </div>
       </aside>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 inset-x-0 z-40 bg-night/90 backdrop-blur border-b border-hairline-d">
+      <div className="dark-ctx lg:hidden fixed top-0 inset-x-0 z-40 bg-night/90 backdrop-blur border-b border-divider">
         <div className="px-4 h-14 flex items-center justify-between">
           <span className="font-display font-extrabold text-white uppercase tracking-tight text-[15px]">
             Snooker<span className="text-live">PK</span>
             <span className="ml-2 badge bg-brass/20 text-brass text-[9px]">Admin</span>
           </span>
-          <NavLink to="/" className="text-[12px] text-ink-400 hover:text-white">Exit admin</NavLink>
+          <NavLink to="/" className="text-[12px] text-muted hover:text-heading">Exit admin</NavLink>
         </div>
       </div>
 

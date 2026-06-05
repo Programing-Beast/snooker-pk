@@ -32,16 +32,16 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-night felt-grain flex items-center justify-center px-4">
+    <div className="dark-ctx min-h-screen bg-night felt-grain flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Link to="/" className="font-display font-extrabold text-2xl uppercase tracking-tight text-white">
             Snooker<span className="text-live">PK</span>
           </Link>
-          <p className="text-ink-400 text-[14px] mt-2">Create your free account</p>
+          <p className="text-muted text-[14px] mt-2">Create your free account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="card p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="light-ctx card p-6 space-y-4">
           {errors.general && (
             <div className="bg-bad-tint text-bad text-[13px] px-4 py-3 rounded-md">{errors.general[0]}</div>
           )}
@@ -71,7 +71,7 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <p className="text-center text-ink-400 text-[13px] mt-6">
+        <p className="text-center text-muted text-[13px] mt-6">
           Already have an account?{' '}
           <Link to="/login" className="text-felt-400 hover:text-white font-semibold">Sign in</Link>
         </p>

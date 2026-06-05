@@ -344,14 +344,14 @@ export default function DrawGeneratePage() {
             {hasMatches ? (
               <div className="card overflow-hidden">
                 {/* Dark header */}
-                <div className="px-5 py-3 bg-night text-white flex items-center gap-3">
+                <div className="dark-ctx px-5 py-3 bg-night text-white flex items-center gap-3">
                   <span className="font-display font-bold uppercase tracking-[0.1em] text-[13px]">
                     {selectedRound?.name}
                   </span>
-                  <span className="seclabel text-ink-400 !text-[10px]">
+                  <span className="seclabel !text-[10px]">
                     Best of {bestOf} · first to {framesToWin(bestOf)}
                   </span>
-                  <span className="ml-auto text-[11px] text-ink-400">
+                  <span className="ml-auto text-[11px] text-muted">
                     {displayMatches.length} matches · {displayByes.length} byes
                   </span>
                 </div>
@@ -459,8 +459,8 @@ export default function DrawGeneratePage() {
 
         {/* Right column — Sticky sidebar */}
         <div className="card overflow-hidden sticky top-[76px]">
-          <div className="px-5 py-3.5 bg-night text-white">
-            <div className="seclabel text-ink-300 !text-[10px]">
+          <div className="dark-ctx px-5 py-3.5 bg-night text-white">
+            <div className="seclabel text-body !text-[10px]">
               {isAlreadyGenerated ? 'Round summary' : 'Pre-generation summary'}
             </div>
             <div className="font-display font-bold text-[16px] mt-0.5">
