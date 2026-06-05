@@ -16,7 +16,7 @@ export default function ManageMatchesPage() {
   const [drawData, setDrawData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editMatch, setEditMatch] = useState(null);
-  const [editForm, setEditForm] = useState({ scheduled_at: '', table_no: '' });
+  const [editForm, setEditForm] = useState({ scheduled_at: '', table_no: '', youtube_url: '', facebook_url: '' });
   const [saving, setSaving] = useState(false);
 
   // Set Score modal state
@@ -45,6 +45,8 @@ export default function ManageMatchesPage() {
     setEditForm({
       scheduled_at: match.scheduled_at || '',
       table_no: match.table_no || '',
+      youtube_url: match.youtube_url || '',
+      facebook_url: match.facebook_url || '',
     });
   }
 
@@ -203,6 +205,8 @@ export default function ManageMatchesPage() {
           <div className="space-y-4">
             <Input label="Scheduled date/time" type="datetime-local" value={editForm.scheduled_at} onChange={e => setEditForm(f => ({ ...f, scheduled_at: e.target.value }))} />
             <Input label="Table number" value={editForm.table_no} onChange={e => setEditForm(f => ({ ...f, table_no: e.target.value }))} placeholder="1" />
+            <Input label="YouTube URL" value={editForm.youtube_url} onChange={e => setEditForm(f => ({ ...f, youtube_url: e.target.value }))} placeholder="https://youtube.com/watch?v=..." />
+            <Input label="Facebook URL" value={editForm.facebook_url} onChange={e => setEditForm(f => ({ ...f, facebook_url: e.target.value }))} placeholder="https://facebook.com/watch/..." />
           </div>
         </ModalBody>
         <ModalFooter>

@@ -271,10 +271,30 @@ export default function MatchDetailPage() {
         </div>
 
         {/* Match status badge */}
-        <div className="flex justify-center mb-8">
+        <div className="flex flex-col items-center gap-3 mb-8">
           <span className="border border-ink-400 text-ink-300 text-xs uppercase tracking-widest px-4 py-1 rounded-full font-display font-semibold">
             {statusLabel(m.status)}
           </span>
+          {(m.youtube_url || m.facebook_url) && (
+            <div className="flex items-center gap-2">
+              {m.youtube_url && (
+                <a href={m.youtube_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FF0000]/10 text-[#FF4444] hover:bg-[#FF0000]/20 transition text-xs font-semibold">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81ZM10 15V9l5.2 3L10 15Z" />
+                  </svg>
+                  YouTube
+                </a>
+              )}
+              {m.facebook_url && (
+                <a href={m.facebook_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1877F2]/10 text-[#5B9CF6] hover:bg-[#1877F2]/20 transition text-xs font-semibold">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073Z" />
+                  </svg>
+                  Facebook
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Hero — Players + Score */}

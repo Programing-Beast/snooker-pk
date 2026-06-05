@@ -57,27 +57,31 @@ function MatchInfo({ index, date, tableNo }) {
   );
 }
 
-function ActionIcons({ matchId, onEdit, navigate }) {
+function ActionIcons({ match, onEdit, navigate }) {
   return (
     <div className="shrink-0 hidden md:flex items-center gap-1.5">
       {/* Match Centre */}
-      <button className="w-8 h-8 rounded-full bg-felt text-white grid place-items-center hover:bg-felt-700 transition" title="Match Centre" onClick={(e) => { e.stopPropagation(); navigate('/matches/' + matchId); }}>
+      <button className="w-8 h-8 rounded-full bg-felt text-white grid place-items-center hover:bg-felt-700 transition" title="Match Centre" onClick={(e) => { e.stopPropagation(); navigate('/matches/' + match.id); }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
           <path fillRule="evenodd" clipRule="evenodd" d="M14.33 2.38c-1.04-1.84-3.62-1.84-4.66 0L.36 18.88C-.67 20.71.62 23 2.69 23h18.62c2.07 0 3.36-2.29 2.33-4.13L14.33 2.38ZM14.75 6.75a2.75 2.75 0 11-5.5 0 2.75 2.75 0 015.5 0ZM8.75 15.5a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5ZM5.25 21.5a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5Zm6.5 0a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5Zm9.25-2.75a2.75 2.75 0 11-5.5 0 2.75 2.75 0 015.5 0Zm-3-3.25a2.75 2.75 0 100-5.5 2.75 2.75 0 000 5.5Z" />
         </svg>
       </button>
       {/* YouTube */}
-      <button className="w-8 h-8 rounded-full bg-[#FF0000]/10 text-[#CC0000] grid place-items-center hover:bg-[#FF0000]/20 transition" title="Watch on YouTube">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81ZM10 15V9l5.2 3L10 15Z" />
-        </svg>
-      </button>
+      {match.youtube_url && (
+        <button className="w-8 h-8 rounded-full bg-[#FF0000]/10 text-[#CC0000] grid place-items-center hover:bg-[#FF0000]/20 transition" title="Watch on YouTube" onClick={(e) => { e.stopPropagation(); window.open(match.youtube_url, '_blank', 'noopener'); }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81ZM10 15V9l5.2 3L10 15Z" />
+          </svg>
+        </button>
+      )}
       {/* Facebook */}
-      <button className="w-8 h-8 rounded-full bg-[#1877F2]/10 text-[#1877F2] grid place-items-center hover:bg-[#1877F2]/20 transition" title="Watch on Facebook">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073Z" />
-        </svg>
-      </button>
+      {match.facebook_url && (
+        <button className="w-8 h-8 rounded-full bg-[#1877F2]/10 text-[#1877F2] grid place-items-center hover:bg-[#1877F2]/20 transition" title="Watch on Facebook" onClick={(e) => { e.stopPropagation(); window.open(match.facebook_url, '_blank', 'noopener'); }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073Z" />
+          </svg>
+        </button>
+      )}
       {/* Edit (admin only) */}
       {onEdit && (
         <button className="w-8 h-8 rounded-full bg-ink-100 text-ink-600 grid place-items-center hover:bg-ink-200 transition" title="Edit match" onClick={onEdit}>
@@ -132,7 +136,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
           <span className="badge bg-ink-100 text-ink-500 tracking-[0.1em] text-[10px] uppercase shrink-0">Bye</span>
           <div className="w-16 shrink-0" />
         </div>
-        <ActionIcons matchId={m.id} onEdit={onEdit} navigate={navigate} />
+        <ActionIcons match={m} onEdit={onEdit} navigate={navigate} />
       </div>
     );
   }
@@ -168,7 +172,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
             </div>
           </div>
         </div>
-        <ActionIcons matchId={m.id} onEdit={onEdit} navigate={navigate} />
+        <ActionIcons match={m} onEdit={onEdit} navigate={navigate} />
       </div>
     );
   }
@@ -228,7 +232,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
         {isLive && <StatusBadge status="live" pulse>Live</StatusBadge>}
 
         {/* Right — action icons */}
-        <ActionIcons matchId={m.id} onEdit={onEdit} navigate={navigate} />
+        <ActionIcons match={m} onEdit={onEdit} navigate={navigate} />
       </div>
 
       {/* Admin actions (below match row, no grey background) */}

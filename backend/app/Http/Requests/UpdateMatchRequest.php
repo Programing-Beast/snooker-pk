@@ -20,7 +20,8 @@ class UpdateMatchRequest extends FormRequest
             'scheduled_at' => ['nullable', 'date'],
             'score1' => ['sometimes', 'integer', 'min:0'],
             'score2' => ['sometimes', 'integer', 'min:0'],
-            'video_url' => ['nullable', 'url', 'max:500'],
+            'youtube_url' => ['nullable', 'url', 'max:500'],
+            'facebook_url' => ['nullable', 'url', 'max:500'],
             'note' => ['nullable', 'string'],
         ];
     }
