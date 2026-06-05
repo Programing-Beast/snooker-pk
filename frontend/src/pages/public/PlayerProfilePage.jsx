@@ -32,8 +32,8 @@ export default function PlayerProfilePage() {
     });
   }, [id]);
 
-  if (loading) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-ink-400">Loading...</div>;
-  if (!player) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-ink-400">Player not found.</div>;
+  if (loading) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-muted">Loading...</div>;
+  if (!player) return <div className="max-w-[1200px] mx-auto px-6 py-16 text-center text-muted">Player not found.</div>;
 
   const isPro = player.tier?.toLowerCase() === 'pro' || player.tier?.toLowerCase() === 'professional';
 
@@ -89,7 +89,7 @@ export default function PlayerProfilePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {stats.map(s => (
               <div key={s.k} className="card p-4 sm:p-5">
-                <div className="seclabel text-ink-400">{s.k}</div>
+                <div className="seclabel text-muted">{s.k}</div>
                 <div className={`font-display font-extrabold text-2xl sm:text-[34px] leading-none tabular-nums mt-1.5 ${s.highlight ? 'text-felt' : ''}`}>
                   {s.v}
                 </div>
@@ -146,10 +146,10 @@ function HistoryRow({ match: m, playerId }) {
   const resLabel = isLive ? 'In progress' : won ? 'Won' : roundName || 'Played';
 
   return (
-    <div className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b border-hairline last:border-0">
+    <div className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b border-divider last:border-0">
       <div className="min-w-0 flex-1">
         <div className="font-semibold text-[14px] truncate">{eventName}</div>
-        <div className="text-[11px] text-ink-400">{roundName}</div>
+        <div className="text-[11px] text-muted">{roundName}</div>
       </div>
       <span className={`badge ${chipClass}`}>
         {isLive && <span className="dot pulse" />}
@@ -175,7 +175,7 @@ function UpcomingEvent({ match: m }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="font-semibold text-[14px] truncate">{eventName}</div>
-        <div className="text-[11px] text-ink-400 truncate">{[roundName, venue].filter(Boolean).join(' · ') || 'Upcoming'}</div>
+        <div className="text-[11px] text-muted truncate">{[roundName, venue].filter(Boolean).join(' · ') || 'Upcoming'}</div>
       </div>
       <div className="text-right shrink-0">
         <div className="text-[11px] text-ink-500">{dateStr}</div>
@@ -216,7 +216,7 @@ function H2HSection({ history, playerId }) {
           const pct = Math.round(o.w / total * 100);
           const lead = o.w > o.l;
           return (
-            <div key={i} className="px-4 sm:px-5 py-3 border-b border-hairline last:border-0">
+            <div key={i} className="px-4 sm:px-5 py-3 border-b border-divider last:border-0">
               <div className="flex items-center gap-2.5 mb-2">
                 <CountryFlagChip code={o.cc} showLabel={false} size="sm" />
                 <span className="font-semibold text-[14px]">{o.name}</span>

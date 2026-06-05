@@ -45,8 +45,8 @@ export default function MatchResultHero({
   const p1Won = String(player1?.id) === String(winnerId);
   const p2Won = String(player2?.id) === String(winnerId);
 
-  const textPrimary = dark ? 'text-white' : 'text-ink-900';
-  const textMuted = 'text-ink-400';
+  const textPrimary = dark ? 'text-white' : 'text-heading';
+  const textMuted = dark ? 'text-ink-400' : 'text-muted';
   const photoWin = 'bg-[#F2C31A] border-2 border-[#F2C31A] shadow-[0_0_30px_rgba(242,195,26,0.4)]';
   const photoLose = dark ? 'border-2 border-ink-700' : 'border-2 border-ink-200';
 

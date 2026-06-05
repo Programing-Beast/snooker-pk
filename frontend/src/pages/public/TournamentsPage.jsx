@@ -44,20 +44,20 @@ export default function TournamentsPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="px-6 sm:px-9 sticky top-16 z-10 bg-page/95 backdrop-blur py-3 border-y border-hairline">
+      <div className="px-6 sm:px-9 sticky top-16 z-10 bg-page/95 backdrop-blur py-3 border-y border-divider">
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="inline-flex bg-surface2 rounded-md p-1 gap-1">
+          <div className="inline-flex bg-card-alt rounded-md p-1 gap-1">
             {TABS.map(tab => (
               <button
                 key={tab}
                 onClick={() => setFilter(tab)}
                 className={`px-4 py-2 rounded-md text-[13px] font-display font-semibold flex items-center gap-1.5 ${
-                  filter === tab ? 'bg-white text-felt shadow-e1' : 'text-ink-600 hover:text-ink-900'
+                  filter === tab ? 'bg-card text-felt shadow-e1' : 'text-ink-600 hover:text-ink-900'
                 }`}
               >
                 {tab === 'live' && <span className="w-1.5 h-1.5 rounded-full bg-live pulse" />}
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                <span className="text-ink-400">{counts[tab]}</span>
+                <span className="text-muted">{counts[tab]}</span>
               </button>
             ))}
           </div>
@@ -78,7 +78,7 @@ export default function TournamentsPage() {
       {/* Grid */}
       <div className="px-6 sm:px-9 py-7">
         {loading ? (
-          <div className="text-center py-16 text-ink-400">Loading tournaments...</div>
+          <div className="text-center py-16 text-muted">Loading tournaments...</div>
         ) : filtered.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map(t => <TournamentCard key={t.id} tournament={t} />)}

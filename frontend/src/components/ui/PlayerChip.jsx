@@ -3,7 +3,7 @@ import PlayerAvatar from './PlayerAvatar';
 import CountryFlagChip from './CountryFlagChip';
 
 export default function PlayerChip({ player, size = 'default', to }) {
-  if (!player) return <span className="text-ink-400 italic text-[13px]">TBD</span>;
+  if (!player) return <span className="text-muted italic text-[13px]">TBD</span>;
 
   const big = size === 'lg';
   const Root = to ? Link : 'span';
@@ -21,7 +21,7 @@ export default function PlayerChip({ player, size = 'default', to }) {
       <CountryFlagChip code={player.country_code || 'PAK'} showLabel={false} size="sm" />
       <span className="font-semibold">{player.name}</span>
       {player.seed != null && (
-        <span className="text-[10px] text-ink-400 tabular-nums">{player.seed}</span>
+        <span className="text-[10px] text-muted tabular-nums">{player.seed}</span>
       )}
     </Root>
   );

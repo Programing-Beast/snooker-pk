@@ -1,7 +1,7 @@
 export default function EmptyState({ icon, title, message, action }) {
   return (
     <div className="text-center py-16">
-      <div className="w-16 h-16 rounded-full bg-surface2 grid place-items-center mx-auto mb-4 text-ink-300">
+      <div className="w-16 h-16 rounded-full bg-card-alt grid place-items-center mx-auto mb-4 text-ink-300">
         {icon || (
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
             <rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M8 4v16" />

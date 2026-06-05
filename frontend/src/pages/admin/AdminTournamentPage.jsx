@@ -45,7 +45,7 @@ export default function AdminTournamentPage() {
     return (
       <div>
         <TournamentSubNav tournament={{ id, name: 'Loading...' }} />
-        <div className="text-center py-12 text-ink-400">Loading...</div>
+        <div className="text-center py-12 text-muted">Loading...</div>
       </div>
     );
   }
@@ -57,22 +57,22 @@ export default function AdminTournamentPage() {
       {/* Quick stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="card p-5">
-          <div className="seclabel text-ink-400">Approved entries</div>
+          <div className="seclabel text-muted">Approved entries</div>
           <div className="font-display font-extrabold text-[32px] leading-none tabular-nums mt-2">{approved.length}</div>
           <div className="text-[11px] text-ink-500 mt-1.5">of {tournament?.max_players || '∞'} max</div>
         </div>
         <div className="card p-5">
-          <div className="seclabel text-ink-400">Pending entries</div>
+          <div className="seclabel text-muted">Pending entries</div>
           <div className="font-display font-extrabold text-[32px] leading-none tabular-nums mt-2">{pending.length}</div>
           <div className="text-[11px] text-ink-500 mt-1.5">{pending.length > 0 ? 'Needs review' : 'All clear'}</div>
         </div>
         <div className="card p-5">
-          <div className="seclabel text-ink-400">Rounds</div>
+          <div className="seclabel text-muted">Rounds</div>
           <div className="font-display font-extrabold text-[32px] leading-none tabular-nums mt-2">{rounds.length}</div>
           <div className="text-[11px] text-ink-500 mt-1.5">{rounds.filter(r => r.generated_at).length} drawn</div>
         </div>
         <div className="card p-5">
-          <div className="seclabel text-ink-400">Total matches</div>
+          <div className="seclabel text-muted">Total matches</div>
           <div className="font-display font-extrabold text-[32px] leading-none tabular-nums mt-2">{totalMatches}</div>
           <div className="text-[11px] text-ink-500 mt-1.5">{liveMatches > 0 ? `${liveMatches} live now` : 'None live'}</div>
         </div>
@@ -108,7 +108,7 @@ export default function AdminTournamentPage() {
         <div className="space-y-6">
           {/* Info card */}
           <div className="card overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-hairline flex items-center justify-between">
+            <div className="px-5 py-3.5 border-b border-divider flex items-center justify-between">
               <span className="seclabel text-felt">Tournament info</span>
               <Link
                 to={`/admin/tournaments/${id}/edit`}
@@ -155,11 +155,11 @@ export default function AdminTournamentPage() {
 
           {/* Round progression */}
           <div className="card overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-hairline">
+            <div className="px-5 py-3.5 border-b border-divider">
               <span className="seclabel text-felt">Round progression</span>
             </div>
             {sortedRounds.length > 0 ? (
-              <div className="divide-y divide-hairline">
+              <div className="divide-y divide-divider">
                 {sortedRounds.map(round => {
                   const roundDraw = drawRounds.find(r => r.id === round.id);
                   const matches = roundDraw?.matches || [];
@@ -184,7 +184,7 @@ export default function AdminTournamentPage() {
                     <div key={round.id} className="flex items-center gap-3 px-5 py-3.5">
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-[14px]">{round.name}</div>
-                        <div className="text-[11px] text-ink-400">
+                        <div className="text-[11px] text-muted">
                           {round.frames_to_win ? `Best of ${round.frames_to_win * 2 - 1}` : '—'}
                           {matchCount > 0 && ` · ${matchCount} matches`}
                         </div>
@@ -195,7 +195,7 @@ export default function AdminTournamentPage() {
                 })}
               </div>
             ) : (
-              <div className="p-5 text-center text-ink-400 text-[13px]">No rounds configured yet.</div>
+              <div className="p-5 text-center text-muted text-[13px]">No rounds configured yet.</div>
             )}
           </div>
         </div>

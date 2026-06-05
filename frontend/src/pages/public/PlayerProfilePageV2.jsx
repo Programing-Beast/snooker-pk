@@ -24,7 +24,7 @@ function splitName(name) {
 function StatItem({ label, value }) {
   return (
     <div>
-      <div className="text-xs text-ink-400 uppercase font-semibold tracking-wide mb-1">{label}</div>
+      <div className="text-xs text-muted uppercase font-semibold tracking-wide mb-1">{label}</div>
       <div
         className="text-3xl font-extrabold tabular-nums"
         style={{ fontFamily: 'var(--font-display)' }}
@@ -148,7 +148,7 @@ export default function PlayerProfilePageV2() {
         <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 sm:py-12">
           {/* Name block */}
           <div className="text-center mb-8">
-            <p className="text-sm uppercase text-ink-400 font-bold tracking-wide">
+            <p className="text-sm uppercase text-muted font-bold tracking-wide">
               {first || '\u00A0'}
             </p>
             <h1
@@ -165,7 +165,7 @@ export default function PlayerProfilePageV2() {
           </div>
 
           {/* Info card */}
-          <div className="border border-hairline rounded-xl bg-white p-6 sm:p-8">
+          <div className="border border-border-subtle rounded-xl bg-card p-6 sm:p-8">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
               {/* Nationality */}
               <div>
@@ -174,7 +174,7 @@ export default function PlayerProfilePageV2() {
                     <circle cx="12" cy="12" r="10" />
                     <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                   </svg>
-                  <span className="text-xs text-ink-400 uppercase font-semibold tracking-wide">Nationality</span>
+                  <span className="text-xs text-muted uppercase font-semibold tracking-wide">Nationality</span>
                 </div>
                 <div className="text-sm font-bold">
                   <CountryFlagChip code={player.country_code || 'PAK'} />
@@ -188,7 +188,7 @@ export default function PlayerProfilePageV2() {
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  <span className="text-xs text-ink-400 uppercase font-semibold tracking-wide">City</span>
+                  <span className="text-xs text-muted uppercase font-semibold tracking-wide">City</span>
                 </div>
                 <div className="text-sm font-bold">{player.city || '–'}</div>
               </div>
@@ -200,7 +200,7 @@ export default function PlayerProfilePageV2() {
                     <path d="M6 9l6-6 6 6M6 9l6 6 6-6" />
                     <path d="M6 15v4h12v-4" />
                   </svg>
-                  <span className="text-xs text-ink-400 uppercase font-semibold tracking-wide">Turned Pro</span>
+                  <span className="text-xs text-muted uppercase font-semibold tracking-wide">Turned Pro</span>
                 </div>
                 <div className="text-sm font-bold">{turnedProYear || '–'}</div>
               </div>
@@ -211,7 +211,7 @@ export default function PlayerProfilePageV2() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-400">
                     <path d="M18 20V10M12 20V4M6 20v-6" />
                   </svg>
-                  <span className="text-xs text-ink-400 uppercase font-semibold tracking-wide">Current Ranking</span>
+                  <span className="text-xs text-muted uppercase font-semibold tracking-wide">Current Ranking</span>
                 </div>
                 <div className="text-sm font-bold">
                   {player.ranking_points ? Number(player.ranking_points).toLocaleString() + ' pts' : '–'}
@@ -223,7 +223,7 @@ export default function PlayerProfilePageV2() {
       </section>
 
       {/* ─── Section 3: Career Stats ─── */}
-      <section className="border-t border-hairline">
+      <section className="border-t border-divider">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 sm:py-12">
           <h2
             className="text-2xl sm:text-3xl font-extrabold uppercase mb-8"
@@ -241,7 +241,7 @@ export default function PlayerProfilePageV2() {
       </section>
 
       {/* ─── Section 4: Season Stats ─── */}
-      <section className="border-t border-hairline">
+      <section className="border-t border-divider">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 sm:py-12">
           <h2
             className="text-2xl sm:text-3xl font-extrabold uppercase mb-8"
@@ -280,7 +280,7 @@ export default function PlayerProfilePageV2() {
       </section>
 
       {/* ─── Section 5: Tournament History ─── */}
-      <section className="border-t border-hairline">
+      <section className="border-t border-divider">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 sm:py-12">
           <h2
             className="text-2xl sm:text-3xl font-extrabold uppercase mb-8"
@@ -289,7 +289,7 @@ export default function PlayerProfilePageV2() {
             Tournament History
           </h2>
           {history.length > 0 ? (
-            <div className="border border-hairline rounded-xl bg-white overflow-hidden">
+            <div className="border border-border-subtle rounded-xl bg-card overflow-hidden">
               {history.slice(0, 8).map(m => {
                 const isPlayer1 = m.player1?.id === player.id;
                 const won = isPlayer1 ? (m.player1_frames > m.player2_frames) : (m.player2_frames > m.player1_frames);
@@ -298,10 +298,10 @@ export default function PlayerProfilePageV2() {
                 const isLive = m.status === 'live';
 
                 return (
-                  <div key={m.id} className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b border-hairline last:border-0">
+                  <div key={m.id} className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b border-divider last:border-0">
                     <div className="min-w-0 flex-1">
                       <div className="font-semibold text-[14px] truncate">{eventName}</div>
-                      <div className="text-[11px] text-ink-400">{roundName}</div>
+                      <div className="text-[11px] text-muted">{roundName}</div>
                     </div>
                     <span className={`badge ${isLive ? 'bg-live-fill text-white' : won ? 'bg-felt text-white' : 'bg-ink-100 text-ink-500'}`}>
                       {isLive && <span className="dot pulse" />}
@@ -318,7 +318,7 @@ export default function PlayerProfilePageV2() {
       </section>
 
       {/* ─── Section 6: Upcoming Events ─── */}
-      <section className="border-t border-hairline">
+      <section className="border-t border-divider">
         <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 sm:py-12">
           <h2
             className="text-2xl sm:text-3xl font-extrabold uppercase mb-8"
@@ -338,13 +338,13 @@ export default function PlayerProfilePageV2() {
                 const roundName = m.round?.name || '';
 
                 return (
-                  <div key={m.id} className="border border-hairline rounded-xl bg-white p-4 flex items-center gap-3">
+                  <div key={m.id} className="border border-border-subtle rounded-xl bg-card p-4 flex items-center gap-3">
                     <div className="w-12 h-12 rounded-md bg-gradient-to-br from-felt-400 to-felt-900 felt-grain shrink-0 grid place-items-center">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18M8 4v16" /></svg>
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="font-semibold text-[14px] truncate">{eventName}</div>
-                      <div className="text-[11px] text-ink-400 truncate">{[roundName, venue].filter(Boolean).join(' · ') || 'Upcoming'}</div>
+                      <div className="text-[11px] text-muted truncate">{[roundName, venue].filter(Boolean).join(' · ') || 'Upcoming'}</div>
                     </div>
                     <div className="text-right shrink-0">
                       <div className="text-[11px] text-ink-500">{dateStr}</div>
@@ -382,7 +382,7 @@ export default function PlayerProfilePageV2() {
         if (h2h.length === 0) return null;
 
         return (
-          <section className="border-t border-hairline">
+          <section className="border-t border-divider">
             <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-10 sm:py-12">
               <h2
                 className="text-2xl sm:text-3xl font-extrabold uppercase mb-8"
@@ -390,13 +390,13 @@ export default function PlayerProfilePageV2() {
               >
                 Head To Head
               </h2>
-              <div className="border border-hairline rounded-xl bg-white overflow-hidden">
+              <div className="border border-border-subtle rounded-xl bg-card overflow-hidden">
                 {h2h.map((o, i) => {
                   const total = o.w + o.l;
                   const pct = Math.round(o.w / total * 100);
                   const lead = o.w > o.l;
                   return (
-                    <div key={i} className="px-4 sm:px-5 py-3 border-b border-hairline last:border-0">
+                    <div key={i} className="px-4 sm:px-5 py-3 border-b border-divider last:border-0">
                       <div className="flex items-center gap-2.5 mb-2">
                         <CountryFlagChip code={o.cc} showLabel={false} size="sm" />
                         <span className="font-semibold text-[14px]">{o.name}</span>

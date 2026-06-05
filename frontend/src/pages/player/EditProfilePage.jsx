@@ -188,7 +188,7 @@ export default function EditProfilePage() {
             style={displayPhoto ? { backgroundImage: `url(${displayPhoto})` } : {}}
           >
             {!displayPhoto && (
-              <div className="w-full h-full rounded-xl grid place-items-center font-display font-bold text-ink-400 text-lg">
+              <div className="w-full h-full rounded-xl grid place-items-center font-display font-bold text-muted text-lg">
                 {form.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'}
               </div>
             )}
@@ -198,11 +198,11 @@ export default function EditProfilePage() {
               Change photo
               <input type="file" className="hidden" accept="image/*" onChange={handlePhotoChange} />
             </label>
-            <div className="text-[11px] text-ink-400 mt-1.5">JPG or PNG · up to 5MB</div>
+            <div className="text-[11px] text-muted mt-1.5">JPG or PNG · up to 5MB</div>
           </div>
         </div>
 
-        <div className="border-t border-hairline" />
+        <div className="border-t border-divider" />
 
         {/* Form fields */}
         <div className="grid sm:grid-cols-2 gap-4">
@@ -234,7 +234,7 @@ export default function EditProfilePage() {
           </div>
         </div>
 
-        <div className="border-t border-hairline" />
+        <div className="border-t border-divider" />
 
         {/* Actions */}
         <div className="flex items-center gap-3 pt-2">
@@ -254,16 +254,16 @@ export default function EditProfilePage() {
         {phones.length > 0 ? (
           <div className="space-y-2 mb-4">
             {phones.map(ph => (
-              <div key={ph.id} className="flex items-center gap-3 py-2 border-b border-hairline last:border-0">
+              <div key={ph.id} className="flex items-center gap-3 py-2 border-b border-divider last:border-0">
                 <span className="font-mono text-[14px] flex-1">{ph.phone}</span>
-                <span className="text-[11px] font-medium text-ink-500 bg-surface2 px-2 py-0.5 rounded">{ph.label}</span>
+                <span className="text-[11px] font-medium text-ink-500 bg-card-alt px-2 py-0.5 rounded">{ph.label}</span>
                 {ph.is_whatsapp && <span className="text-[11px] font-medium text-ok bg-ok-tint px-2 py-0.5 rounded">WhatsApp</span>}
                 <button type="button" className="text-bad hover:text-bad/80 text-[13px]" onClick={() => handleDeletePhone(ph.id)}>Remove</button>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-[13px] text-ink-400 mb-4">No phone numbers added yet.</p>
+          <p className="text-[13px] text-muted mb-4">No phone numbers added yet.</p>
         )}
 
         {labelOptions.length > 0 ? (
@@ -304,7 +304,7 @@ export default function EditProfilePage() {
             {phoneError && <p className="text-[12px] text-bad mt-2">{phoneError}</p>}
           </>
         ) : (
-          <p className="text-[12px] text-ink-400">Maximum phone numbers reached (1 primary + 3 secondary).</p>
+          <p className="text-[12px] text-muted">Maximum phone numbers reached (1 primary + 3 secondary).</p>
         )}
       </div>
     </div>

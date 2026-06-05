@@ -1,7 +1,7 @@
 export default function ProductCard({ product }) {
   return (
     <div className="card overflow-hidden flex flex-col">
-      <div className="aspect-[4/3] bg-surface2 relative grid place-items-center">
+      <div className="aspect-[4/3] bg-card-alt relative grid place-items-center">
         <span className="absolute top-3 left-3 badge bg-brass-tint text-brass-700">
           <span className="dot" />Store · soon
         </span>
@@ -14,11 +14,11 @@ export default function ProductCard({ product }) {
         )}
       </div>
       <div className="p-4">
-        {product?.brand && <div className="seclabel text-ink-400 text-[10px]">{product.brand}</div>}
+        {product?.brand && <div className="seclabel text-muted text-[10px]">{product.brand}</div>}
         <h4 className="text-[14.5px] font-semibold leading-snug mt-1.5 mb-3">{product?.name || 'Product'}</h4>
         <div className="flex items-center justify-between">
           <span className="font-display font-extrabold text-[19px]">
-            <span className="text-ink-400 text-xs">PKR</span> {product?.price ? Number(product.price).toLocaleString() : '—'}
+            <span className="text-muted text-xs">PKR</span> {product?.price ? Number(product.price).toLocaleString() : '—'}
           </span>
           <button className="btn btn-secondary btn-sm" disabled>Coming soon</button>
         </div>

@@ -22,15 +22,15 @@ export default function FileUpload({ label, accept = 'image/jpeg,image/png', max
         {preview ? (
           <img src={preview} alt="Preview" className="w-9 h-9 rounded-md object-cover" />
         ) : (
-          <span className="w-9 h-9 rounded-md bg-surface2 grid place-items-center text-felt">
+          <span className="w-9 h-9 rounded-md bg-card-alt grid place-items-center text-felt">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 16V4M7 9l5-5 5 5" /><path d="M5 20h14" />
             </svg>
           </span>
         )}
         <span>
-          <span className="block text-[14px] font-semibold text-ink-800">Drag a photo or browse</span>
-          <span className="block text-[0.72rem] text-ink-400">JPG or PNG · up to {maxSize}MB</span>
+          <span className="block text-[14px] font-semibold text-body">Drag a photo or browse</span>
+          <span className="block text-[0.72rem] text-muted">JPG or PNG · up to {maxSize}MB</span>
         </span>
         <input ref={ref} type="file" accept={accept} onChange={handleChange} className="hidden" />
       </label>

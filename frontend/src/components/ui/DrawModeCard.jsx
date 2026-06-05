@@ -6,13 +6,13 @@ export default function DrawModeCard({ selected, onClick, icon, title, descripti
       className={`text-left p-4 rounded-lg border-2 transition ${
         selected
           ? 'border-felt bg-felt-50'
-          : 'border-hairline bg-white hover:border-ink-300'
+          : 'border-border-subtle bg-card hover:border-ink-300'
       }`}
     >
       <div className="flex items-center gap-2.5 mb-2">
         <span
           className={`w-9 h-9 rounded-md grid place-items-center ${
-            selected ? 'bg-felt text-white' : 'bg-surface2 text-ink-500'
+            selected ? 'bg-felt text-white' : 'bg-card-alt text-ink-500'
           }`}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">

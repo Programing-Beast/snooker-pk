@@ -32,7 +32,7 @@ export default function TournamentSubNav({ tournament }) {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 border-b border-hairline">
+      <div className="flex gap-1 border-b border-divider">
         {TABS.map(tab => {
           const to = base + tab.to;
           const isActive = tab.matchSuffixes.some(suffix =>
@@ -45,7 +45,7 @@ export default function TournamentSubNav({ tournament }) {
               className={`px-4 py-2.5 text-[13px] font-semibold border-b-2 transition -mb-px ${
                 isActive
                   ? 'border-felt text-felt'
-                  : 'border-transparent text-ink-400 hover:text-ink-700'
+                  : 'border-transparent text-muted hover:text-ink-700'
               }`}
             >
               {tab.label}

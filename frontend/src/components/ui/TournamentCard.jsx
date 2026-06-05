@@ -35,15 +35,15 @@ export default function TournamentCard({ tournament }) {
           </span>
           {t.prize_pool && <span className="font-display font-bold text-felt">PKR {Number(t.prize_pool).toLocaleString()}</span>}
         </div>
-        <div className="flex items-center gap-2.5 pt-3.5 mt-auto border-t border-hairline">
+        <div className="flex items-center gap-2.5 pt-3.5 mt-auto border-t border-divider">
           {t.organizer_initials && (
-            <span className="w-8 h-8 rounded-md bg-surface2 border border-hairline grid place-items-center font-display font-bold text-[12px] text-felt">
+            <span className="w-8 h-8 rounded-md bg-card-alt border border-border-subtle grid place-items-center font-display font-bold text-[12px] text-felt">
               {t.organizer_initials}
             </span>
           )}
           <div className="leading-tight min-w-0 flex-1">
-            <div className="seclabel text-ink-400 text-[9px]">Organized by</div>
-            <div className="text-[12.5px] font-semibold text-ink-800 truncate">{t.organizer || '—'}</div>
+            <div className="seclabel text-muted text-[9px]">Organized by</div>
+            <div className="text-[12.5px] font-semibold text-body truncate">{t.organizer || '—'}</div>
           </div>
           <span className={`btn btn-sm ${status === 'live' ? 'btn-live' : 'btn-brass'}`}>
             {status === 'live' ? 'Watch' : 'View'}

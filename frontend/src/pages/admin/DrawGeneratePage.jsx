@@ -236,7 +236,7 @@ export default function DrawGeneratePage() {
                     className={`px-3.5 py-2 rounded-md text-[13px] font-display font-semibold transition flex items-center gap-1.5 ${
                       r.id === selectedRoundId
                         ? 'bg-felt text-white'
-                        : 'bg-surface2 text-ink-600 hover:text-ink-900'
+                        : 'bg-card-alt text-ink-600 hover:text-ink-900'
                     }`}
                   >
                     {r.name}
@@ -249,15 +249,15 @@ export default function DrawGeneratePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-[13px] text-ink-400 mb-3">Rounds will be created automatically based on the number of approved players.</p>
+              <p className="text-[13px] text-muted mb-3">Rounds will be created automatically based on the number of approved players.</p>
             )}
             {poolSize > 0 && (
-              <div className="flex items-center gap-2 rounded-md bg-surface2 px-3.5 py-2.5 text-[13px]">
+              <div className="flex items-center gap-2 rounded-md bg-card-alt px-3.5 py-2.5 text-[13px]">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-felt shrink-0">
                   <path d="M12 2v6m0 0l3-3m-3 3L9 5" /><circle cx="12" cy="15" r="6" />
                 </svg>
                 <span className="text-ink-600">Pool for this round:</span>
-                <b className="text-ink-900">{poolSource}</b>
+                <b className="text-heading">{poolSource}</b>
                 <span className="ml-auto font-display font-bold text-felt tabular-nums">{poolSize} players</span>
               </div>
             )}
@@ -266,7 +266,7 @@ export default function DrawGeneratePage() {
           {/* Card 2: Draw mode */}
           <div className="card p-5">
             <div className="seclabel text-felt mb-3">
-              2 · Draw mode <span className="text-ink-400 font-sans normal-case tracking-normal">· per round</span>
+              2 · Draw mode <span className="text-muted font-sans normal-case tracking-normal">· per round</span>
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
               <DrawModeCard
@@ -303,7 +303,7 @@ export default function DrawGeneratePage() {
                     ))}
                   </select>
                   <span className="text-[13px] text-ink-500">
-                    → first to <b className="text-ink-800">{framesToWin(bestOf)}</b> frames
+                    → first to <b className="text-body">{framesToWin(bestOf)}</b> frames
                   </span>
                 </div>
               </div>
@@ -311,8 +311,8 @@ export default function DrawGeneratePage() {
                 <label className="lbl">
                   Assign byes to{' '}
                   {byes > 0
-                    ? <span className="text-ink-400">({byes})</span>
-                    : <span className="text-ink-400">(none needed)</span>}
+                    ? <span className="text-muted">({byes})</span>
+                    : <span className="text-muted">(none needed)</span>}
                 </label>
                 <Select
                   value={byeMode}
@@ -360,7 +360,7 @@ export default function DrawGeneratePage() {
                 {displayMatches.map((m, i) => (
                   <div
                     key={m.id || m.position || i}
-                    className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-3 px-5 py-3 border-b border-hairline last:border-0"
+                    className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-3 px-5 py-3 border-b border-divider last:border-0"
                   >
                     <span className="font-display font-semibold text-ink-300 tabular-nums w-5 text-center">
                       {i + 1}
@@ -381,21 +381,21 @@ export default function DrawGeneratePage() {
                   return (
                     <div
                       key={`bye-${i}`}
-                      className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-3 px-5 py-3 border-b border-hairline last:border-0 bg-surface2/50"
+                      className="grid grid-cols-[auto_1fr_auto_1fr] items-center gap-3 px-5 py-3 border-b border-divider last:border-0 bg-card-alt/50"
                     >
                       <span className="font-display font-semibold text-ink-300 tabular-nums w-5 text-center">—</span>
                       <div className="flex justify-start">
                         <PlayerChip player={player} />
                       </div>
                       <span className="badge bg-ink-100 text-ink-500 !text-[9px]">Bye</span>
-                      <div className="text-right text-[12px] text-ink-400 italic">advances</div>
+                      <div className="text-right text-[12px] text-muted italic">advances</div>
                     </div>
                   );
                 })}
 
                 {/* Footer: published vs unpublished */}
                 {selectedRound?.generated_at && !generated ? (
-                  <div className="flex items-center gap-2 px-5 py-3 bg-surface2 border-t border-hairline">
+                  <div className="flex items-center gap-2 px-5 py-3 bg-card-alt border-t border-divider">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="text-ok shrink-0">
                       <path d="M5 12l5 5L20 6" />
                     </svg>
@@ -442,13 +442,13 @@ export default function DrawGeneratePage() {
             ) : (
               <div className="card border-dashed grid place-items-center text-center py-14">
                 <div>
-                  <div className="w-14 h-14 rounded-full bg-surface2 grid place-items-center mb-3 text-ink-300 mx-auto">
+                  <div className="w-14 h-14 rounded-full bg-card-alt grid place-items-center mb-3 text-ink-300 mx-auto">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                       <path d="M3 6h7v12H3zM14 9h7v6h-7z" /><path d="M10 12h4" />
                     </svg>
                   </div>
                   <div className="font-display font-bold text-ink-700">No matches generated yet</div>
-                  <p className="text-ink-400 text-[13px] mt-1">
+                  <p className="text-muted text-[13px] mt-1">
                     Configure the round above, then {drawMode === 'fixed' ? 'generate the pairing.' : 'launch the live reveal.'}
                   </p>
                 </div>
@@ -480,7 +480,7 @@ export default function DrawGeneratePage() {
               <span className="text-[13px] text-ink-500">Byes</span>
               <span className={`font-display font-bold tabular-nums text-[15px] ${byes > 0 ? 'text-warn' : ''}`}>{byes}</span>
             </div>
-            <div className="flex items-center justify-between pt-3 border-t border-hairline">
+            <div className="flex items-center justify-between pt-3 border-t border-divider">
               <span className="text-[13px] text-ink-500">Advance to next</span>
               <span className="font-display font-bold tabular-nums text-[15px]">{matchCount + byes}</span>
             </div>
@@ -490,7 +490,7 @@ export default function DrawGeneratePage() {
             </div>
 
             {/* Mode badge */}
-            <div className="rounded-md bg-surface2 px-3 py-2 text-[12px] text-ink-500 flex items-center gap-2">
+            <div className="rounded-md bg-card-alt px-3 py-2 text-[12px] text-ink-500 flex items-center gap-2">
               <span className={`badge ${drawMode === 'fixed' ? 'bg-felt text-white' : 'bg-brass-tint text-brass-700'} !text-[9px]`}>
                 {drawMode === 'fixed' ? 'Fixed' : 'Random'}
               </span>

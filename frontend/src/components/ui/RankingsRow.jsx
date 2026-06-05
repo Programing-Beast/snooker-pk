@@ -6,7 +6,7 @@ export default function RankingsRow({ rank, player }) {
   const movementColor = movement.includes('▲') ? 'text-ok' : movement.includes('▼') ? 'text-bad' : 'text-ink-400';
 
   return (
-    <Link to={`/players/${player.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-surface2 transition">
+    <Link to={`/players/${player.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-card-alt transition">
       <PlayerListItem player={player} index={rank} showTier={false}>
         <div className="text-right">
           <div className="font-display font-bold tabular-nums text-[15px]">

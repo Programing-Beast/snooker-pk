@@ -21,7 +21,7 @@ function splitName(name) {
 function PlayerImage({ player, align = 'left' }) {
   const src = resolvePhoto(player?.photo_path || player?.photo);
   return (
-    <div className={`shrink-0 w-16 h-20 rounded-lg border border-hairline overflow-hidden bg-ink-100 flex items-end ${
+    <div className={`shrink-0 w-16 h-20 rounded-lg border border-border-subtle overflow-hidden bg-ink-100 flex items-end ${
       align === 'right' ? 'justify-start' : 'justify-end'
     }`}>
       <img
@@ -39,10 +39,10 @@ function MatchInfo({ index, date, tableNo }) {
     <div className="shrink-0 flex flex-col items-center lg:items-start">
       {d && (
         <>
-          <h4 className="text-xl font-bold font-display text-ink-900 leading-5 tabular-nums">
+          <h4 className="text-xl font-bold font-display text-heading leading-5 tabular-nums">
             {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
           </h4>
-          <p className="text-xs text-ink-400 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
           </p>
         </>
@@ -51,7 +51,7 @@ function MatchInfo({ index, date, tableNo }) {
         <p className="text-sm font-bold text-ink-700 mt-0.5">Match {index}</p>
       )}
       {tableNo && (
-        <p className="text-xs text-ink-400 mt-0.5">Table {tableNo}</p>
+        <p className="text-xs text-muted mt-0.5">Table {tableNo}</p>
       )}
     </div>
   );
@@ -121,14 +121,14 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
   /* ── Bye ─────────────────────────────────────────────── */
   if (isBye) {
     return (
-      <div className="flex items-center gap-6 px-6 py-5 border-b border-hairline">
+      <div className="flex items-center gap-6 px-6 py-5 border-b border-divider">
         <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
         <div className="flex items-center gap-4 flex-1 min-w-0 justify-center">
           {/* Player 1 */}
           <div className="flex items-center gap-3 min-w-0">
             <div className="text-right min-w-0 uppercase">
-              <p className="text-[10px] text-ink-400 leading-tight">{p1Name.first}</p>
-              <p className="text-[15px] font-bold text-ink-900 leading-snug" {...playerClick(m.player1)}>{p1Name.last}</p>
+              <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
+              <p className="text-[15px] font-bold text-heading leading-snug" {...playerClick(m.player1)}>{p1Name.last}</p>
               <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
             </div>
             <PlayerImage player={m.player1} align="left" />
@@ -144,20 +144,20 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
   /* ── Walkover ────────────────────────────────────────── */
   if (isWalkover) {
     return (
-      <div className="flex items-center gap-6 px-6 py-5 border-b border-hairline">
+      <div className="flex items-center gap-6 px-6 py-5 border-b border-divider">
         <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
         <div className="flex items-center gap-4 flex-1 min-w-0 justify-center">
           {/* Player 1 */}
           <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
             <div className="text-right min-w-0 uppercase">
-              <p className="text-[10px] text-ink-400 leading-tight">{p1Name.first}</p>
-              <p className="text-[15px] font-bold text-ink-900 leading-snug" {...playerClick(m.player1)}>{p1Name.last}</p>
+              <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
+              <p className="text-[15px] font-bold text-heading leading-snug" {...playerClick(m.player1)}>{p1Name.last}</p>
               <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
             </div>
             <PlayerImage player={m.player1} align="left" />
           </div>
           {/* Score */}
-          <div className="flex items-center border border-hairline rounded-lg overflow-hidden shrink-0">
+          <div className="flex items-center border border-border-subtle rounded-lg overflow-hidden shrink-0">
             <span className="w-8 py-2 text-center font-display font-bold text-[16px] text-ink-900">W</span>
             <span className="w-px self-stretch bg-hairline" />
             <span className="w-8 py-2 text-center font-display font-bold text-[16px] text-ink-400">O</span>
@@ -166,7 +166,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <PlayerImage player={m.player2} align="right" />
             <div className="min-w-0 uppercase">
-              <p className="text-[10px] text-ink-400 leading-tight">{p2Name.first}</p>
+              <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
               <p className="text-[15px] text-ink-400 leading-snug line-through" {...playerClick(m.player2)}>{p2Name.last}</p>
               <CountryFlagChip code={m.player2?.country_code || 'PAK'} showLabel={false} size="sm" />
             </div>
@@ -178,10 +178,10 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
   }
 
   /* ── Normal / Live / Scheduled ───────────────────────── */
-  const rowBg = isLive ? 'bg-gradient-to-r from-live-tint to-transparent' : 'hover:bg-surface2/50 transition';
+  const rowBg = isLive ? 'bg-gradient-to-r from-live-tint to-transparent' : 'hover:bg-card-alt/50 transition';
 
   return (
-    <div className={`border-b border-hairline ${rowBg}`}>
+    <div className={`border-b border-divider ${rowBg}`}>
       <div className="flex items-center gap-6 px-6 py-5">
         {/* Left — match info */}
         <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
@@ -191,7 +191,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
           {/* Player 1 — right-aligned name, then image */}
           <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
             <div className="text-right min-w-0 uppercase">
-              <p className="text-[10px] text-ink-400 leading-tight">{p1Name.first}</p>
+              <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
               <p className={`text-[15px] font-bold leading-snug ${p1Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player1)}>
                 {p1Name.last}
               </p>
@@ -202,9 +202,9 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
 
           {/* Score */}
           {isScheduled ? (
-            <span className="font-display font-semibold text-[14px] text-ink-400 px-3 shrink-0">vs</span>
+            <span className="font-display font-semibold text-[14px] text-muted px-3 shrink-0">vs</span>
           ) : (
-            <div className="flex items-center border border-hairline rounded-lg overflow-hidden shrink-0">
+            <div className="flex items-center border border-border-subtle rounded-lg overflow-hidden shrink-0">
               <span className={`w-8 py-2 text-center font-display font-bold text-[18px] tabular-nums ${p1Won ? 'text-ink-900' : 'text-ink-400'}`}>
                 {m.player1_frames ?? 0}
               </span>
@@ -219,7 +219,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <PlayerImage player={m.player2} align="right" />
             <div className="min-w-0 uppercase">
-              <p className="text-[10px] text-ink-400 leading-tight">{p2Name.first}</p>
+              <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
               <p className={`text-[15px] font-bold leading-snug ${p2Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player2)}>
                 {p2Name.last}
               </p>

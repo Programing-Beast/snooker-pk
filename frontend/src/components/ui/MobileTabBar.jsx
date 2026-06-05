@@ -14,14 +14,14 @@ export default function MobileTabBar() {
   const profileTo = isAuthenticated ? '/dashboard' : '/login';
 
   return (
-    <div className="md:hidden sticky bottom-0 grid grid-cols-4 bg-white/95 backdrop-blur border-t border-hairline z-20">
+    <div className="md:hidden sticky bottom-0 grid grid-cols-4 bg-card/95 backdrop-blur border-t border-divider z-20">
       {TABS.map(tab => (
         <NavLink
           key={tab.to}
           to={tab.to === '/profile' ? profileTo : tab.to}
           end={tab.to === '/'}
           className={({ isActive }) =>
-            `flex flex-col items-center gap-0.5 py-2 ${isActive ? 'text-felt' : 'text-ink-400'}`
+            `flex flex-col items-center gap-0.5 py-2 ${isActive ? 'text-felt' : 'text-muted'}`
           }
         >
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
