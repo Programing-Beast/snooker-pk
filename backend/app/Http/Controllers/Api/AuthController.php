@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AuthController extends Controller
 {
@@ -44,5 +46,12 @@ class AuthController extends Controller
     public function me(Request $request): UserResource
     {
         return new UserResource($this->authService->me($request->user()));
+    }
+
+    public function umpires(): AnonymousResourceCollection
+    {
+        return UserResource::collection(
+            User::role('umpire')->orderBy('name')->get()
+        );
     }
 }

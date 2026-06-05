@@ -21,20 +21,20 @@ export default function HomePage() {
             <div className="flex items-center gap-2.5 seclabel text-felt-400 mb-5">
               <span className="w-1.5 h-1.5 rounded-full bg-live pulse" /> Pakistan's home of snooker
             </div>
-            <h1 className="font-display font-extrabold uppercase text-heading leading-[0.92] tracking-tight text-[42px] sm:text-[54px]">
+            <h1 className="font-display font-extrabold uppercase text-white leading-[0.92] tracking-tight text-[42px] sm:text-[54px]">
               Every frame,<br /><span className="text-brass">one platform.</span>
             </h1>
-            <p className="text-body text-[17px] mt-5 max-w-md">
+            <p className="text-ink-200 text-[17px] mt-5 max-w-md">
               Follow live tournaments, browse the draw, request entry and track the national rankings — from your local club to the national stage.
             </p>
             <div className="flex flex-wrap gap-3 mt-7">
               <Link to="/tournaments" className="btn btn-lg btn-primary">Browse tournaments</Link>
-              <Link to="/register" className="btn btn-lg bg-interactive text-heading border border-interactive-border hover:bg-interactive-hover">Create free account</Link>
+              <Link to="/register" className="btn btn-lg bg-white/15 text-white border border-white/20 hover:bg-white/25">Create free account</Link>
             </div>
             <div className="flex gap-7 mt-8">
-              <div><div className="font-display font-extrabold text-2xl text-heading tabular-nums">1,240+</div><div className="seclabel mt-0.5">Players</div></div>
-              <div><div className="font-display font-extrabold text-2xl text-heading tabular-nums">86</div><div className="seclabel mt-0.5">Tournaments</div></div>
-              <div><div className="font-display font-extrabold text-2xl text-heading tabular-nums">12</div><div className="seclabel mt-0.5">Cities</div></div>
+              <div><div className="font-display font-extrabold text-2xl text-white tabular-nums">1,240+</div><div className="seclabel text-ink-400 mt-0.5">Players</div></div>
+              <div><div className="font-display font-extrabold text-2xl text-white tabular-nums">86</div><div className="seclabel text-ink-400 mt-0.5">Tournaments</div></div>
+              <div><div className="font-display font-extrabold text-2xl text-white tabular-nums">12</div><div className="seclabel text-ink-400 mt-0.5">Cities</div></div>
             </div>
           </div>
           <div className="hidden lg:flex gap-3 justify-center opacity-80">

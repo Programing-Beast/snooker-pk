@@ -10,6 +10,7 @@ use App\Http\Resources\MatchResource;
 use App\Models\Match_;
 use App\Services\MatchService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class MatchController extends Controller
 {
@@ -63,5 +64,10 @@ class MatchController extends Controller
     public function board(Match_ $match): MatchResource
     {
         return new MatchResource($this->matchService->board($match));
+    }
+
+    public function umpireMatches(): AnonymousResourceCollection
+    {
+        return MatchResource::collection($this->matchService->umpireMatches(auth()->id()));
     }
 }

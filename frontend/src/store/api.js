@@ -17,6 +17,7 @@ export const api = createApi({
     'Prize',
     'PrizeAward',
     'EligiblePlayers',
+    'Umpire',
   ],
   endpoints: () => ({}),
 });

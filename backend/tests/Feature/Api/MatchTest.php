@@ -257,6 +257,8 @@ class MatchTest extends ApiTestCase
 
     public function test_board_umpire(): void
     {
+        $this->match->update(['umpire_id' => $this->umpireUser->id]);
+
         $response = $this->actingAs($this->umpireUser)
             ->getJson("/api/matches/{$this->match->id}/board");
 
@@ -278,6 +280,48 @@ class MatchTest extends ApiTestCase
             ->getJson("/api/matches/{$this->match->id}/board");
 
         $response->assertStatus(403);
+    }
+
+    public function test_board_forbidden_for_unassigned_umpire(): void
+    {
+        // Match has no umpire_id set, so this umpire is not assigned
+        $response = $this->actingAs($this->umpireUser)
+            ->getJson("/api/matches/{$this->match->id}/board");
+
+        $response->assertStatus(403);
+    }
+
+    public function test_board_allowed_for_assigned_umpire(): void
+    {
+        $this->match->update(['umpire_id' => $this->umpireUser->id]);
+
+        $response = $this->actingAs($this->umpireUser)
+            ->getJson("/api/matches/{$this->match->id}/board");
+
+        $response->assertOk()
+            ->assertJsonStructure(['data' => ['player1', 'player2', 'round', 'frames']]);
+    }
+
+    public function test_umpire_matches_returns_assigned_matches(): void
+    {
+        $this->match->update(['umpire_id' => $this->umpireUser->id]);
+
+        $response = $this->actingAs($this->umpireUser)
+            ->getJson('/api/umpire/matches');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $this->match->id);
+    }
+
+    public function test_admin_umpires_list(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/admin/umpires');
+
+        $response->assertOk();
+        $ids = collect($response->json('data'))->pluck('id')->all();
+        $this->assertContains($this->umpireUser->id, $ids);
     }
 
     public function test_complete_final_creates_prize_awards(): void

@@ -1,6 +1,7 @@
-import { ACTIONS, playerInitials } from '../../engine/snookerEngine';
+import { Link } from 'react-router-dom';
+import { playerInitials } from '../../engine/snookerEngine';
 
-export default function MatchEndOverlay({ state, dispatch }) {
+export default function MatchEndOverlay({ state }) {
   const w = state.players[0].frames > state.players[1].frames ? 0 : 1;
   const winner = state.players[w];
   const loser = state.players[1 - w];
@@ -37,12 +38,12 @@ export default function MatchEndOverlay({ state, dispatch }) {
               {winner.frames}<span className="text-ink-500"> – </span>{loser.frames}
             </div>
             <div className="text-ink-400 text-[13px] mt-1">def. {loser.name}</div>
-            <button
-              onClick={() => dispatch({ type: ACTIONS.RESET, config: { players: state.players, bestOf: state.bestOf, tournament: state.tournament, round: state.round } })}
+            <Link
+              to="/umpire/dashboard"
               className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md px-5 py-2.5 text-sm leading-none transition active:translate-y-px bg-felt text-white hover:bg-felt-700 mt-5"
             >
-              Confirm &amp; submit result
-            </button>
+              Done — back to dashboard
+            </Link>
           </div>
 
           {/* Frame history */}

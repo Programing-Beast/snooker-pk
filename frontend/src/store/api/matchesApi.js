@@ -41,7 +41,15 @@ const matchesApi = api.injectEndpoints({
     }),
     assignUmpire: builder.mutation({
       query: ({ id, data }) => ({ url: `/matches/${id}/assign-umpire`, method: 'POST', data }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Match', id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Match', id },
+        { type: 'Match', id: 'UMPIRE_LIST' },
+      ],
+    }),
+    getUmpireMatches: builder.query({
+      query: () => ({ url: '/umpire/matches' }),
+      transformResponse: (res) => res.data ?? res ?? [],
+      providesTags: [{ type: 'Match', id: 'UMPIRE_LIST' }],
     }),
   }),
 });
@@ -54,4 +62,5 @@ export const {
   useCompleteMatchMutation,
   useDeclareWinnerMutation,
   useAssignUmpireMutation,
+  useGetUmpireMatchesQuery,
 } = matchesApi;

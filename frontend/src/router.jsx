@@ -19,5 +19,6 @@ export function GuestRoute() {
   if (loading) return <div className="h-screen grid place-items-center bg-page"><span className="text-muted">Loading...</span></div>;
   if (!isAuthenticated) return <Outlet />;
   if (hasRole('admin')) return <Navigate to="/admin" replace />;
+  if (hasRole('umpire')) return <Navigate to="/umpire/dashboard" replace />;
   return <Navigate to="/dashboard" replace />;
 }

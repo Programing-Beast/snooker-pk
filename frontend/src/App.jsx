@@ -37,6 +37,7 @@ import ManageRankingsPage from './pages/admin/ManageRankingsPage';
 
 // Umpire
 import UmpireBoardPage from './pages/umpire/UmpireBoardPage';
+import UmpireDashboardPage from './pages/umpire/UmpireDashboardPage';
 
 export default function App() {
   return (
@@ -86,6 +87,15 @@ export default function App() {
                 <Route path="/admin/players" element={<ManagePlayersPage />} />
                 <Route path="/admin/players/new" element={<PlayerFormPage />} />
                 <Route path="/admin/players/:id/edit" element={<PlayerFormPage />} />
+              </Route>
+            </Route>
+          </Route>
+
+          {/* Umpire dashboard */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<RoleRoute role="umpire" />}>
+              <Route element={<PublicLayout />}>
+                <Route path="/umpire/dashboard" element={<UmpireDashboardPage />} />
               </Route>
             </Route>
           </Route>

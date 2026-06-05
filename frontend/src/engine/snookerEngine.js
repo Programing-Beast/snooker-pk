@@ -76,44 +76,47 @@ export function getPhaseLabel(state) {
 
 // ─── Initial state factory ───────────────────────────────────────────
 
-export function createInitialState({ players, bestOf, tournament = '', round = '' }) {
+export function createInitialState({ players, bestOf, tournament = '', round = '', frameNo = 1, frameHistory = [] }) {
+  const need = framesToWin(bestOf);
+  const mappedPlayers = players.map((p) => ({
+    id: p.id,
+    name: p.name,
+    countryCode: p.countryCode || 'PAK',
+    tier: p.tier || 'Amateur',
+    seed: p.seed || null,
+    frames: p.frames || 0,
+    points: 0,
+    highBreak: 0,
+    frameHighBreak: 0,
+  }));
+  const alreadyWon = mappedPlayers.some((p) => p.frames >= need);
+
   return {
     // Match context
     tournament,
     round,
     bestOf,
 
-    // Players: [{id, name, countryCode, tier, seed, frames, points, highBreak, frameHighBreak}]
-    players: players.map((p) => ({
-      id: p.id,
-      name: p.name,
-      countryCode: p.countryCode || 'PAK',
-      tier: p.tier || 'Amateur',
-      seed: p.seed || null,
-      frames: 0,
-      points: 0,
-      highBreak: 0,
-      frameHighBreak: 0,
-    })),
+    players: mappedPlayers,
 
     // Frame state
     activePlayerIndex: 0,
     reds: 15,
-    phase: 'reds', // 'reds' | 'colour' | 'clearing'
-    clearOn: 2,     // next colour in clearing sequence
-    currentBreak: [], // array of ball values potted this visit
+    phase: 'reds',
+    clearOn: 2,
+    currentBreak: [],
 
     // Overlays / flow
     foulOpen: false,
     foulValue: null,
-    frameOver: false,
-    frameWinner: null, // 0 or 1
-    matchOver: false,
+    frameOver: alreadyWon,
+    frameWinner: null,
+    matchOver: alreadyWon,
 
     // History
-    frameNo: 1,
+    frameNo,
     timer: 0,
-    frameHistory: [], // [{p1Score, p2Score, winner, topBreak}]
+    frameHistory,
   };
 }
 
@@ -159,8 +162,7 @@ function potBall(state, value) {
     if (value === 7) {
       // All balls potted — frame over
       updateHighBreak(s);
-      s.frameOver = true;
-      resolveFrameWinner(s);
+      finaliseFrame(s);
       return s;
     }
     s.clearOn = COLOUR_SEQUENCE[COLOUR_SEQUENCE.indexOf(value) + 1];
@@ -201,9 +203,8 @@ function foulApply(state, giveBack) {
   return s;
 }
 
-function endFrame(state) {
-  const s = cloneState(state);
-  updateHighBreak(s);
+/** Shared bookkeeping when a frame ends (natural or manual). Mutates state. */
+function finaliseFrame(s) {
   if (s.frameWinner == null) resolveFrameWinner(s);
 
   const w = s.frameWinner;
@@ -222,6 +223,12 @@ function endFrame(state) {
   if (s.players[w].frames >= framesToWin(s.bestOf)) {
     s.matchOver = true;
   }
+}
+
+function endFrame(state) {
+  const s = cloneState(state);
+  updateHighBreak(s);
+  finaliseFrame(s);
   return s;
 }
 

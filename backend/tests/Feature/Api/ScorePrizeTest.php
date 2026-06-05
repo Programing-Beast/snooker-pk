@@ -35,6 +35,7 @@ class ScorePrizeTest extends ApiTestCase
             'player1_id' => $this->player->id,
             'player2_id' => $this->player2->id,
             'status' => 'live',
+            'umpire_id' => $this->umpireUser->id,
         ]);
     }
 

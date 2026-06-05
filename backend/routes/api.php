@@ -70,7 +70,9 @@ Route::middleware('auth:sanctum')->group(function () {
     |----------------------------------------------------------------------
     */
 
-    Route::middleware('role:umpire|admin')->group(function () {
+    Route::middleware('role:umpire')->get('/umpire/matches', [MatchController::class, 'umpireMatches']);
+
+    Route::middleware(['role:umpire|admin', 'assigned_umpire'])->group(function () {
         Route::get('/matches/{match}/board', [MatchController::class, 'board']);
         Route::post('/matches/{match}/frames', [FrameController::class, 'store']);
         Route::put('/frames/{frame}', [FrameController::class, 'update']);
@@ -86,6 +88,9 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::middleware('role:admin')->group(function () {
+
+        // Umpire users list
+        Route::get('/admin/umpires', [AuthController::class, 'umpires']);
 
         // Players — admin create
         Route::post('/players', [PlayerController::class, 'store']);

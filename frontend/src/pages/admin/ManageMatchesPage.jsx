@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetTournamentQuery, useGetTournamentDrawQuery } from '../../store/api/tournamentsApi';
-import { useUpdateMatchMutation, useWalkoverMatchMutation, useCompleteMatchMutation, useDeclareWinnerMutation } from '../../store/api/matchesApi';
+import { useUpdateMatchMutation, useWalkoverMatchMutation, useCompleteMatchMutation, useDeclareWinnerMutation, useAssignUmpireMutation } from '../../store/api/matchesApi';
+import { useGetUmpireUsersQuery } from '../../store/api/usersApi';
 import MatchRow from '../../components/ui/MatchRow';
 import EmptyState from '../../components/ui/EmptyState';
 import Button from '../../components/ui/Button';
@@ -18,6 +19,8 @@ export default function ManageMatchesPage() {
   const [walkoverMatch] = useWalkoverMatchMutation();
   const [completeMatch] = useCompleteMatchMutation();
   const [declareWinner] = useDeclareWinnerMutation();
+  const [assignUmpire] = useAssignUmpireMutation();
+  const { data: umpireUsers = [] } = useGetUmpireUsersQuery();
 
   const [editMatch, setEditMatch] = useState(null);
   const [editForm, setEditForm] = useState({ scheduled_at: '', table_no: '', youtube_url: '', facebook_url: '' });
@@ -33,6 +36,11 @@ export default function ManageMatchesPage() {
   const [declareMatch, setDeclareMatch] = useState(null);
   const [declareForm, setDeclareForm] = useState({ loserScore: '' });
   const [declareSaving, setDeclareSaving] = useState(false);
+
+  // Assign Umpire modal state
+  const [assignMatch, setAssignMatch] = useState(null);
+  const [selectedUmpireId, setSelectedUmpireId] = useState('');
+  const [assignSaving, setAssignSaving] = useState(false);
 
   function openEdit(match) {
     setEditMatch(match);
@@ -138,6 +146,21 @@ export default function ManageMatchesPage() {
     setDeclareSaving(false);
   }
 
+  function openAssignModal(match) {
+    setAssignMatch(match);
+    setSelectedUmpireId(match.umpire?.id ?? '');
+  }
+
+  async function handleAssignUmpire() {
+    if (!assignMatch || !selectedUmpireId) return;
+    setAssignSaving(true);
+    try {
+      await assignUmpire({ id: assignMatch.id, data: { umpire_id: Number(selectedUmpireId) } }).unwrap();
+      setAssignMatch(null);
+    } catch { /* ignore */ }
+    setAssignSaving(false);
+  }
+
   const rounds = Array.isArray(drawData) ? drawData : (drawData?.rounds || []);
 
   return (
@@ -171,8 +194,9 @@ export default function ManageMatchesPage() {
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openScoreModal(m, round)}>Set Score</button>
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openDeclareModal(m, round)}>Declare Winner</button>
                         <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => handleComplete(m.id)}>Complete</button>
-                        {m.umpire && <span className="ml-auto text-[11px] text-muted">Umpire: {m.umpire.name}</span>}
-                        {!m.umpire && <span className="ml-auto text-[11px] text-muted italic">No umpire assigned</span>}
+                        <button className="btn btn-ghost btn-sm text-[11px] ml-auto" onClick={() => openAssignModal(m)}>
+                          {m.umpire ? `Umpire: ${m.umpire.name}` : 'Assign Umpire'}
+                        </button>
                       </>
                     ) : null}
                   />
@@ -276,6 +300,39 @@ export default function ManageMatchesPage() {
             </div>
           )}
         </ModalBody>
+      </Modal>
+
+      {/* Assign Umpire modal */}
+      <Modal open={!!assignMatch} onClose={() => setAssignMatch(null)}>
+        <ModalBody>
+          <h3 className="font-display font-bold text-[18px] mb-4">Assign Umpire</h3>
+          {assignMatch && (
+            <div className="space-y-4">
+              <p className="text-[13px] text-muted">
+                {assignMatch.player1?.name || 'TBD'} vs {assignMatch.player2?.name || 'TBD'}
+              </p>
+              <div>
+                <label className="block text-[13px] font-medium mb-1">Umpire</label>
+                <select
+                  className="w-full rounded-md border border-interactive-border bg-interactive px-3 py-2 text-sm text-heading"
+                  value={selectedUmpireId}
+                  onChange={e => setSelectedUmpireId(e.target.value)}
+                >
+                  <option value="">Select umpire...</option>
+                  {umpireUsers.map(u => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="ghost" size="sm" onClick={() => setAssignMatch(null)}>Cancel</Button>
+          <Button size="sm" onClick={handleAssignUmpire} disabled={assignSaving || !selectedUmpireId}>
+            {assignSaving ? 'Saving...' : 'Save'}
+          </Button>
+        </ModalFooter>
       </Modal>
     </div>
   );

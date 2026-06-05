@@ -7,11 +7,21 @@ use App\Models\Break_;
 use App\Models\Frame;
 use App\Models\Match_;
 use App\Models\Prize;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
 class MatchService
 {
     public function __construct(private PrizeAwardService $prizeAwardService) {}
+    public function umpireMatches(int $userId): Collection
+    {
+        return Match_::where('umpire_id', $userId)
+            ->with(['player1', 'player2', 'tournament', 'round'])
+            ->orderByRaw("CASE status WHEN 'live' THEN 0 WHEN 'scheduled' THEN 1 ELSE 2 END")
+            ->orderBy('scheduled_at')
+            ->get();
+    }
+
     public function show(Match_ $match): Match_
     {
         return $match->load([
@@ -217,11 +227,24 @@ class MatchService
         $score1 = $match->frames()->where('winner_id', $match->player1_id)->count();
         $score2 = $match->frames()->where('winner_id', $match->player2_id)->count();
 
-        $match->update([
+        $data = [
             'score1' => $score1,
             'score2' => $score2,
             'current_frame_no' => $score1 + $score2 + 1,
-        ]);
+        ];
+
+        // Auto-complete match when a player reaches the winning threshold
+        $framesToWin = $match->round->frames_to_win;
+        if ($match->status !== 'completed' && ($score1 >= $framesToWin || $score2 >= $framesToWin)) {
+            $data['status'] = 'completed';
+            $data['winner_id'] = $score1 >= $framesToWin ? $match->player1_id : $match->player2_id;
+        }
+
+        $match->update($data);
+
+        if (isset($data['winner_id'])) {
+            event(new \App\Events\MatchCompleted($match->fresh()));
+        }
     }
 
     private function checkScoreBasedPrizes(Match_ $match, Break_ $break): void

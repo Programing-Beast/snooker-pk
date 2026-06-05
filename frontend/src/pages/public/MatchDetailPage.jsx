@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGetMatchQuery } from '../../store/api/matchesApi';
+import { useAuth } from '../../context/AuthContext';
 import CountryFlagChip from '../../components/ui/CountryFlagChip';
 import MatchResultHero from '../../components/ui/MatchResultHero';
 import defaultPhoto from '../../assets/default-player.png';
@@ -210,6 +211,7 @@ function MatchTab({ match }) {
 export default function MatchDetailPage() {
   const { id } = useParams();
   const { data: match, isLoading } = useGetMatchQuery(id);
+  const { user, isAdmin, isUmpire } = useAuth();
   const [tab, setTab] = useState('frames');
 
   if (isLoading) {
@@ -287,6 +289,13 @@ export default function MatchDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Score Match button for admin or assigned umpire */}
+        {(isAdmin || (isUmpire && m.umpire?.id === user?.id)) && m.status !== 'completed' && m.status !== 'walkover' && (
+          <div className="flex justify-center mb-6">
+            <Link to={`/umpire/${m.id}`} className="btn btn-primary btn-sm">Score Match</Link>
+          </div>
+        )}
 
         {/* Hero — Players + Score */}
         <div className="mb-10">

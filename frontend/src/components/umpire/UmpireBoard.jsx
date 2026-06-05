@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ACTIONS,
   ALL_BALL_VALUES,
@@ -24,15 +26,73 @@ const DEMO_CONFIG = {
   round: 'Quarter-final',
 };
 
-export default function UmpireBoard({ config = DEMO_CONFIG }) {
+export default function UmpireBoard({ config = DEMO_CONFIG, onEndTurn, onFrameEnd, onMatchEnd }) {
   const { state, dispatch, undo } = useSnookerEngine(config);
   const need = framesToWin(state.bestOf);
   const disabled = state.frameOver || state.matchOver;
+
+  // Refs keep callbacks and state current without re-creating handleDispatch
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const cbRef = useRef({ onEndTurn, onFrameEnd, onMatchEnd });
+  cbRef.current = { onEndTurn, onFrameEnd, onMatchEnd };
+
+  // Wrapped dispatch that fires API persistence callbacks for turn-level actions
+  const handleDispatch = useCallback((action) => {
+    const s = stateRef.current;
+    const cbs = cbRef.current;
+
+    if (action.type === ACTIONS.END_TURN && cbs.onEndTurn) {
+      cbs.onEndTurn({
+        currentBreak: [...s.currentBreak],
+        activePlayerIndex: s.activePlayerIndex,
+      });
+    }
+    if (action.type === ACTIONS.FOUL_APPLY && cbs.onEndTurn) {
+      cbs.onEndTurn({
+        currentBreak: [...s.currentBreak],
+        activePlayerIndex: s.activePlayerIndex,
+        isFoul: true,
+        foulPoints: s.foulValue || 4,
+      });
+    }
+    dispatch(action);
+  }, [dispatch]);
+
+  // Fire onFrameEnd when frameOver transitions to true.
+  // Covers BOTH natural endings (potting black) and manual "End frame" button.
+  const prevFrameOverRef = useRef(false);
+  useEffect(() => {
+    if (state.frameOver && !prevFrameOverRef.current) {
+      // Save any unsaved current break (umpire clicked "End frame" without "End turn")
+      if (state.currentBreak.length > 0 && cbRef.current.onEndTurn) {
+        cbRef.current.onEndTurn({
+          currentBreak: [...state.currentBreak],
+          activePlayerIndex: state.activePlayerIndex,
+        });
+      }
+
+      const winner = state.frameWinner ?? (state.players[0].points >= state.players[1].points ? 0 : 1);
+      cbRef.current.onFrameEnd?.({
+        frameNo: state.frameNo,
+        winner,
+        p1Score: state.players[0].points,
+        p2Score: state.players[1].points,
+        matchOver: state.matchOver,
+      });
+    }
+    prevFrameOverRef.current = state.frameOver;
+  }, [state.frameOver, state.frameNo, state.frameWinner, state.players]);
 
   return (
     <div className="relative h-full flex flex-col bg-night felt-grain">
       {/* Top bar */}
       <div className="flex items-center gap-4 px-6 h-[60px] bg-night border-b border-hairline-d shrink-0">
+        <Link to="/umpire/dashboard" className="text-ink-400 hover:text-white transition" title="Back to dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </Link>
         <span className="font-display font-extrabold text-white uppercase tracking-tight text-[15px]">
           Snooker<span className="text-live">PK</span>
         </span>
@@ -86,7 +146,7 @@ export default function UmpireBoard({ config = DEMO_CONFIG }) {
                 key={v}
                 state={state}
                 value={v}
-                onPot={(val) => dispatch({ type: ACTIONS.POT_BALL, value: val })}
+                onPot={(val) => handleDispatch({ type: ACTIONS.POT_BALL, value: val })}
               />
             ))}
           </div>
@@ -96,7 +156,7 @@ export default function UmpireBoard({ config = DEMO_CONFIG }) {
           {/* Action buttons */}
           <div className="grid grid-cols-3 gap-3 mt-auto">
             <button
-              onClick={() => dispatch({ type: ACTIONS.END_TURN })}
+              onClick={() => handleDispatch({ type: ACTIONS.END_TURN })}
               disabled={disabled}
               className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md px-5 py-4 text-[15px] leading-none transition active:translate-y-px bg-panel2 border border-hairline-d text-white hover:bg-panel disabled:opacity-30"
             >
@@ -106,7 +166,7 @@ export default function UmpireBoard({ config = DEMO_CONFIG }) {
               End turn
             </button>
             <button
-              onClick={() => dispatch({ type: ACTIONS.FOUL_OPEN })}
+              onClick={() => handleDispatch({ type: ACTIONS.FOUL_OPEN })}
               disabled={disabled}
               className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md px-5 py-4 text-[15px] leading-none transition active:translate-y-px bg-bad/90 text-white hover:bg-bad disabled:opacity-30"
             >
@@ -128,7 +188,7 @@ export default function UmpireBoard({ config = DEMO_CONFIG }) {
           </div>
 
           <button
-            onClick={() => dispatch({ type: ACTIONS.END_FRAME })}
+            onClick={() => handleDispatch({ type: ACTIONS.END_FRAME })}
             disabled={disabled}
             className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md w-full px-5 py-3.5 text-[15px] leading-none transition active:translate-y-px bg-brass text-[#3a2c08] hover:brightness-105 disabled:opacity-30"
           >
@@ -145,9 +205,9 @@ export default function UmpireBoard({ config = DEMO_CONFIG }) {
       </div>
 
       {/* Overlays */}
-      {state.matchOver && <MatchEndOverlay state={state} dispatch={dispatch} />}
-      {!state.matchOver && state.frameOver && <FrameEndOverlay state={state} dispatch={dispatch} />}
-      {!state.matchOver && !state.frameOver && state.foulOpen && <FoulOverlay state={state} dispatch={dispatch} />}
+      {state.matchOver && <MatchEndOverlay state={state} />}
+      {!state.matchOver && state.frameOver && <FrameEndOverlay state={state} dispatch={handleDispatch} />}
+      {!state.matchOver && !state.frameOver && state.foulOpen && <FoulOverlay state={state} dispatch={handleDispatch} />}
     </div>
   );
 }

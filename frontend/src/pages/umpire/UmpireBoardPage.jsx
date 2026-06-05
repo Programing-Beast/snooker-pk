@@ -1,11 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import * as matchesApi from '../../api/matches';
 import * as framesApi from '../../api/frames';
 import * as breaksApi from '../../api/breaks';
 import UmpireBoard from '../../components/umpire/UmpireBoard';
-import { ACTIONS } from '../../engine/snookerEngine';
-import useSnookerEngine from '../../hooks/useSnookerEngine';
 
 export default function UmpireBoardPage() {
   const { matchId } = useParams();
@@ -14,15 +12,35 @@ export default function UmpireBoardPage() {
   const [error, setError] = useState(null);
   const [currentFrameId, setCurrentFrameId] = useState(null);
 
-  // Load match board data
+  // Refs so callbacks always read the latest values — no stale closures
+  const frameIdRef = useRef(currentFrameId);
+  frameIdRef.current = currentFrameId;
+  const boardDataRef = useRef(boardData);
+  boardDataRef.current = boardData;
+
+  // Load match board data and initialise frame
   useEffect(() => {
     matchesApi.board(matchId)
-      .then(res => {
+      .then(async (res) => {
         const data = res.data.data ?? res.data;
         setBoardData(data);
-        // If there's an active frame, track it
-        if (data.current_frame?.id) {
-          setCurrentFrameId(data.current_frame.id);
+
+        // Find an active frame or use the last one from the frames array
+        const frames = data.frames ?? [];
+        const activeFrame = frames.find(f => f.status === 'in_progress')
+          || frames[frames.length - 1];
+
+        if (activeFrame?.id) {
+          setCurrentFrameId(activeFrame.id);
+          frameIdRef.current = activeFrame.id;
+        } else {
+          // No frames yet — create the first one
+          try {
+            const frameRes = await framesApi.create(matchId, { frame_no: 1 });
+            const newId = frameRes.data.data?.id ?? frameRes.data?.id;
+            setCurrentFrameId(newId);
+            frameIdRef.current = newId;
+          } catch { /* continue without frame tracking */ }
         }
       })
       .catch(err => setError(err.response?.data?.message || 'Failed to load match'))
@@ -30,6 +48,8 @@ export default function UmpireBoardPage() {
   }, [matchId]);
 
   // Build config for UmpireBoard from API data
+  const ftw = boardData?.round?.frames_to_win;
+  const completedFrames = (boardData?.frames ?? []).filter(f => f.status === 'completed');
   const config = boardData ? {
     players: [
       {
@@ -38,6 +58,7 @@ export default function UmpireBoardPage() {
         countryCode: boardData.player1?.country_code || 'PAK',
         tier: boardData.player1?.tier || 'Amateur',
         seed: boardData.player1?.seed || null,
+        frames: boardData.score1 || 0,
       },
       {
         id: boardData.player2?.id,
@@ -45,48 +66,70 @@ export default function UmpireBoardPage() {
         countryCode: boardData.player2?.country_code || 'PAK',
         tier: boardData.player2?.tier || 'Amateur',
         seed: boardData.player2?.seed || null,
+        frames: boardData.score2 || 0,
       },
     ],
-    bestOf: boardData.best_of || boardData.frames_to_win ? (boardData.frames_to_win * 2 - 1) : 9,
+    bestOf: ftw ? (ftw * 2 - 1) : 9,
     tournament: boardData.tournament?.name || '',
     round: boardData.round?.name || '',
+    frameNo: (boardData.current_frame_no ?? completedFrames.length + 1),
+    frameHistory: completedFrames.map(f => ({
+      p1Score: f.score1 || 0,
+      p2Score: f.score2 || 0,
+      winner: f.winner_id === boardData.player1?.id ? 0 : 1,
+      topBreak: f.high_break_value || 0,
+    })),
   } : null;
 
-  // Persist break to API on end turn
-  const handleEndTurn = useCallback(async (breakBalls, playerIndex) => {
-    if (!currentFrameId || !breakBalls.length) return;
+  // Persist break to API on end turn / foul
+  const handleEndTurn = useCallback(async (turnData) => {
+    const frameId = frameIdRef.current;
+    const bd = boardDataRef.current;
+    if (!frameId || !bd) return;
+    const { currentBreak, activePlayerIndex, isFoul, foulPoints } = turnData;
+    if (!currentBreak.length && !isFoul) return;
+
+    const players = [bd.player1, bd.player2];
+    const playerId = players[activePlayerIndex]?.id;
+    if (!playerId) return;
+
     try {
-      await breaksApi.create(currentFrameId, {
-        player_index: playerIndex,
-        balls: breakBalls,
-        total: breakBalls.reduce((s, v) => s + v, 0),
+      await breaksApi.create(frameId, {
+        player_id: playerId,
+        points: currentBreak.reduce((s, v) => s + v, 0),
+        balls: currentBreak,
+        is_foul_turn: isFoul || false,
+        foul_points: foulPoints || 0,
       });
     } catch { /* continue local scoring */ }
-  }, [currentFrameId]);
+  }, []);
 
   // Persist frame end to API
   const handleFrameEnd = useCallback(async (frameData) => {
-    if (!currentFrameId) return;
+    const frameId = frameIdRef.current;
+    const bd = boardDataRef.current;
+    if (!frameId || !bd) return;
+    const players = [bd.player1, bd.player2];
+    const winnerId = players[frameData.winner]?.id;
+
     try {
-      await framesApi.update(currentFrameId, {
-        player1_score: frameData.p1Score,
-        player2_score: frameData.p2Score,
-        winner_index: frameData.winner,
+      await framesApi.update(frameId, {
+        winner_id: winnerId,
         status: 'completed',
       });
-      // Create next frame
-      const res = await framesApi.create(matchId, {
-        frame_number: frameData.frameNo + 1,
-      });
-      setCurrentFrameId(res.data.data?.id ?? res.data?.id);
     } catch { /* continue */ }
-  }, [currentFrameId, matchId]);
 
-  // Persist match end to API
-  const handleMatchEnd = useCallback(async () => {
-    try {
-      await matchesApi.complete(matchId);
-    } catch { /* ignore */ }
+    // Only create next frame if match isn't over
+    if (!frameData.matchOver) {
+      try {
+        const res = await framesApi.create(matchId, {
+          frame_no: frameData.frameNo + 1,
+        });
+        const newId = res.data.data?.id ?? res.data?.id;
+        setCurrentFrameId(newId);
+        frameIdRef.current = newId; // immediately available to other callbacks
+      } catch { /* ignore */ }
+    }
   }, [matchId]);
 
   if (loading) {
@@ -115,10 +158,14 @@ export default function UmpireBoardPage() {
     );
   }
 
-  // Render the existing UmpireBoard with config from API
+  // Render the existing UmpireBoard with config + persistence callbacks
   return (
     <div className="h-screen bg-night">
-      <UmpireBoard config={config} />
+      <UmpireBoard
+        config={config}
+        onEndTurn={handleEndTurn}
+        onFrameEnd={handleFrameEnd}
+      />
     </div>
   );
 }

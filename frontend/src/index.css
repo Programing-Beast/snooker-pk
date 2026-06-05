@@ -108,6 +108,18 @@
   --sem-interactive: rgba(255, 255, 255, 0.10);
   --sem-interactive-hover: rgba(255, 255, 255, 0.20);
   --sem-interactive-border: rgba(255, 255, 255, 0.15);
+
+  --color-page: #0C100E;
+  --color-card: #16201A;
+  --color-card-alt: #1F2D26;
+  --color-heading: #fff;
+  --color-body: #EDF0EC;
+  --color-muted: #95A39A;
+  --color-divider: #2B3A32;
+  --color-border-subtle: #33433B;
+  --color-interactive: rgba(255, 255, 255, 0.10);
+  --color-interactive-hover: rgba(255, 255, 255, 0.20);
+  --color-interactive-border: rgba(255, 255, 255, 0.15);
 }
 
 /* Light context — resets to light values inside dark-ctx */
@@ -123,6 +135,18 @@
   --sem-interactive: rgba(0, 0, 0, 0.06);
   --sem-interactive-hover: rgba(0, 0, 0, 0.10);
   --sem-interactive-border: rgba(0, 0, 0, 0.12);
+
+  --color-page: #F6F5F0;
+  --color-card: #fff;
+  --color-card-alt: #F1EFE8;
+  --color-heading: #13201A;
+  --color-body: #1F2D26;
+  --color-muted: #95A39A;
+  --color-divider: #E2E6DF;
+  --color-border-subtle: #DDE4DE;
+  --color-interactive: rgba(0, 0, 0, 0.06);
+  --color-interactive-hover: rgba(0, 0, 0, 0.10);
+  --color-interactive-border: rgba(0, 0, 0, 0.12);
 }
 
 /* Base styles */
