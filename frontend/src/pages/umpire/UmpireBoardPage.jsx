@@ -49,7 +49,23 @@ export default function UmpireBoardPage() {
 
   // Build config for UmpireBoard from API data
   const ftw = boardData?.round?.frames_to_win;
-  const completedFrames = (boardData?.frames ?? []).filter(f => f.status === 'completed');
+  const allFrames = boardData?.frames ?? [];
+  const completedFrames = allFrames.filter(f => f.status === 'completed');
+  const activeFrame = allFrames.find(f => f.status === 'in_progress') || allFrames[allFrames.length - 1];
+  const activeBreaks = (activeFrame && activeFrame.status !== 'completed')
+    ? (activeFrame.breaks || [])
+    : [];
+
+  // Build resumeBreaks: ordered turns from the current in-progress frame
+  const p1Id = boardData?.player1?.id;
+  const resumeBreaks = activeBreaks.map(b => ({
+    playerIndex: b.player_id === p1Id ? 0 : 1,
+    points: b.points || 0,
+    balls: b.balls || [],
+    isFoul: b.is_foul_turn || false,
+    foulPoints: b.foul_points || 0,
+  }));
+
   const config = boardData ? {
     players: [
       {
@@ -79,6 +95,7 @@ export default function UmpireBoardPage() {
       winner: f.winner_id === boardData.player1?.id ? 0 : 1,
       topBreak: f.high_break_value || 0,
     })),
+    resumeBreaks,
   } : null;
 
   // Persist break to API on end turn / foul

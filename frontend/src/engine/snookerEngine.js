@@ -76,7 +76,7 @@ export function getPhaseLabel(state) {
 
 // ─── Initial state factory ───────────────────────────────────────────
 
-export function createInitialState({ players, bestOf, tournament = '', round = '', frameNo = 1, frameHistory = [] }) {
+export function createInitialState({ players, bestOf, tournament = '', round = '', frameNo = 1, frameHistory = [], resumeBreaks = [] }) {
   const need = framesToWin(bestOf);
   const mappedPlayers = players.map((p) => ({
     id: p.id,
@@ -91,6 +91,39 @@ export function createInitialState({ players, bestOf, tournament = '', round = '
   }));
   const alreadyWon = mappedPlayers.some((p) => p.frames >= need);
 
+  // Replay saved breaks from the current in-progress frame
+  let reds = 15;
+  let lastPlayerIndex = 0;
+
+  if (resumeBreaks.length > 0) {
+    for (const brk of resumeBreaks) {
+      const pi = brk.playerIndex;
+      const player = mappedPlayers[pi];
+      lastPlayerIndex = pi;
+
+      if (brk.isFoul) {
+        // Foul points go to opponent
+        mappedPlayers[1 - pi].points += (brk.foulPoints || 4);
+      } else {
+        player.points += brk.points;
+        // Count reds potted to track remaining reds
+        if (brk.balls) {
+          for (const v of brk.balls) {
+            if (v === 1) reds--;
+          }
+        }
+        // Track high break
+        if (brk.points > player.frameHighBreak) player.frameHighBreak = brk.points;
+        if (brk.points > player.highBreak) player.highBreak = brk.points;
+      }
+    }
+    // After the last recorded break, the turn switches to the other player
+    const lastBreak = resumeBreaks[resumeBreaks.length - 1];
+    lastPlayerIndex = 1 - lastBreak.playerIndex;
+  }
+
+  if (reds < 0) reds = 0;
+
   return {
     // Match context
     tournament,
@@ -100,9 +133,9 @@ export function createInitialState({ players, bestOf, tournament = '', round = '
     players: mappedPlayers,
 
     // Frame state
-    activePlayerIndex: 0,
-    reds: 15,
-    phase: 'reds',
+    activePlayerIndex: resumeBreaks.length > 0 ? lastPlayerIndex : 0,
+    reds,
+    phase: reds > 0 ? 'reds' : 'clearing',
     clearOn: 2,
     currentBreak: [],
 

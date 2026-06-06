@@ -131,7 +131,10 @@ class MatchService
             $data['frame_no'] = $match->current_frame_no;
         }
 
-        $frame = Frame::create($data);
+        $frame = Frame::firstOrCreate(
+            ['match_id' => $data['match_id'], 'frame_no' => $data['frame_no']],
+            $data,
+        );
 
         return $frame;
     }

@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
 
         // Umpire user
         $umpire = User::factory()->create([
-            'name' => 'Umpire',
+            'name' => 'Desislava Bozhilova',
             'email' => 'umpire@snookerpk.com',
         ]);
         $umpire->assignRole('umpire');

@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useGetTournamentQuery, useGetTournamentDrawQuery } from '../../store/api/tournamentsApi';
 import { useUpdateMatchMutation, useWalkoverMatchMutation, useCompleteMatchMutation, useDeclareWinnerMutation, useAssignUmpireMutation } from '../../store/api/matchesApi';
 import { useGetUmpireUsersQuery } from '../../store/api/usersApi';
 import MatchRow from '../../components/ui/MatchRow';
+import MatchResultHero from '../../components/ui/MatchResultHero';
+import StatusBadge from '../../components/ui/StatusBadge';
 import EmptyState from '../../components/ui/EmptyState';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Modal, { ModalBody, ModalFooter } from '../../components/ui/Modal';
+import PlayerAvatar from '../../components/ui/PlayerAvatar';
 import RoundHeader from '../../components/ui/RoundHeader';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 
@@ -67,7 +70,7 @@ export default function ManageMatchesPage() {
   }
 
   async function handleComplete(matchId) {
-    await completeMatch(matchId).unwrap();
+    await completeMatch({ id: matchId, tournamentId: id }).unwrap();
   }
 
   // Set Score modal helpers
@@ -112,7 +115,7 @@ export default function ManageMatchesPage() {
     setScoreSaving(true);
     try {
       await updateMatch({ id: scoreMatch.id, data: { score1: s1, score2: s2 }, tournamentId: id }).unwrap();
-      await completeMatch(scoreMatch.id).unwrap();
+      await completeMatch({ id: scoreMatch.id, tournamentId: id }).unwrap();
       setScoreMatch(null);
     } catch (err) {
       setScoreError(err.data?.message || 'Failed to complete match.');
@@ -155,7 +158,7 @@ export default function ManageMatchesPage() {
     if (!assignMatch || !selectedUmpireId) return;
     setAssignSaving(true);
     try {
-      await assignUmpire({ id: assignMatch.id, data: { umpire_id: Number(selectedUmpireId) } }).unwrap();
+      await assignUmpire({ id: assignMatch.id, data: { umpire_id: Number(selectedUmpireId) }, tournamentId: id }).unwrap();
       setAssignMatch(null);
     } catch { /* ignore */ }
     setAssignSaving(false);
@@ -180,22 +183,76 @@ export default function ManageMatchesPage() {
             <div key={round.id} className="card overflow-hidden">
               <RoundHeader name={round.name} subtitle={round.frames_to_win ? `Best of ${round.frames_to_win * 2 - 1}` : undefined} detail={`${round.matches?.length || 0} matches`} />
               {round.matches?.map((m, i) => {
-                const isActive = m.status !== 'completed' && m.status !== 'walkover' && m.player1 && m.player2;
+                const isCompleted = m.status === 'completed' || m.status === 'walkover';
+                const isActive = !isCompleted && m.player1 && m.player2;
+                const hasBothPlayers = m.player1 && m.player2;
+                const winnerId = m.winner?.id;
+                const p1IsWinner = winnerId && String(winnerId) === String(m.player1?.id);
+
+                if (isCompleted && hasBothPlayers) {
+                  return (
+                    <div key={m.id} className="border-b border-divider px-6 py-5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-sm font-bold text-ink-700">Match {i + 1}</span>
+                        <StatusBadge status={m.status} />
+                        {m.status === 'walkover' && <span className="badge bg-ink-100 text-ink-500 text-[9px]">W/O</span>}
+                      </div>
+                      <MatchResultHero
+                        player1={m.player1}
+                        player2={m.player2}
+                        p1Frames={m.status === 'walkover' ? (p1IsWinner ? 'W' : 'O') : (m.player1_frames ?? m.score1 ?? 0)}
+                        p2Frames={m.status === 'walkover' ? (p1IsWinner ? 'O' : 'W') : (m.player2_frames ?? m.score2 ?? 0)}
+                        winnerId={winnerId}
+                        label={m.status === 'walkover' ? 'Walkover' : 'Frames'}
+                        dark={false}
+                        compact
+                      />
+                      <div className="flex items-center gap-2 mt-3">
+                        <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => openEdit(m)}>Edit</button>
+                        <button className="btn btn-ghost btn-sm text-[11px] ml-auto flex items-center gap-1.5" onClick={() => openAssignModal(m)}>
+                          {m.umpire ? (
+                            <>
+                              <PlayerAvatar name={m.umpire.name} size="sm" />
+                              <span className="text-felt font-semibold">{m.umpire.name}</span>
+                              <span className="text-muted">(umpire)</span>
+                            </>
+                          ) : (
+                            <span className="text-muted">Assign Umpire</span>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <MatchRow
                     key={m.id}
                     match={m}
                     index={i + 1}
                     onEdit={() => openEdit(m)}
-                    adminActions={isActive ? (
+                    adminActions={hasBothPlayers ? (
                       <>
-                        <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => handleWalkover(m.id, m.player1.id)}>W/O → {m.player1.name?.split(' ').pop()}</button>
-                        <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => handleWalkover(m.id, m.player2.id)}>W/O → {m.player2.name?.split(' ').pop()}</button>
-                        <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openScoreModal(m, round)}>Set Score</button>
-                        <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openDeclareModal(m, round)}>Declare Winner</button>
-                        <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => handleComplete(m.id)}>Complete</button>
-                        <button className="btn btn-ghost btn-sm text-[11px] ml-auto" onClick={() => openAssignModal(m)}>
-                          {m.umpire ? `Umpire: ${m.umpire.name}` : 'Assign Umpire'}
+                        {isActive && (
+                          <>
+                            <Link to={`/umpire/${m.id}`} className="btn btn-primary btn-sm text-[11px]">Scoreboard</Link>
+                            <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => handleWalkover(m.id, m.player1.id)}>W/O → {m.player1.name?.split(' ').pop()}</button>
+                            <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => handleWalkover(m.id, m.player2.id)}>W/O → {m.player2.name?.split(' ').pop()}</button>
+                            <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openScoreModal(m, round)}>Set Score</button>
+                            <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openDeclareModal(m, round)}>Declare Winner</button>
+                            <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => handleComplete(m.id)}>Complete</button>
+                          </>
+                        )}
+                        <button className="btn btn-ghost btn-sm text-[11px] ml-auto flex items-center gap-1.5" onClick={() => openAssignModal(m)}>
+                          {m.umpire ? (
+                            <>
+                              <PlayerAvatar name={m.umpire.name} size="sm" />
+                              <span className="text-felt font-semibold">{m.umpire.name}</span>
+                              <span className="text-muted">(umpire)</span>
+                            </>
+                          ) : (
+                            <span className="text-muted">Assign Umpire</span>
+                          )}
                         </button>
                       </>
                     ) : null}

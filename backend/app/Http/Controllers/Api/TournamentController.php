@@ -62,7 +62,7 @@ class TournamentController extends Controller
     {
         return response()->json([
             'data' => RoundResource::collection(
-                $tournament->rounds()->with(['matches.player1', 'matches.player2', 'matches.winner'])->get()
+                $tournament->rounds()->with(['matches.player1', 'matches.player2', 'matches.winner', 'matches.umpire'])->get()
             ),
         ]);
     }

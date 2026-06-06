@@ -5,7 +5,7 @@
 - [x] Spatie roles/permissions (admin, player, umpire)
 - [x] Migrations (all tables — users, players, tournaments, prizes, contacts, tournament_entries, rounds, matches, frames, breaks)
 - [x] Models + relationships (User, Player, Tournament, Prize, Contact, TournamentEntry, Round, Match_, Frame, Break_)
-- [x] Basic seeder (roles, admin user, umpire user, 32 sample players with phones)
+- [x] Basic seeder (roles, admin user, umpire user (Desislava Bozhilova), 32 sample players with phones)
 - [x] bootstrap/app.php — API routes, Sanctum stateful middleware, Spatie middleware aliases
 - [x] AppServiceProvider — route model bindings for Match_ and Break_
 - [x] routes/api.php — 58+ endpoints across public, auth, umpire, admin groups
@@ -66,11 +66,15 @@
 - [x] Feature tests (9 tests — preview, generate, byes, confirm, reroll, no-rounds edge case, bye advancement)
 
 ## Phase 8 — Matches + Live Scoring
-- [x] MatchService (show, update, assignUmpire, walkover, complete, declareWinner, board, createFrame, updateFrame, createBreak, updateBreak, deleteBreak, score cascade: breaks → frame scores → match scores)
+- [x] MatchService (show, update, assignUmpire, walkover, complete, declareWinner, board, createFrame, updateFrame, createBreak, updateBreak, deleteBreak, umpireMatches, score cascade: breaks → frame scores → match scores)
+- [x] Frame::firstOrCreate (prevents duplicate frame key violations on concurrent requests)
+- [x] EnsureAssignedUmpire middleware (admins pass unconditionally; umpires must be assigned to the match)
 - [x] Match completion side-effects extracted into Laravel events: `MatchCompleted` event dispatched by MatchService; `AdvanceWinner` listener (fills next-round bracket slot, auto-sets `generated_at`); `CompleteTournament` listener (sets winner/runner-up, awards ranking points from prizes)
 - [x] UpdateMatchRequest (includes score1/score2), AssignUmpireRequest, WalkoverRequest (includes optional score1/score2), StoreFrameRequest, UpdateFrameRequest, StoreBreakRequest, UpdateBreakRequest
 - [x] MatchResource, FrameResource, BreakResource
-- [x] MatchController (show, update, assignUmpire, walkover, complete, declareWinner, board), FrameController, BreakController
+- [x] MatchController (show, update, assignUmpire, walkover, complete, declareWinner, board, umpireMatches), FrameController, BreakController
+- [x] `GET /umpire/matches` — returns matches assigned to authenticated umpire
+- [x] `GET /admin/umpires` — returns users with umpire role (for assign-umpire dropdown)
 - [x] `POST /matches/{match}/declare-winner` — admin endpoint to directly pick a winner (sets status=completed, optional scores, advances bracket)
 - [x] Feature tests (36 tests — match CRUD, umpire assignment, walkover, complete, declare winner, score update, board, frames, breaks, score recalculation, high-break tracking, foul scoring, auth/role guards)
 

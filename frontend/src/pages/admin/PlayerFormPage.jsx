@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { api } from '../../store/api';
 import * as playersApi from '../../api/players';
 import * as playerPhonesApi from '../../api/playerPhones';
 import Input from '../../components/ui/Input';
@@ -19,6 +21,7 @@ const PK_CITIES = [
 export default function PlayerFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const isEdit = !!id;
 
   const [form, setForm] = useState({
@@ -113,8 +116,10 @@ export default function PlayerFormPage() {
 
       if (isEdit) {
         await playersApi.update(id, data);
+        dispatch(api.util.invalidateTags([{ type: 'Player', id }, { type: 'Player', id: 'LIST' }]));
       } else {
         await playersApi.create(data);
+        dispatch(api.util.invalidateTags([{ type: 'Player', id: 'LIST' }]));
       }
       navigate('/admin/players');
     } catch (err) {

@@ -5,12 +5,14 @@
 ### Setup
 - [x] Vite + React + Tailwind project scaffold
 - [x] Baize design tokens in CSS (@theme)
-- [x] Google Fonts (Saira + Hanken Grotesk)
+- [x] Google Fonts (Saira + Hanken Grotesk + Rokkitt slab-serif)
 - [x] Vite proxy to Laravel API (`/api` + `/storage`)
 - [x] Axios API client (`src/api/client.js` + 15 API modules)
 - [x] AuthContext (login, logout, register, me, role checks)
+- [x] Redux Toolkit + RTK Query state management (store/api.js + endpoint slices)
 - [x] Routing — react-router with ProtectedRoute, RoleRoute, GuestRoute (`router.jsx` + `App.jsx`)
 - [x] Layouts — PublicLayout (TopNav + MobileTabBar), AdminLayout (sidebar + mobile header)
+- [x] Vite proxy targeting `127.0.0.1:8000` (IPv4 fix for macOS)
 
 ### Scoring Engine
 - [x] snookerEngine.js — framework-agnostic reducer (ported from umpire.js)
@@ -26,27 +28,29 @@
 - [x] FoulOverlay (foul value picker + give-back decision)
 - [x] FrameEndOverlay (winner, score, next breaker choice)
 - [x] MatchEndOverlay (winner, frame history, submit button)
+- [x] API integration (persist breaks, complete frame/match)
+- [x] Frame state resume on page refresh (replays saved breaks to restore scores, reds, high breaks)
 - [ ] UmpireBoard mobile layout
-- [ ] API integration (persist breaks, complete frame/match)
 
 ### Shared Components (from Design System)
 - [x] Button (variants: primary, ghost, outline, brass, danger, live; sizes: sm, md, lg)
 - [x] Input (with label, error state)
 - [x] Select (with label, error state)
 - [x] Toggle
-- [x] FileUpload
+- [x] FileUpload (JPG, PNG, WebP support; fixed double-dialog bug)
 - [x] StatusBadge (live, upcoming, completed, pending, approved, rejected, pro, amateur)
 - [x] CountryFlagChip (PAK flag image, configurable size, optional label)
 - [x] PlayerAvatar (sm/md/lg/xl sizes, photo or initials fallback, pro brass ring)
 - [x] TournamentCard
 - [x] StatCard (with progress bar and trend)
 - [x] ProductCard
-- [x] MatchResultHero (two-player hero with PortraitCard gold/dark portraits, frame scores)
+- [x] MatchResultHero (two-player hero with PortraitCard gold/dark portraits, frame scores, compact mode)
 - [x] MatchRow (flat, bye/walkover/live/scheduled states, frame scores)
 - [x] PlayerListItem (avatar, name, city, phone, country flag)
 - [x] RankingsRow
 - [x] Modal
-- [x] PortraitCard (layered portrait with gold/dark radial gradient treatment for winner/loser)
+- [x] PortraitCard (layered portrait with gold/dark radial gradient treatment for winner/loser, compact mode)
+- [x] PlayerCard (WST-style: dog-ear border frame, photo above frame, Rokkitt slab-serif surname, gold hover)
 - [x] EmptyState (title, message, optional action)
 - [x] Tabs
 - [x] TopNav (sticky, responsive, notification bell, avatar+name for logged-in users)
@@ -85,26 +89,31 @@
 - [x] Entry request states on tournament detail page (request/pending/approved/rejected/closed)
 
 ### Admin Routes
-- [x] Admin dashboard (`/admin`) — stat cards, tournament list, pending entries, quick actions
+- [x] Admin dashboard (`/admin`) — stat cards (from /stats API), tournament list, pending entries, quick actions
 - [x] Create/edit tournament (`/admin/tournaments/new`, `/admin/tournaments/:id/edit`)
 - [x] Admin tournament detail (`/admin/tournaments/:id`) — tab navigation, winner/runner-up display card, round status badges (pending/draw ready/in progress/completed with match counts)
 - [x] Manage entries (`/admin/tournaments/:id/entries`) — bulk add players, searchable, approve/reject
 - [x] Manage players (`/admin/players`, `/admin/players/new`, `/admin/players/:id/edit`)
 - [x] Generate draw (`/admin/tournaments/:id/draw`)
 - [x] Draw reveal (`/admin/tournaments/:id/draw/reveal`)
-- [x] Manage matches (`/admin/tournaments/:id/matches`) — Set Score modal (enter frame scores + auto-complete), Declare Winner modal (pick winner + optional scores), walkover buttons, complete button
+- [x] Manage matches (`/admin/tournaments/:id/matches`) — Set Score modal (enter frame scores + auto-complete), Declare Winner modal (pick winner + optional scores), walkover buttons, complete button, MatchResultHero (compact) for completed matches, Scoreboard link for active matches, assign/reassign umpire with avatar display
+
+### Umpire Routes
+- [x] Umpire dashboard (`/umpire/dashboard`) — assigned matches split into Active/Completed, "Score Match" links
+- [x] Umpire scoreboard (`/umpire/:matchId`) — live scoring, frame state resume on refresh
+- [x] "Score Match" button on match detail page (for admin or assigned umpire)
+- [x] TopNav "My Matches" link for umpire role
 
 ### Design System CSS (`index.css`)
 - [x] Baize color tokens (felt, brass, live, ok, warn, bad, ink, canvas, surface, night, panel)
-- [x] Typography tokens (font-display: Saira, font-sans: Hanken Grotesk)
+- [x] Typography tokens (font-display: Saira, font-sans: Hanken Grotesk, font-slab: Rokkitt)
 - [x] Elevation tokens (shadow-e1 through e4)
-- [x] Component classes: btn (primary, secondary, ghost, danger, brass, live, onfelt, outline), input, lbl, badge, card, seclabel, fg
+- [x] Component classes: btn (primary, secondary, ghost, danger, brass, live, onfelt, outline), input, lbl, badge, card, seclabel, fg, player-card-frame (dog-ear border with gold hover)
 - [x] Utility classes: ball, felt-grain, on-felt, text-caption
 - [x] Animations: pulse, bump, activeglow, dropin
 
 ### Remaining
 - [ ] Umpire board mobile layout
-- [ ] Umpire board API integration (persist breaks, complete frame/match)
 - [ ] Home page: featured live match banner
 - [ ] Tournament form wizard: review step, success page, preview sidebar
 - [ ] Draw generation: mode selector UI, summary sidebar

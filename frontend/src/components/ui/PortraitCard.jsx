@@ -11,7 +11,7 @@
  *   alt  — player name
  *   won  — boolean, toggles gold vs dark treatment
  */
-export default function PortraitCard({ src, alt, won }) {
+export default function PortraitCard({ src, alt, won, compact = false }) {
   const panelStyle = won
     ? {
         background:
@@ -32,7 +32,7 @@ export default function PortraitCard({ src, alt, won }) {
 
   return (
     <div
-      className="shrink-0 w-24 h-32 sm:w-28 sm:h-36 rounded-xl overflow-hidden relative"
+      className={`shrink-0 overflow-hidden relative ${compact ? 'w-14 h-[72px] rounded-lg' : 'w-24 h-32 sm:w-28 sm:h-36 rounded-xl'}`}
       style={panelStyle}
     >
       {/* Player image */}

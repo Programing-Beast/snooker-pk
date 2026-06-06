@@ -18,17 +18,24 @@ function splitName(name) {
   return { first: parts.slice(0, -1).join(' '), last: parts[parts.length - 1] };
 }
 
-function PlayerImage({ player, align = 'left' }) {
+function PlayerImage({ player, align = 'left', isWinner = false }) {
   const src = resolvePhoto(player?.photo_path || player?.photo);
   return (
-    <div className={`shrink-0 w-16 h-20 rounded-lg border border-border-subtle overflow-hidden bg-ink-100 flex items-end ${
+    <div className={`relative shrink-0 w-16 h-20 rounded-lg overflow-hidden bg-ink-100 flex items-end ${
       align === 'right' ? 'justify-start' : 'justify-end'
-    }`}>
+    } ${isWinner ? 'border-2 border-brass ring-2 ring-brass/30' : 'border border-border-subtle'}`}>
       <img
         src={src}
         alt={player?.name || 'Player'}
         className="h-full w-auto object-cover object-top"
       />
+      {isWinner && (
+        <div className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-brass grid place-items-center shadow-sm">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="#3A2C08" stroke="none">
+            <path d="M5 3l3.1 7.4L2 15h5l1 6h8l1-6h5l-6.1-4.6L19 3l-7 4.2L5 3z" />
+          </svg>
+        </div>
+      )}
     </div>
   );
 }
@@ -111,8 +118,9 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
   const isWalkover = m.is_walkover || m.status === 'walkover';
   const isLive = m.status === 'live';
   const isScheduled = m.status === 'scheduled';
-  const p1Won = m.player1_frames > m.player2_frames && !isScheduled;
-  const p2Won = m.player2_frames > m.player1_frames && !isScheduled;
+  const winnerId = m.winner?.id ? String(m.winner.id) : null;
+  const p1Won = winnerId ? winnerId === String(m.player1?.id) : (m.player1_frames > m.player2_frames && !isScheduled);
+  const p2Won = winnerId ? winnerId === String(m.player2?.id) : (m.player2_frames > m.player1_frames && !isScheduled);
   const resultDate = m.scheduled_at || m.updated_at || m.created_at;
   const matchIndex = index ?? m.position;
   const p1Name = splitName(m.player1?.name);
@@ -143,36 +151,45 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
 
   /* ── Walkover ────────────────────────────────────────── */
   if (isWalkover) {
+    const woP1Won = m.winner?.id ? String(m.winner.id) === String(m.player1?.id) : true;
+    const woP2Won = !woP1Won;
     return (
-      <div className="flex items-center gap-6 px-6 py-5 border-b border-divider">
-        <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
-        <div className="flex items-center gap-4 flex-1 min-w-0 justify-center">
-          {/* Player 1 */}
-          <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
-            <div className="text-right min-w-0 uppercase">
-              <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
-              <p className="text-[15px] font-bold text-heading leading-snug" {...playerClick(m.player1)}>{p1Name.last}</p>
-              <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
+      <div className="border-b border-divider">
+        <div className="flex items-center gap-6 px-6 py-5">
+          <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
+          <div className="flex items-center gap-4 flex-1 min-w-0 justify-center">
+            {/* Player 1 */}
+            <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
+              <div className="text-right min-w-0 uppercase">
+                <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
+                <p className={`text-[15px] font-bold leading-snug ${woP1Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player1)}>{p1Name.last}</p>
+                <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
+              </div>
+              <PlayerImage player={m.player1} align="left" isWinner={woP1Won} />
             </div>
-            <PlayerImage player={m.player1} align="left" />
-          </div>
-          {/* Score */}
-          <div className="flex items-center border border-border-subtle rounded-lg overflow-hidden shrink-0">
-            <span className="w-8 py-2 text-center font-display font-bold text-[16px] text-ink-900">W</span>
-            <span className="w-px self-stretch bg-hairline" />
-            <span className="w-8 py-2 text-center font-display font-bold text-[16px] text-ink-400">O</span>
-          </div>
-          {/* Player 2 */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <PlayerImage player={m.player2} align="right" />
-            <div className="min-w-0 uppercase">
-              <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
-              <p className="text-[15px] text-ink-400 leading-snug line-through" {...playerClick(m.player2)}>{p2Name.last}</p>
-              <CountryFlagChip code={m.player2?.country_code || 'PAK'} showLabel={false} size="sm" />
+            {/* Score */}
+            <div className="flex items-center border border-border-subtle rounded-lg overflow-hidden shrink-0">
+              <span className={`w-8 py-2 text-center font-display font-bold text-[16px] ${woP1Won ? 'text-ink-900' : 'text-ink-400'}`}>{woP1Won ? 'W' : 'O'}</span>
+              <span className="w-px self-stretch bg-hairline" />
+              <span className={`w-8 py-2 text-center font-display font-bold text-[16px] ${woP2Won ? 'text-ink-900' : 'text-ink-400'}`}>{woP2Won ? 'W' : 'O'}</span>
+            </div>
+            {/* Player 2 */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <PlayerImage player={m.player2} align="right" isWinner={woP2Won} />
+              <div className="min-w-0 uppercase">
+                <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
+                <p className={`text-[15px] font-bold leading-snug ${woP2Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player2)}>{p2Name.last}</p>
+                <CountryFlagChip code={m.player2?.country_code || 'PAK'} showLabel={false} size="sm" />
+              </div>
             </div>
           </div>
+          <ActionIcons match={m} onEdit={onEdit} navigate={navigate} />
         </div>
-        <ActionIcons match={m} onEdit={onEdit} navigate={navigate} />
+        {adminActions && (
+          <div className="flex items-center gap-2 px-6 pb-3">
+            {adminActions}
+          </div>
+        )}
       </div>
     );
   }
@@ -197,7 +214,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
               </p>
               <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
             </div>
-            <PlayerImage player={m.player1} align="left" />
+            <PlayerImage player={m.player1} align="left" isWinner={p1Won} />
           </div>
 
           {/* Score */}
@@ -217,7 +234,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
 
           {/* Player 2 — image, then left-aligned name */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <PlayerImage player={m.player2} align="right" />
+            <PlayerImage player={m.player2} align="right" isWinner={p2Won} />
             <div className="min-w-0 uppercase">
               <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
               <p className={`text-[15px] font-bold leading-snug ${p2Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player2)}>

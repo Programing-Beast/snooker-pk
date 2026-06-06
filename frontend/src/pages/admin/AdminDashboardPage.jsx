@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useGetTournamentsQuery } from '../../store/api/tournamentsApi';
-import { useGetPlayersQuery } from '../../store/api/playersApi';
+import { useGetStatsQuery } from '../../store/api/statsApi';
 import { useGetEntriesQuery } from '../../store/api/entriesApi';
 import { useApproveEntryMutation, useRejectEntryMutation } from '../../store/api/entriesApi';
 import StatusBadge from '../../components/ui/StatusBadge';
@@ -16,7 +16,7 @@ const STONE = {
 
 export default function AdminDashboardPage() {
   const { data: tournaments = [], isLoading } = useGetTournamentsQuery({ per_page: 50 });
-  const { data: playersData } = useGetPlayersQuery({ per_page: 1 });
+  const { data: platformStats } = useGetStatsQuery();
 
   // Find first active tournament to load its pending entries
   const activeTournaments = tournaments.filter(t => t.status === 'live' || t.status === 'upcoming');
@@ -31,14 +31,7 @@ export default function AdminDashboardPage() {
 
   const pendingEntries = Array.isArray(entriesData) ? entriesData.filter(e => e.status === 'pending') : [];
 
-  // Player count from meta or data
-  const playerCount = (() => {
-    if (!playersData) return 0;
-    if (playersData.meta?.total) return playersData.meta.total;
-    if (playersData.total) return playersData.total;
-    if (Array.isArray(playersData)) return playersData.length;
-    return 0;
-  })();
+  const playerCount = platformStats?.players ?? 0;
 
   const live = tournaments.filter(t => t.status === 'live');
   const upcoming = tournaments.filter(t => t.status === 'upcoming');

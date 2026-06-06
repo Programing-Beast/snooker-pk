@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 
-export default function FileUpload({ label, accept = 'image/jpeg,image/png', maxSize = 5, onFile }) {
+export default function FileUpload({ label, accept = 'image/jpeg,image/png,image/webp', maxSize = 5, onFile }) {
   const ref = useRef();
   const [preview, setPreview] = useState(null);
 
@@ -15,7 +15,7 @@ export default function FileUpload({ label, accept = 'image/jpeg,image/png', max
   return (
     <div>
       {label && <label className="lbl">{label}</label>}
-      <label
+      <div
         onClick={() => ref.current?.click()}
         className="flex items-center gap-3 border border-dashed border-ink-300 rounded-md px-4 py-3.5 cursor-pointer hover:border-felt hover:bg-felt-50/50 transition"
       >
@@ -30,10 +30,10 @@ export default function FileUpload({ label, accept = 'image/jpeg,image/png', max
         )}
         <span>
           <span className="block text-[14px] font-semibold text-body">Drag a photo or browse</span>
-          <span className="block text-[0.72rem] text-muted">JPG or PNG · up to {maxSize}MB</span>
+          <span className="block text-[0.72rem] text-muted">JPG, PNG or WebP · up to {maxSize}MB</span>
         </span>
         <input ref={ref} type="file" accept={accept} onChange={handleChange} className="hidden" />
-      </label>
+      </div>
     </div>
   );
 }

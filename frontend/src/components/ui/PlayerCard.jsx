@@ -25,30 +25,38 @@ export default function PlayerCard({ player, to, overlay, seed }) {
   const href = to ?? (player.id ? `/players/${player.id}` : undefined);
 
   const card = (
-    <div className="group flex flex-col items-center text-center">
-      {/* Image container */}
-      <div className="relative w-[104px] h-[130px] lg:w-[156px] lg:h-[195px] rounded-2xl border border-border-subtle bg-ink-100 hover:bg-card-alt transition-colors duration-300 overflow-hidden">
-        <img
-          src={photo}
-          alt={player.name || 'Player'}
-          className="w-full h-full object-cover object-top pointer-events-none select-none"
-        />
-        {/* Hover overlay for admin actions */}
-        {overlay && (
-          <div className="absolute inset-0 rounded-2xl bg-night/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 z-10">
-            {overlay}
-          </div>
-        )}
+    <div className="group flex flex-col items-center text-center w-full">
+      {/* Photo + frame wrapper */}
+      <div className="relative w-full pt-[15%]">
+        {/* Dog-ear background frame — wider than photo, behind it */}
+        <div className="player-card-frame absolute left-1/2 -translate-x-1/2 bottom-0 w-[95%] h-[80%]" />
+
+        {/* Player photo — sits inside the frame, top extends above */}
+        <div className="relative z-[1] mx-auto w-[72%]">
+          <img
+            src={photo}
+            alt={player.name || 'Player'}
+            className="w-full aspect-[3/4] object-cover object-top pointer-events-none select-none"
+          />
+          {/* Admin hover actions — buttons at bottom, no dark overlay */}
+          {overlay && (
+            <div className="absolute inset-x-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+              <div className="bg-gradient-to-t from-night/80 to-transparent pt-6 pb-2 flex items-center justify-center gap-2">
+                {overlay}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Text */}
       <div className="mt-2 lg:mt-3">
-        <p className="text-xs uppercase text-ink-500 font-normal leading-snug">
+        <p className="text-[10px] lg:text-xs uppercase text-ink-500 font-normal leading-snug tracking-wide">
           {first || '\u00A0'}
         </p>
         <p
-          className="text-xl lg:text-3xl font-extrabold uppercase leading-tight"
-          style={{ fontFamily: 'var(--font-display)' }}
+          className="text-base lg:text-xl font-bold uppercase leading-tight"
+          style={{ fontFamily: 'var(--font-slab)' }}
         >
           {last}
         </p>
@@ -57,7 +65,7 @@ export default function PlayerCard({ player, to, overlay, seed }) {
             Seed {seed}
           </span>
         )}
-        <div className="flex justify-center mt-1.5">
+        <div className="flex justify-center mt-1">
           <CountryFlagChip code={player.country_code || 'PAK'} showLabel={false} size="sm" />
         </div>
       </div>

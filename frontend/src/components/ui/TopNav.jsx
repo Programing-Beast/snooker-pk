@@ -5,6 +5,7 @@ import PlayerAvatar from './PlayerAvatar';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
+  { to: '/dashboard', label: 'Dashboard', auth: true },
   { to: '/tournaments', label: 'Tournaments' },
   { to: '/rankings', label: 'Rankings' },
   { to: '/store', label: 'Store', badge: 'Soon' },
@@ -25,7 +26,7 @@ export default function TopNav() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex gap-1 ml-2">
-          {NAV_LINKS.map(link => (
+          {NAV_LINKS.filter(l => !l.auth || isAuthenticated).map(link => (
             <NavLink
               key={link.to}
               to={link.to}

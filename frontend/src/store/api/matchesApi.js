@@ -27,10 +27,18 @@ const matchesApi = api.injectEndpoints({
       ],
     }),
     completeMatch: builder.mutation({
-      query: (id) => ({ url: `/matches/${id}/complete`, method: 'POST' }),
-      invalidatesTags: (result, error, id) => [
-        { type: 'Match', id },
-      ],
+      query: (idOrObj) => {
+        const matchId = typeof idOrObj === 'object' ? idOrObj.id : idOrObj;
+        return { url: `/matches/${matchId}/complete`, method: 'POST' };
+      },
+      invalidatesTags: (result, error, idOrObj) => {
+        const matchId = typeof idOrObj === 'object' ? idOrObj.id : idOrObj;
+        const tournamentId = typeof idOrObj === 'object' ? idOrObj.tournamentId : null;
+        return [
+          { type: 'Match', id: matchId },
+          ...(tournamentId ? [{ type: 'TournamentDraw', id: tournamentId }] : []),
+        ];
+      },
     }),
     declareWinner: builder.mutation({
       query: ({ id, data }) => ({ url: `/matches/${id}/declare-winner`, method: 'POST', data }),
@@ -41,9 +49,10 @@ const matchesApi = api.injectEndpoints({
     }),
     assignUmpire: builder.mutation({
       query: ({ id, data }) => ({ url: `/matches/${id}/assign-umpire`, method: 'POST', data }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (result, error, { id, tournamentId }) => [
         { type: 'Match', id },
         { type: 'Match', id: 'UMPIRE_LIST' },
+        ...(tournamentId ? [{ type: 'TournamentDraw', id: tournamentId }] : []),
       ],
     }),
     getUmpireMatches: builder.query({
