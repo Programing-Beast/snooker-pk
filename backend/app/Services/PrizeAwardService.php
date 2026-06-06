@@ -34,8 +34,8 @@ class PrizeAwardService
         $tournament = $match->tournament;
         $prizes = $tournament->prizes()->get();
 
-        $winnerPrize = $prizes->first(fn ($p) => $p->type === Prize::TYPE_WINNER);
-        $runnerUpPrize = $prizes->first(fn ($p) => $p->type === Prize::TYPE_RUNNER_UP);
+        $winnerPrize = $prizes->where('type', Prize::TYPE_WINNER)->sortByDesc('amount')->first();
+        $runnerUpPrize = $prizes->where('type', Prize::TYPE_RUNNER_UP)->sortByDesc('amount')->first();
 
         $loserId = $match->winner_id === $match->player1_id
             ? $match->player2_id

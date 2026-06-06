@@ -32,6 +32,11 @@ class PlayerResource extends JsonResource
             'win_rate' => $this->whenHas('win_rate'),
             'titles_count' => $this->whenHas('titles_count'),
             'high_break' => $this->whenHas('high_break'),
+            'total_points' => $this->whenHas('total_points'),
+            'avg_break' => $this->whenHas('avg_break'),
+            'breaks_50' => $this->whenHas('breaks_50'),
+            'breaks_100' => $this->whenHas('breaks_100'),
+            'breaks_147' => $this->whenHas('breaks_147'),
             'status' => $this->status,
             'created_at' => $this->created_at,
         ];

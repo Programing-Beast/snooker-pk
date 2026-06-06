@@ -1,14 +1,18 @@
 import { Link } from 'react-router-dom';
 import { useGetTournamentsQuery } from '../../store/api/tournamentsApi';
 import { useGetRankingsQuery } from '../../store/api/rankingsApi';
+import { useGetStatsQuery } from '../../store/api/statsApi';
+import { useAuth } from '../../context/AuthContext';
 import TournamentCard from '../../components/ui/TournamentCard';
 import RankingsRow from '../../components/ui/RankingsRow';
 import FeltHero from '../../components/ui/FeltHero';
 import StoreTeaser from '../../components/ui/StoreTeaser';
 
 export default function HomePage() {
+  const { isAuthenticated } = useAuth();
   const { data: tournaments = [], isLoading } = useGetTournamentsQuery({ per_page: 6 });
   const { data: rankings = [] } = useGetRankingsQuery({ per_page: 5 });
+  const { data: stats } = useGetStatsQuery();
 
   const live = tournaments.filter(t => t.status === 'live');
   const upcoming = tournaments.filter(t => t.status === 'upcoming');
@@ -29,12 +33,14 @@ export default function HomePage() {
             </p>
             <div className="flex flex-wrap gap-3 mt-7">
               <Link to="/tournaments" className="btn btn-lg btn-primary">Browse tournaments</Link>
-              <Link to="/register" className="btn btn-lg bg-white/15 text-white border border-white/20 hover:bg-white/25">Create free account</Link>
+              {!isAuthenticated && (
+                <Link to="/register" className="btn btn-lg bg-white/15 text-white border border-white/20 hover:bg-white/25">Create free account</Link>
+              )}
             </div>
             <div className="flex gap-7 mt-8">
-              <div><div className="font-display font-extrabold text-2xl text-white tabular-nums">1,240+</div><div className="seclabel text-ink-400 mt-0.5">Players</div></div>
-              <div><div className="font-display font-extrabold text-2xl text-white tabular-nums">86</div><div className="seclabel text-ink-400 mt-0.5">Tournaments</div></div>
-              <div><div className="font-display font-extrabold text-2xl text-white tabular-nums">12</div><div className="seclabel text-ink-400 mt-0.5">Cities</div></div>
+              <div><div className="font-display font-extrabold text-2xl text-white tabular-nums">{stats?.players?.toLocaleString() ?? '–'}</div><div className="seclabel text-ink-400 mt-0.5">Players</div></div>
+              <div><div className="font-display font-extrabold text-2xl text-white tabular-nums">{stats?.tournaments?.toLocaleString() ?? '–'}</div><div className="seclabel text-ink-400 mt-0.5">Tournaments</div></div>
+              <div><div className="font-display font-extrabold text-2xl text-white tabular-nums">{stats?.cities?.toLocaleString() ?? '–'}</div><div className="seclabel text-ink-400 mt-0.5">Cities</div></div>
             </div>
           </div>
           <div className="hidden lg:flex gap-3 justify-center opacity-80">

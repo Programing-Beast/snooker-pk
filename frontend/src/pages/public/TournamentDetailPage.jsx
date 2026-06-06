@@ -71,7 +71,8 @@ export default function TournamentDetailPage() {
           </div>
           {/* Entry button */}
           <div className="shrink-0">
-            {!isAuthenticated ? (
+            {t.status === 'completed' || t.status === 'walkover' ? null
+            : !isAuthenticated ? (
               <Button variant="brass" size="lg">Log in to enter</Button>
             ) : entryStatus === 'approved' ? (
               <StatusBadge status="approved">You're in</StatusBadge>
@@ -113,14 +114,15 @@ function OverviewTab({ tournament: t, drawData, awards }) {
   if (t.winner) {
     const wId = t.winner_id ?? t.winner?.id;
     const finalRound = drawRounds[drawRounds.length - 1];
-    const finalMatch = finalRound?.matches?.find(m => String(m.winner_id) === String(wId))
-      || finalRound?.matches?.[0] || null;
-    const p1IsWinner = finalMatch && String(finalMatch.player1_id) === String(wId);
+    const finalMatch = finalRound?.matches?.find(m =>
+        String(m.winner?.id ?? m.winner_id) === String(wId)
+      ) || finalRound?.matches?.[0] || null;
+    const p1IsWinner = finalMatch && String(finalMatch.player1?.id ?? finalMatch.player1_id) === String(wId);
     heroProps = {
       player1: t.winner,
       player2: t.runner_up,
-      p1Frames: finalMatch ? (p1IsWinner ? finalMatch.player1_frames : finalMatch.player2_frames) : null,
-      p2Frames: finalMatch ? (p1IsWinner ? finalMatch.player2_frames : finalMatch.player1_frames) : null,
+      p1Frames: finalMatch ? (p1IsWinner ? finalMatch.score1 : finalMatch.score2) : null,
+      p2Frames: finalMatch ? (p1IsWinner ? finalMatch.score2 : finalMatch.score1) : null,
       winnerId: wId,
       label: 'Final',
     };

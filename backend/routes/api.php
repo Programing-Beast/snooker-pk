@@ -37,6 +37,16 @@ Route::get('/tournaments/{tournament}/players', [TournamentController::class, 'p
 
 Route::get('/rankings', [RankingController::class, 'index']);
 
+Route::get('/stats', function () {
+    return response()->json([
+        'data' => [
+            'players' => \App\Models\Player::where('status', 'active')->count(),
+            'tournaments' => \App\Models\Tournament::count(),
+            'cities' => \App\Models\Player::where('status', 'active')->whereNotNull('city')->distinct('city')->count(),
+        ],
+    ]);
+});
+
 Route::get('/matches/{match}', [MatchController::class, 'show']);
 
 /*

@@ -10,7 +10,7 @@ export default function RankingsRow({ rank, player }) {
       <PlayerListItem player={player} index={rank} showTier={false}>
         <div className="text-right">
           <div className="font-display font-bold tabular-nums text-[15px]">
-            {Number(player.points || 0).toLocaleString()}
+            {Number(player.ranking_points || player.points || 0).toLocaleString()}
           </div>
           <div className={`text-[0.72rem] ${movementColor}`}>{movement}</div>
         </div>

@@ -250,14 +250,14 @@ export default function PlayerProfilePageV2() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 mb-8">
                 <StatItem label="Matches Played" value={player.matches_played || '–'} />
                 <StatItem label="Wins" value={player.wins || '–'} />
-                <StatItem label="Points Scored" value="–" />
-                <StatItem label="Breaks 50+" value="–" />
-                <StatItem label="Breaks 100+" value="–" />
+                <StatItem label="Points Scored" value={player.total_points ? Number(player.total_points).toLocaleString() : '–'} />
+                <StatItem label="Breaks 50+" value={player.breaks_50 ?? '–'} />
+                <StatItem label="Breaks 100+" value={player.breaks_100 ?? '–'} />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
                 <StatItem label="Highest Break" value={player.high_break || '–'} />
-                <StatItem label="147s" value="–" />
-                <StatItem label="Average Break" value="–" />
+                <StatItem label="147s" value={player.breaks_147 ?? '–'} />
+                <StatItem label="Average Break" value={player.avg_break ?? '–'} />
               </div>
             </div>
           </div>

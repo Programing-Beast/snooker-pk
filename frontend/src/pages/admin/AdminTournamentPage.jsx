@@ -72,11 +72,12 @@ export default function AdminTournamentPage() {
       {tournament?.winner && (() => {
         const wId = tournament.winner_id ?? tournament.winner?.id;
         const finalRound = drawRounds[drawRounds.length - 1];
-        const finalMatch = finalRound?.matches?.find(m => String(m.winner_id) === String(wId))
-          || finalRound?.matches?.[0] || null;
-        const p1IsWinner = finalMatch && String(finalMatch.player1_id) === String(wId);
-        const winnerFrames = finalMatch ? (p1IsWinner ? finalMatch.player1_frames : finalMatch.player2_frames) : null;
-        const runnerFrames = finalMatch ? (p1IsWinner ? finalMatch.player2_frames : finalMatch.player1_frames) : null;
+        const finalMatch = finalRound?.matches?.find(m =>
+            String(m.winner?.id ?? m.winner_id) === String(wId)
+          ) || finalRound?.matches?.[0] || null;
+        const p1IsWinner = finalMatch && String(finalMatch.player1?.id ?? finalMatch.player1_id) === String(wId);
+        const winnerFrames = finalMatch ? (p1IsWinner ? finalMatch.score1 : finalMatch.score2) : null;
+        const runnerFrames = finalMatch ? (p1IsWinner ? finalMatch.score2 : finalMatch.score1) : null;
 
         return (
           <div className="mb-6 py-4">

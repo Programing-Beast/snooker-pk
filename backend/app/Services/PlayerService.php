@@ -66,10 +66,24 @@ class PlayerService
         $titlesCount = Tournament::where('winner_id', $player->id)->count();
         $player->setAttribute('titles_count', $titlesCount);
 
-        $highBreak = \App\Models\Break_::where('player_id', $player->id)
-            ->where('is_foul_turn', false)
-            ->max('points');
+        // Break stats (non-foul breaks only)
+        $breakQuery = \App\Models\Break_::where('player_id', $player->id)
+            ->where('is_foul_turn', false);
+
+        $highBreak = (clone $breakQuery)->max('points');
+        $totalPoints = (int) (clone $breakQuery)->sum('points');
+        $breakCount = (clone $breakQuery)->count();
+        $avgBreak = $breakCount > 0 ? round($totalPoints / $breakCount, 1) : null;
+        $breaks50 = (clone $breakQuery)->where('points', '>=', 50)->count();
+        $breaks100 = (clone $breakQuery)->where('points', '>=', 100)->count();
+        $breaks147 = (clone $breakQuery)->where('points', 147)->count();
+
         $player->setAttribute('high_break', $highBreak);
+        $player->setAttribute('total_points', $totalPoints);
+        $player->setAttribute('avg_break', $avgBreak);
+        $player->setAttribute('breaks_50', $breaks50);
+        $player->setAttribute('breaks_100', $breaks100);
+        $player->setAttribute('breaks_147', $breaks147);
 
         return $player;
     }

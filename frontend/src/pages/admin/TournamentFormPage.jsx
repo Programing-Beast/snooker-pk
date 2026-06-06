@@ -190,6 +190,19 @@ export default function TournamentFormPage() {
         const res = await tournamentsApi.create(data);
         const t = res.data.data ?? res.data;
         setTournamentId(t.id);
+
+        // Backend auto-creates system prizes (winner/runner-up) — fetch them
+        // and merge IDs into local state so savePrizes() updates, not duplicates
+        try {
+          const prizesRes = await prizesApi.list(t.id);
+          const systemPrizes = prizesRes.data.data ?? prizesRes.data ?? [];
+          if (systemPrizes.length) {
+            setPrizes(prev => prev.map(p => {
+              const match = systemPrizes.find(sp => sp.type === p.type);
+              return match ? { ...p, id: match.id } : p;
+            }));
+          }
+        } catch { /* proceed without IDs */ }
       }
       setStep(1);
     } catch (err) {
