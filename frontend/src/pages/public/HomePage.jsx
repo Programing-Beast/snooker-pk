@@ -20,7 +20,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero */}
-      <FeltHero gradient="800px 420px at 22% -10%, rgba(11,110,67,.55)" className="max-w-[1200px] mx-auto px-6 sm:px-9 pt-12 pb-10 grid lg:grid-cols-2 gap-9 items-center">
+      <FeltHero gradient="1200px 600px at 50% 20%, rgba(11,110,67,.45), rgba(11,110,67,.15) 70%" className="max-w-[1200px] mx-auto px-6 sm:px-9 pt-12 pb-10 grid lg:grid-cols-2 gap-9 items-center">
           <div>
             <div className="flex items-center gap-2.5 seclabel text-felt-400 mb-5">
               <span className="w-1.5 h-1.5 rounded-full bg-live pulse" /> Pakistan's home of snooker
