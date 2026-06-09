@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import CountryFlagChip from './CountryFlagChip';
-import PortraitCard from './PortraitCard';
 import defaultPhoto from '../../assets/default-player.png';
 
 const STORAGE_URL = import.meta.env.VITE_STORAGE_URL || '/storage';
@@ -18,6 +17,31 @@ function splitName(name) {
   return { first: parts.slice(0, -1).join(' '), last: parts[parts.length - 1] };
 }
 
+function HeroPortrait({ src, alt, won, compact = false, dark = false }) {
+  const outerClass = compact
+    ? 'w-[68px] h-[82px]'
+    : 'w-24 h-[120px] sm:w-32 sm:h-[160px]';
+  const imgClass = compact
+    ? 'w-[54px] h-[72px]'
+    : 'w-[76px] h-[100px] sm:w-[104px] sm:h-[136px]';
+  const frameClass = [
+    'player-card-frame absolute inset-x-0 bottom-0 h-[75%]',
+    won ? 'winner-frame' : '',
+    dark ? 'frame-on-dark' : '',
+  ].filter(Boolean).join(' ');
+
+  return (
+    <div className={`relative shrink-0 ${outerClass}`}>
+      <div className={frameClass} />
+      <img
+        src={src}
+        alt={alt || 'Player'}
+        className={`relative z-[1] ${imgClass} mx-auto object-cover object-top`}
+      />
+    </div>
+  );
+}
+
 /**
  * Match-style hero showing two players with frame scores.
  *
@@ -26,7 +50,7 @@ function splitName(name) {
  *   player2    — { id, name, photo_path, country_code }  (runner-up / right side)
  *   p1Frames   — number | null
  *   p2Frames   — number | null
- *   winnerId   — id of winning player (gets gold border)
+ *   winnerId   — id of winning player (gets gold frame)
  *   label      — text below the score (e.g. "Frames", "Final")
  *   dark       — use dark theme colours (default true)
  */
@@ -78,7 +102,7 @@ export default function MatchResultHero({
             <CountryFlagChip code={player1?.country_code || 'PAK'} showLabel={false} size="sm" />
           </div>
         </div>
-        <PortraitCard src={p1Photo} alt={player1?.name} won={p1Won} compact={compact} />
+        <HeroPortrait src={p1Photo} alt={player1?.name} won={p1Won} compact={compact} dark={dark} />
       </div>
 
       {/* Score center */}
@@ -92,7 +116,7 @@ export default function MatchResultHero({
 
       {/* Player 2 — left-aligned */}
       <div className={`flex items-center ${innerGap}`}>
-        <PortraitCard src={p2Photo} alt={player2?.name} won={p2Won} compact={compact} />
+        <HeroPortrait src={p2Photo} alt={player2?.name} won={p2Won} compact={compact} dark={dark} />
         <div className="uppercase">
           <p className={firstNameClass}>{p2Name.first}</p>
           <Link to={player2?.id ? `/players/${player2.id}` : '#'} className={nameClass}>

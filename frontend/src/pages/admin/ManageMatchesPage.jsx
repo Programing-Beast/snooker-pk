@@ -186,44 +186,6 @@ export default function ManageMatchesPage() {
                 const isCompleted = m.status === 'completed' || m.status === 'walkover';
                 const isActive = !isCompleted && m.player1 && m.player2;
                 const hasBothPlayers = m.player1 && m.player2;
-                const winnerId = m.winner?.id;
-                const p1IsWinner = winnerId && String(winnerId) === String(m.player1?.id);
-
-                if (isCompleted && hasBothPlayers) {
-                  return (
-                    <div key={m.id} className="border-b border-divider px-6 py-5">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-sm font-bold text-ink-700">Match {i + 1}</span>
-                        <StatusBadge status={m.status} />
-                        {m.status === 'walkover' && <span className="badge bg-ink-100 text-ink-500 text-[9px]">W/O</span>}
-                      </div>
-                      <MatchResultHero
-                        player1={m.player1}
-                        player2={m.player2}
-                        p1Frames={m.status === 'walkover' ? (p1IsWinner ? 'W' : 'O') : (m.player1_frames ?? m.score1 ?? 0)}
-                        p2Frames={m.status === 'walkover' ? (p1IsWinner ? 'O' : 'W') : (m.player2_frames ?? m.score2 ?? 0)}
-                        winnerId={winnerId}
-                        label={m.status === 'walkover' ? 'Walkover' : 'Frames'}
-                        dark={false}
-                        compact
-                      />
-                      <div className="flex items-center gap-2 mt-3">
-                        <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => openEdit(m)}>Edit</button>
-                        <button className="btn btn-ghost btn-sm text-[11px] ml-auto flex items-center gap-1.5" onClick={() => openAssignModal(m)}>
-                          {m.umpire ? (
-                            <>
-                              <PlayerAvatar name={m.umpire.name} size="sm" />
-                              <span className="text-felt font-semibold">{m.umpire.name}</span>
-                              <span className="text-muted">(umpire)</span>
-                            </>
-                          ) : (
-                            <span className="text-muted">Assign Umpire</span>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
 
                 return (
                   <MatchRow
@@ -242,6 +204,9 @@ export default function ManageMatchesPage() {
                             <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => openDeclareModal(m, round)}>Declare Winner</button>
                             <button className="btn btn-ghost btn-sm text-[11px] text-felt" onClick={() => handleComplete(m.id)}>Complete</button>
                           </>
+                        )}
+                        {isCompleted && (
+                          <button className="btn btn-ghost btn-sm text-[11px]" onClick={() => openEdit(m)}>Edit</button>
                         )}
                         <button className="btn btn-ghost btn-sm text-[11px] ml-auto flex items-center gap-1.5" onClick={() => openAssignModal(m)}>
                           {m.umpire ? (

@@ -21,21 +21,15 @@ function splitName(name) {
 function PlayerImage({ player, align = 'left', isWinner = false }) {
   const src = resolvePhoto(player?.photo_path || player?.photo);
   return (
-    <div className={`relative shrink-0 w-16 h-20 rounded-lg overflow-hidden bg-ink-100 flex items-end ${
-      align === 'right' ? 'justify-start' : 'justify-end'
-    } ${isWinner ? 'border-2 border-brass ring-2 ring-brass/30' : 'border border-border-subtle'}`}>
+    <div className="relative shrink-0 w-[68px] h-[82px]">
+      {/* Dog-ear back frame */}
+      <div className={`player-card-frame absolute inset-x-0 bottom-0 h-[75%] ${isWinner ? 'winner-frame' : ''}`} />
+      {/* Player photo */}
       <img
         src={src}
         alt={player?.name || 'Player'}
-        className="h-full w-auto object-cover object-top"
+        className="relative z-[1] w-[54px] h-[72px] mx-auto object-cover object-top"
       />
-      {isWinner && (
-        <div className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-brass grid place-items-center shadow-sm">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="#3A2C08" stroke="none">
-            <path d="M5 3l3.1 7.4L2 15h5l1 6h8l1-6h5l-6.1-4.6L19 3l-7 4.2L5 3z" />
-          </svg>
-        </div>
-      )}
     </div>
   );
 }
@@ -66,7 +60,7 @@ function MatchInfo({ index, date, tableNo }) {
 
 function ActionIcons({ match, onEdit, navigate }) {
   return (
-    <div className="shrink-0 hidden md:flex items-center gap-1.5">
+    <div className="shrink-0 hidden md:flex items-center gap-1.5 w-[100px] justify-end">
       {/* Match Centre */}
       <button className="w-8 h-8 rounded-full bg-felt text-white grid place-items-center hover:bg-felt-700 transition" title="Match Centre" onClick={(e) => { e.stopPropagation(); navigate('/matches/' + match.id); }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">

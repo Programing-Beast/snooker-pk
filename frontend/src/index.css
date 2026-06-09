@@ -325,3 +325,23 @@ body {
 .group:hover .player-card-frame::after {
   background: var(--color-brass-tint);
 }
+/* Winner frame — always gold */
+.player-card-frame.winner-frame::before {
+  background: var(--color-brass);
+}
+.player-card-frame.winner-frame::after {
+  background: var(--color-brass-tint);
+}
+/* Dark background variant */
+.player-card-frame.frame-on-dark::before {
+  background: rgba(255, 255, 255, 0.25);
+}
+.player-card-frame.frame-on-dark::after {
+  background: var(--color-panel);
+}
+.player-card-frame.frame-on-dark.winner-frame::before {
+  background: var(--color-brass);
+}
+.player-card-frame.frame-on-dark.winner-frame::after {
+  background: var(--color-brass-700);
+}
