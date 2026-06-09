@@ -44,8 +44,8 @@
 - [x] TournamentCard
 - [x] StatCard (with progress bar and trend)
 - [x] ProductCard
-- [x] MatchResultHero (two-player hero with PortraitCard gold/dark portraits, frame scores, compact mode)
-- [x] MatchRow (flat, bye/walkover/live/scheduled states, frame scores)
+- [x] MatchResultHero (two-player hero with dog-ear HeroPortrait, frame scores, compact mode, dark/light variants)
+- [x] MatchRow (flat, bye/walkover/live/scheduled/completed states, dog-ear player photos, gold winner-frame, Match Centre + social icons, fixed-width action area)
 - [x] PlayerListItem (avatar, name, city, phone, country flag)
 - [x] RankingsRow
 - [x] Modal
@@ -96,7 +96,7 @@
 - [x] Manage players (`/admin/players`, `/admin/players/new`, `/admin/players/:id/edit`)
 - [x] Generate draw (`/admin/tournaments/:id/draw`)
 - [x] Draw reveal (`/admin/tournaments/:id/draw/reveal`)
-- [x] Manage matches (`/admin/tournaments/:id/matches`) — Set Score modal (enter frame scores + auto-complete), Declare Winner modal (pick winner + optional scores), walkover buttons, complete button, MatchResultHero (compact) for completed matches, Scoreboard link for active matches, assign/reassign umpire with avatar display
+- [x] Manage matches (`/admin/tournaments/:id/matches`) — Set Score modal, Declare Winner modal, walkover buttons, complete button, Scoreboard link for active matches, assign/reassign umpire with avatar display, unified MatchRow for all match states
 
 ### Umpire Routes
 - [x] Umpire dashboard (`/umpire/dashboard`) — assigned matches split into Active/Completed, "Score Match" links
@@ -108,7 +108,7 @@
 - [x] Baize color tokens (felt, brass, live, ok, warn, bad, ink, canvas, surface, night, panel)
 - [x] Typography tokens (font-display: Saira, font-sans: Hanken Grotesk, font-slab: Rokkitt)
 - [x] Elevation tokens (shadow-e1 through e4)
-- [x] Component classes: btn (primary, secondary, ghost, danger, brass, live, onfelt, outline), input, lbl, badge, card, seclabel, fg, player-card-frame (dog-ear border with gold hover)
+- [x] Component classes: btn (primary, secondary, ghost, danger, brass, live, onfelt, outline), input, lbl, badge, card, seclabel, fg, player-card-frame (dog-ear border with gold hover, winner-frame, frame-on-dark variants)
 - [x] Utility classes: ball, felt-grain, on-felt, text-caption
 - [x] Animations: pulse, bump, activeglow, dropin
 
@@ -121,3 +121,17 @@
 - [x] Match management: Set Score & Complete modal, Declare Winner modal (admin can enter scores or pick winners directly)
 - [ ] Match management: per-frame scores, live scoring interface
 - [ ] Store page: dark felt hero styling
+
+### Known Issues (from `docs/issues/issues.md`)
+- [x] ~~#2 Player section match design same as admin~~ — unified MatchRow with dog-ear frames
+- [x] ~~#6 Umpire dashboard~~ — UmpireDashboardPage, TopNav link, login redirect
+- [x] ~~#7 Match page player photos with back frame + winner highlighted~~ — dog-ear PlayerImage + winner-frame
+- [ ] #1 Tournament status always shows "upcoming"
+- [ ] #3 Entry request visible when tournament entries are full
+- [ ] #4 Umpire info not editable, needs photo column on users table
+- [ ] #5 Umpire name in middle of match screen (shared component for player/admin)
+- [ ] #8 Rankings board redesign (see `docs/issues/sc/` for reference screenshots)
+- [ ] #9 Configurable reds per round (10 or 15)
+- [ ] #10 Prize allocation per round
+- [ ] #11 Draw regeneration broken after first generation
+- [ ] #12 Public views requiring login when they shouldn't
