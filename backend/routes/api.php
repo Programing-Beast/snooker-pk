@@ -48,6 +48,7 @@ Route::get('/stats', function () {
 });
 
 Route::get('/matches/{match}', [MatchController::class, 'show']);
+Route::get('/tournaments/{tournament}/prize-awards', [PrizeAwardController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------
@@ -156,7 +157,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/rankings/adjust', [RankingController::class, 'adjust']);
 
         // Prize Awards
-        Route::get('/tournaments/{tournament}/prize-awards', [PrizeAwardController::class, 'index']);
         Route::post('/prize-awards', [PrizeAwardController::class, 'store']);
         Route::post('/prize-awards/bulk', [PrizeAwardController::class, 'bulk']);
         Route::put('/prize-awards/{prizeAward}', [PrizeAwardController::class, 'update']);
