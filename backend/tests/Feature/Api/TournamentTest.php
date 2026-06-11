@@ -145,12 +145,11 @@ class TournamentTest extends ApiTestCase
         $response = $this->actingAs($this->admin)
             ->putJson("/api/tournaments/{$t->id}", [
                 'name' => 'Updated Name',
-                'status' => 'live',
             ]);
 
         $response->assertOk()
             ->assertJsonPath('data.name', 'Updated Name')
-            ->assertJsonPath('data.status', 'live');
+            ->assertJsonPath('data.status', 'upcoming');
     }
 
     public function test_update_tournament_forbidden_for_player(): void

@@ -71,6 +71,32 @@ class Tournament extends Model
         return $this->entries()->where('status', 'approved');
     }
 
+    /**
+     * Derive tournament status from actual match state.
+     *
+     * completed → winner has been determined
+     * live      → at least one match has been played/is live
+     * upcoming  → no matches played yet
+     */
+    public function computedStatus(): string
+    {
+        if ($this->winner_id) {
+            return 'completed';
+        }
+
+        // Use pre-loaded count if available (set via withCount)
+        if (isset($this->attributes['active_matches_count'])) {
+            return $this->attributes['active_matches_count'] > 0 ? 'live' : 'upcoming';
+        }
+
+        // Fallback: query directly
+        $hasActiveMatches = $this->matches()
+            ->whereIn('status', ['live', 'completed'])
+            ->exists();
+
+        return $hasActiveMatches ? 'live' : 'upcoming';
+    }
+
     public function prizeAwards()
     {
         return $this->hasMany(PrizeAward::class);

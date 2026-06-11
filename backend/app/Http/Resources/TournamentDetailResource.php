@@ -28,7 +28,7 @@ class TournamentDetailResource extends JsonResource
             'qualifier_info' => $this->qualifier_info,
             'presented_by' => $this->presented_by,
             'prize_pool' => $this->prize_pool,
-            'status' => $this->status,
+            'status' => $this->computedStatus(),
             'entry_status' => $this->entry_status,
             'max_players' => $this->max_players,
             'draw_size' => $this->draw_size,

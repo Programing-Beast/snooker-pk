@@ -26,7 +26,7 @@ class TournamentResource extends JsonResource
             'banner_path' => $this->banner_path,
             'presented_by' => $this->presented_by,
             'prize_pool' => $this->prize_pool,
-            'status' => $this->status,
+            'status' => $this->computedStatus(),
             'entry_status' => $this->entry_status,
             'max_players' => $this->max_players,
             'draw_size' => $this->draw_size,

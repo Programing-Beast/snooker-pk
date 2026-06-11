@@ -14,14 +14,25 @@ class TournamentService
 
     public function list(array $filters): LengthAwarePaginator
     {
-        $query = Tournament::query();
+        $query = Tournament::query()
+            ->withCount(['matches as active_matches_count' => function ($q) {
+                $q->whereIn('status', ['live', 'completed']);
+            }]);
 
         if (! empty($filters['search'])) {
             $query->where('name', 'like', '%'.$filters['search'].'%');
         }
 
         if (! empty($filters['status'])) {
-            $query->where('status', $filters['status']);
+            // Filter by computed status: use having-style logic
+            match ($filters['status']) {
+                'completed' => $query->whereNotNull('winner_id'),
+                'live' => $query->whereNull('winner_id')
+                    ->whereHas('matches', fn ($q) => $q->whereIn('status', ['live', 'completed'])),
+                'upcoming' => $query->whereNull('winner_id')
+                    ->whereDoesntHave('matches', fn ($q) => $q->whereIn('status', ['live', 'completed'])),
+                default => $query->where('status', $filters['status']),
+            };
         }
 
         if (! empty($filters['type'])) {
