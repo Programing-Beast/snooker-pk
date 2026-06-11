@@ -81,6 +81,37 @@ export default function ManageEntriesPage() {
   const capacity = tournament?.max_players || 0;
   const fillPct = capacity ? Math.round((approved.length / capacity) * 100) : 0;
   const isFull = capacity > 0 && approved.length >= capacity;
+  const slotsRemaining = capacity > 0 ? capacity - approved.length : Infinity;
+
+  // Quick-select presets: show powers of 2 and the exact remaining count
+  const quickSelectOptions = (() => {
+    if (filteredPlayers.length === 0 || slotsRemaining <= 0) return [];
+    const options = new Set();
+    // Add exact remaining slots if capacity-bound
+    if (slotsRemaining !== Infinity && slotsRemaining < filteredPlayers.length) {
+      options.add(slotsRemaining);
+    }
+    // Common tournament sizes
+    for (const n of [8, 16, 32, 64]) {
+      if (n < filteredPlayers.length && n <= slotsRemaining) options.add(n);
+    }
+    return [...options].sort((a, b) => a - b);
+  })();
+
+  function selectTopN(n) {
+    const toSelect = filteredPlayers.slice(0, n);
+    setCheckedIds(prev => {
+      const next = new Set(prev);
+      // Clear any previously checked filtered players first
+      filteredPlayers.forEach(p => next.delete(p.id));
+      toSelect.forEach(p => next.add(p.id));
+      return next;
+    });
+  }
+
+  // "Select all" should cap at remaining slots
+  const selectAllCount = Math.min(filteredPlayers.length, slotsRemaining);
+  const allSelected = selectAllCount > 0 && filteredPlayers.slice(0, selectAllCount).every(p => checkedIds.has(p.id));
 
   return (
     <div>
@@ -105,22 +136,50 @@ export default function ManageEntriesPage() {
             className="mb-3"
           />
           {filteredPlayers.length > 0 && (
-            <label className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-ink-50 transition-colors">
-              <input
-                type="checkbox"
-                checked={filteredPlayers.length > 0 && filteredPlayers.every(p => checkedIds.has(p.id))}
-                onChange={() => {
-                  const allChecked = filteredPlayers.every(p => checkedIds.has(p.id));
-                  setCheckedIds(prev => {
-                    const next = new Set(prev);
-                    filteredPlayers.forEach(p => allChecked ? next.delete(p.id) : next.add(p.id));
-                    return next;
-                  });
-                }}
-                className="accent-felt w-4 h-4 shrink-0"
-              />
-              <span className="text-[13px] font-semibold text-ink-600">Select all ({filteredPlayers.length})</span>
-            </label>
+            <div className="flex items-center gap-2 px-4 py-2 flex-wrap">
+              <label className="flex items-center gap-2 cursor-pointer hover:bg-ink-50 transition-colors rounded px-1.5 py-1">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={() => {
+                    if (allSelected) {
+                      setCheckedIds(prev => {
+                        const next = new Set(prev);
+                        filteredPlayers.forEach(p => next.delete(p.id));
+                        return next;
+                      });
+                    } else {
+                      selectTopN(selectAllCount);
+                    }
+                  }}
+                  className="accent-felt w-4 h-4 shrink-0"
+                />
+                <span className="text-[13px] font-semibold text-ink-600">
+                  {selectAllCount < filteredPlayers.length
+                    ? `Select top ${selectAllCount}`
+                    : `Select all (${filteredPlayers.length})`}
+                </span>
+              </label>
+              {quickSelectOptions.length > 0 && (
+                <>
+                  <span className="text-ink-300 text-[12px]">or</span>
+                  {quickSelectOptions.map(n => (
+                    <button
+                      key={n}
+                      onClick={() => selectTopN(n)}
+                      className="text-[12px] font-semibold px-2.5 py-1 rounded-md bg-card-alt text-ink-600 hover:bg-felt hover:text-white transition"
+                    >
+                      Top {n}
+                    </button>
+                  ))}
+                </>
+              )}
+              {slotsRemaining !== Infinity && slotsRemaining < filteredPlayers.length && (
+                <span className="text-[11px] text-ink-400 ml-auto">
+                  {slotsRemaining} slot{slotsRemaining !== 1 ? 's' : ''} remaining
+                </span>
+              )}
+            </div>
           )}
           <div className="max-h-72 overflow-y-auto divide-y divide-divider border border-border-subtle rounded-lg">
             {filteredPlayers.length === 0 && (
@@ -146,7 +205,9 @@ export default function ManageEntriesPage() {
               Cancel
             </Button>
             <Button size="sm" onClick={addSelected} disabled={adding || checkedIds.size === 0 || isFull}>
-              {isFull ? 'Tournament full' : adding ? 'Adding...' : `Add selected (${checkedIds.size})`}
+              {isFull ? 'Tournament full' : adding ? 'Adding...' : checkedIds.size > slotsRemaining
+                ? `Add selected (${checkedIds.size}) — only ${slotsRemaining} will be added`
+                : `Add selected (${checkedIds.size})`}
             </Button>
           </div>
         </div>

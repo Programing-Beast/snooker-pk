@@ -96,6 +96,7 @@ export default function UmpireBoardPage() {
       topBreak: f.high_break_value || 0,
     })),
     resumeBreaks,
+    redCount: boardData.round?.reds_count || 15,
   } : null;
 
   // Persist break to API on end turn / foul

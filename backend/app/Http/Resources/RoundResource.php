@@ -16,6 +16,7 @@ class RoundResource extends JsonResource
             'sub_label' => $this->sub_label,
             'sort_order' => $this->sort_order,
             'frames_to_win' => $this->frames_to_win,
+            'reds_count' => $this->reds_count,
             'draw_mode' => $this->draw_mode,
             'generated_at' => $this->generated_at,
             'elimination_prize' => $this->elimination_prize,

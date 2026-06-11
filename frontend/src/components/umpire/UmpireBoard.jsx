@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import confetti from 'canvas-confetti';
 import {
   ACTIONS,
   ALL_BALL_VALUES,
   framesToWin,
   formatTime,
+  breakTotal,
+  maxBreak,
 } from '../../engine/snookerEngine';
 import useSnookerEngine from '../../hooks/useSnookerEngine';
 import PlayerPanel from './PlayerPanel';
@@ -24,6 +27,7 @@ const DEMO_CONFIG = {
   bestOf: 9,
   tournament: 'Karachi National Open \'26',
   round: 'Quarter-final',
+  redCount: 15,
 };
 
 export default function UmpireBoard({ config = DEMO_CONFIG, onEndTurn, onFrameEnd, onMatchEnd }) {
@@ -83,6 +87,23 @@ export default function UmpireBoard({ config = DEMO_CONFIG, onEndTurn, onFrameEn
     }
     prevFrameOverRef.current = state.frameOver;
   }, [state.frameOver, state.frameNo, state.frameWinner, state.players]);
+
+  // Fire confetti when a player achieves the maximum break
+  const maxBreakFiredRef = useRef(false);
+  useEffect(() => {
+    const currentTotal = breakTotal(state.currentBreak);
+    const max = maxBreak(state.redCount);
+    if (currentTotal === max && !maxBreakFiredRef.current) {
+      maxBreakFiredRef.current = true;
+      const snookerColors = ['#c0392b', '#f2c200', '#1e7a3d', '#7a4a1e', '#1f5fa8', '#e86a92', '#161616'];
+      confetti({ particleCount: 150, spread: 80, colors: snookerColors, origin: { y: 0.6 } });
+      setTimeout(() => confetti({ particleCount: 100, spread: 120, colors: snookerColors, origin: { y: 0.5 } }), 300);
+    }
+    // Reset the guard when break resets (new turn / new frame)
+    if (currentTotal === 0) {
+      maxBreakFiredRef.current = false;
+    }
+  }, [state.currentBreak, state.redCount]);
 
   return (
     <div className="relative h-full flex flex-col bg-night felt-grain">

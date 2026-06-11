@@ -11,6 +11,12 @@ import DrawModeCard from '../../components/ui/DrawModeCard';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 
 const BEST_OF_OPTIONS = [5, 7, 9, 11, 13, 17, 19, 35];
+const REDS_OPTIONS = [
+  { value: 15, label: '15 reds (full)' },
+  { value: 10, label: '10 reds' },
+  { value: 6, label: '6 reds' },
+  { value: 1, label: '1 red' },
+];
 const BYE_MODES = [
   { value: 'seeds', label: 'Highest seeds (recommended)' },
   { value: 'random', label: 'Random' },
@@ -47,6 +53,8 @@ export default function DrawGeneratePage() {
   const [selectedRoundId, setSelectedRoundId] = useState(null);
   const [drawMode, setDrawMode] = useState('fixed');
   const [bestOf, setBestOf] = useState(7);
+  const [redsCount, setRedsCount] = useState(15);
+  const [eliminationPrize, setEliminationPrize] = useState('');
   const [byeMode, setByeMode] = useState('seeds');
   const [generated, setGenerated] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -73,6 +81,8 @@ export default function DrawGeneratePage() {
     if (round.frames_to_win) {
       setBestOf(bestOfFromFrames(round.frames_to_win));
     }
+    setRedsCount(round.reds_count ?? 15);
+    setEliminationPrize(round.elimination_prize ?? '');
   }
 
   const selectedRound = rounds.find(r => r.id === selectedRoundId);
@@ -132,6 +142,18 @@ export default function DrawGeneratePage() {
     persistSetting('frames_to_win', framesToWin(bo));
   }
 
+  function handleRedsCountChange(e) {
+    const val = Number(e.target.value);
+    setRedsCount(val);
+    persistSetting('reds_count', val);
+  }
+
+  function handleEliminationPrizeBlur(e) {
+    const val = e.target.value;
+    setEliminationPrize(val);
+    persistSetting('elimination_prize', val === '' ? null : Number(val));
+  }
+
   async function handleGenerate() {
     if (drawMode === 'random') {
       let roundId = selectedRoundId;
@@ -161,7 +183,7 @@ export default function DrawGeneratePage() {
 
       // Save round settings
       try {
-        await updateRound({ id: roundId, data: { draw_mode: 'random', frames_to_win: framesToWin(bestOf) }, tournamentId: id }).unwrap();
+        await updateRound({ id: roundId, data: { draw_mode: 'random', frames_to_win: framesToWin(bestOf), reds_count: redsCount }, tournamentId: id }).unwrap();
       } catch { /* ignore */ }
 
       navigate(`/admin/tournaments/${id}/reveal?round=${roundId}`);
@@ -174,6 +196,7 @@ export default function DrawGeneratePage() {
       if (selectedRoundId) {
         await persistSetting('draw_mode', drawMode);
         await persistSetting('frames_to_win', framesToWin(bestOf));
+        await persistSetting('reds_count', redsCount);
       }
       const payload = { tournament_id: Number(id), mode: drawMode };
       if (selectedRoundId) payload.round_id = selectedRoundId;
@@ -314,6 +337,18 @@ export default function DrawGeneratePage() {
                 </div>
               </div>
               <div>
+                <label className="lbl">Reds per frame</label>
+                <select
+                  value={redsCount}
+                  onChange={handleRedsCountChange}
+                  className="input !py-2 !w-40 appearance-none"
+                >
+                  {REDS_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="lbl">
                   Assign byes to{' '}
                   {byes > 0
@@ -330,6 +365,19 @@ export default function DrawGeneratePage() {
                     <option key={m.value} value={m.value}>{m.label}</option>
                   ))}
                 </Select>
+              </div>
+              <div>
+                <label className="lbl">Elimination prize (PKR)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="500"
+                  value={eliminationPrize}
+                  onChange={e => setEliminationPrize(e.target.value)}
+                  onBlur={handleEliminationPrizeBlur}
+                  placeholder="0"
+                  className="input !py-2 !w-40"
+                />
               </div>
             </div>
           </div>
@@ -491,6 +539,16 @@ export default function DrawGeneratePage() {
               <span className="text-[13px] text-ink-500">Format</span>
               <span className="font-display font-semibold text-[13px]">Best of {bestOf}</span>
             </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] text-ink-500">Reds</span>
+              <span className="font-display font-semibold text-[13px]">{redsCount}</span>
+            </div>
+            {eliminationPrize !== '' && Number(eliminationPrize) > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] text-ink-500">Elim. prize</span>
+                <span className="font-display font-semibold text-[13px]">PKR {Number(eliminationPrize).toLocaleString()}</span>
+              </div>
+            )}
 
             <div className="rounded-md bg-card-alt px-3 py-2 text-[12px] text-ink-500 flex items-center gap-2">
               <span className={`badge ${drawMode === 'fixed' ? 'bg-felt text-white' : 'bg-brass-tint text-brass-700'} !text-[9px]`}>

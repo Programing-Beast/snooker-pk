@@ -1,10 +1,32 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { playerInitials } from '../../engine/snookerEngine';
+import confetti from 'canvas-confetti';
+import { playerInitials, maxBreak } from '../../engine/snookerEngine';
 
 export default function MatchEndOverlay({ state }) {
   const w = state.players[0].frames > state.players[1].frames ? 0 : 1;
   const winner = state.players[w];
   const loser = state.players[1 - w];
+
+  const max = maxBreak(state.redCount);
+  const hasMaxBreak = state.players.some(p => p.highBreak >= max);
+  const maxBreakPlayer = state.players.find(p => p.highBreak >= max);
+
+  // Fire confetti on mount (winner celebration)
+  const firedRef = useRef(false);
+  useEffect(() => {
+    if (firedRef.current) return;
+    firedRef.current = true;
+    const snookerColors = ['#c0392b', '#f2c200', '#1e7a3d', '#7a4a1e', '#1f5fa8', '#e86a92', '#161616'];
+    confetti({ particleCount: 120, spread: 70, colors: snookerColors, origin: { y: 0.6 } });
+    if (hasMaxBreak) {
+      // Extra sustained burst for max break
+      const fire = (delay) => setTimeout(() => confetti({ particleCount: 80, spread: 100, colors: snookerColors, origin: { y: 0.5 } }), delay);
+      fire(400);
+      fire(800);
+      fire(1200);
+    }
+  }, [hasMaxBreak]);
 
   return (
     <div className="absolute inset-0 z-20 bg-night/92 backdrop-blur-sm grid place-items-center p-8">
@@ -38,6 +60,14 @@ export default function MatchEndOverlay({ state }) {
               {winner.frames}<span className="text-ink-500"> – </span>{loser.frames}
             </div>
             <div className="text-ink-400 text-[13px] mt-1">def. {loser.name}</div>
+            {hasMaxBreak && (
+              <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-brass/20 text-brass font-display font-bold text-[13px] uppercase tracking-wide">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                Maximum break {max}! — {maxBreakPlayer?.name}
+              </div>
+            )}
             <Link
               to="/umpire/dashboard"
               className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md px-5 py-2.5 text-sm leading-none transition active:translate-y-px bg-felt text-white hover:bg-felt-700 mt-5"

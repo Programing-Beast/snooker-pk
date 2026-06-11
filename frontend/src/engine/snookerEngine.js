@@ -32,6 +32,10 @@ export function framesToWin(bestOf) {
   return Math.ceil(bestOf / 2);
 }
 
+export function maxBreak(redsCount) {
+  return (redsCount * 8) + 27;
+}
+
 export function breakTotal(balls) {
   return balls.reduce((sum, v) => sum + v, 0);
 }
@@ -76,7 +80,7 @@ export function getPhaseLabel(state) {
 
 // ─── Initial state factory ───────────────────────────────────────────
 
-export function createInitialState({ players, bestOf, tournament = '', round = '', frameNo = 1, frameHistory = [], resumeBreaks = [] }) {
+export function createInitialState({ players, bestOf, tournament = '', round = '', frameNo = 1, frameHistory = [], resumeBreaks = [], redCount = 15 }) {
   const need = framesToWin(bestOf);
   const mappedPlayers = players.map((p) => ({
     id: p.id,
@@ -92,7 +96,7 @@ export function createInitialState({ players, bestOf, tournament = '', round = '
   const alreadyWon = mappedPlayers.some((p) => p.frames >= need);
 
   // Replay saved breaks from the current in-progress frame
-  let reds = 15;
+  let reds = redCount;
   let lastPlayerIndex = 0;
 
   if (resumeBreaks.length > 0) {
@@ -129,6 +133,7 @@ export function createInitialState({ players, bestOf, tournament = '', round = '
     tournament,
     round,
     bestOf,
+    redCount,
 
     players: mappedPlayers,
 
@@ -268,7 +273,7 @@ function endFrame(state) {
 function startNextFrame(state, breakerIndex) {
   const s = cloneState(state);
   s.players = s.players.map((p) => ({ ...p, points: 0, frameHighBreak: 0 }));
-  s.reds = 15;
+  s.reds = s.redCount;
   s.phase = 'reds';
   s.clearOn = 2;
   s.currentBreak = [];
