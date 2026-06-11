@@ -31,6 +31,7 @@ class TournamentDetailResource extends JsonResource
             'status' => $this->computedStatus(),
             'entry_status' => $this->entry_status,
             'max_players' => $this->max_players,
+            'approved_entries_count' => $this->approved_entries_count ?? $this->approvedEntries()->count(),
             'draw_size' => $this->draw_size,
             'winner_id' => $this->winner_id,
             'runner_up_id' => $this->runner_up_id,

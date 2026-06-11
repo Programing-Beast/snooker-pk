@@ -82,6 +82,8 @@ export default function TournamentDetailPage() {
               <StatusBadge status="rejected">Entry rejected</StatusBadge>
             ) : t.entry_status === 'closed' ? (
               <span className="badge bg-ink-100 text-ink-600">Entries closed</span>
+            ) : t.max_players && t.approved_entries_count >= t.max_players ? (
+              <span className="badge bg-ink-100 text-ink-600">Tournament full</span>
             ) : (
               <Button variant="brass" size="lg" onClick={handleRequestEntry} disabled={requesting}>
                 {requesting ? 'Requesting...' : 'Request Entry'}
