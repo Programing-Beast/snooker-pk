@@ -51,6 +51,7 @@
 - [x] Modal
 - [x] PortraitCard (layered portrait with gold/dark radial gradient treatment for winner/loser, compact mode)
 - [x] PlayerCard (WST-style: dog-ear border frame, photo above frame, Rokkitt slab-serif surname, gold hover)
+- [x] RoundHeader (dark bar with round name; accepts `round` prop to auto-build rich metadata subtitle — player count, best-of, reds, elimination prize — WST style)
 - [x] EmptyState (title, message, optional action)
 - [x] Tabs
 - [x] TopNav (sticky, responsive, notification bell, avatar+name for logged-in users)
@@ -116,7 +117,7 @@
 - [ ] Umpire board mobile layout
 - [ ] Home page: featured live match banner
 - [ ] Tournament form wizard: review step, success page, preview sidebar
-- [ ] Draw generation: mode selector UI, summary sidebar
+- [x] Draw generation: mode selector UI, summary sidebar, RoundHeader with metadata
 - [ ] Draw reveal: slot-machine style reveal animation (currently grid-based)
 - [x] Match management: Set Score & Complete modal, Declare Winner modal (admin can enter scores or pick winners directly)
 - [ ] Match management: per-frame scores, live scoring interface

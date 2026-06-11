@@ -1,6 +1,6 @@
 # Claude Context — SnookerPK Project
 
-Last updated: 2026-06-05
+Last updated: 2026-06-11
 
 ## Project Overview
 
@@ -90,7 +90,7 @@ AuthContext provides auth state, login/logout/register, role checks
 | Directory | Contents |
 |---|---|
 | `src/api/` | 15 API modules (Axios client + auth, players, tournaments, entries, draws, matches, etc.) |
-| `src/components/ui/` | 21 shared components (Button, Input, Select, PlayerAvatar, StatusBadge, PortraitCard, MatchResultHero, MatchRow, TopNav, MobileTabBar, etc.) |
+| `src/components/ui/` | 22 shared components (Button, Input, Select, PlayerAvatar, StatusBadge, PortraitCard, MatchResultHero, MatchRow, RoundHeader, TopNav, MobileTabBar, etc.) |
 | `src/context/` | AuthContext (login, logout, register, me, hasRole) |
 | `src/layouts/` | PublicLayout (TopNav + MobileTabBar), AdminLayout (sidebar) |
 | `src/pages/public/` | 6 pages (Home, Tournaments, TournamentDetail, PlayerProfile, Rankings, Store) |
@@ -107,13 +107,16 @@ Baize design tokens: felt greens, brass gold, live reds, ink neutrals, night/pan
 ### Remaining frontend items
 
 - [ ] Umpire board mobile layout
-- [ ] Umpire board API integration (persist breaks, complete frame/match)
 - [ ] Home page: featured live match banner
 - [ ] Tournament form: review step, success page, preview sidebar
-- [ ] Draw generation: mode selector UI, summary sidebar
 - [ ] Draw reveal: slot-machine style reveal animation
-- [ ] Match management: inline score controls, per-frame scores
+- [ ] Match management: per-frame scores, live scoring interface
 - [ ] Store page: dark felt hero styling
+
+### Open issues (from `docs/issues/issues.md`)
+
+- [ ] #4 Umpire info not editable, needs photo column on users table
+- [ ] #6 Umpire section/dashboard and single umpire display
 
 ---
 
@@ -135,7 +138,7 @@ php artisan serve         # runs on :8000
 
 cd /Users/haiderali/projects/snooker-pk/frontend
 npm run dev               # runs on :3000 (proxies /api + /storage to :8000)
-npm run build             # 184 modules, ~598 KB JS + ~63 KB CSS
+npm run build             # 186 modules, ~626 KB JS + ~67 KB CSS
 ```
 
-Next work: Polish remaining pages (umpire board API integration, home page live match banner, tournament form wizard review step, match management inline scoring).
+Next work: Umpire issues (#4 info/photo, #6 dashboard), then polish (home page live match banner, tournament form wizard, draw reveal animation, store hero).
