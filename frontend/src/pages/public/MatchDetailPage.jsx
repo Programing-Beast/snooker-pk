@@ -307,6 +307,16 @@ export default function MatchDetailPage() {
             winnerId={winnerId}
             dark
           />
+          {m.umpire?.name && (
+            <div className="flex justify-center mt-3">
+              <span className="text-xs text-ink-400 flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-500">
+                  <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+                </svg>
+                Umpire: {m.umpire.name}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Tabs */}

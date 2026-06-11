@@ -151,31 +151,43 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
       <div className="border-b border-divider">
         <div className="flex items-center gap-6 px-6 py-5">
           <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
-          <div className="flex items-center gap-4 flex-1 min-w-0 justify-center">
-            {/* Player 1 */}
-            <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
-              <div className="text-right min-w-0 uppercase">
-                <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
-                <p className={`text-[15px] font-bold leading-snug ${woP1Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player1)}>{p1Name.last}</p>
-                <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-4 justify-center">
+              {/* Player 1 */}
+              <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
+                <div className="text-right min-w-0 uppercase">
+                  <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
+                  <p className={`text-[15px] font-bold leading-snug ${woP1Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player1)}>{p1Name.last}</p>
+                  <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
+                </div>
+                <PlayerImage player={m.player1} align="left" isWinner={woP1Won} />
               </div>
-              <PlayerImage player={m.player1} align="left" isWinner={woP1Won} />
-            </div>
-            {/* Score */}
-            <div className="flex items-center border border-border-subtle rounded-lg overflow-hidden shrink-0">
-              <span className={`w-8 py-2 text-center font-display font-bold text-[16px] ${woP1Won ? 'text-ink-900' : 'text-ink-400'}`}>{woP1Won ? 'W' : 'O'}</span>
-              <span className="w-px self-stretch bg-hairline" />
-              <span className={`w-8 py-2 text-center font-display font-bold text-[16px] ${woP2Won ? 'text-ink-900' : 'text-ink-400'}`}>{woP2Won ? 'W' : 'O'}</span>
-            </div>
-            {/* Player 2 */}
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <PlayerImage player={m.player2} align="right" isWinner={woP2Won} />
-              <div className="min-w-0 uppercase">
-                <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
-                <p className={`text-[15px] font-bold leading-snug ${woP2Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player2)}>{p2Name.last}</p>
-                <CountryFlagChip code={m.player2?.country_code || 'PAK'} showLabel={false} size="sm" />
+              {/* Score */}
+              <div className="flex items-center border border-border-subtle rounded-lg overflow-hidden shrink-0">
+                <span className={`w-8 py-2 text-center font-display font-bold text-[16px] ${woP1Won ? 'text-ink-900' : 'text-ink-400'}`}>{woP1Won ? 'W' : 'O'}</span>
+                <span className="w-px self-stretch bg-hairline" />
+                <span className={`w-8 py-2 text-center font-display font-bold text-[16px] ${woP2Won ? 'text-ink-900' : 'text-ink-400'}`}>{woP2Won ? 'W' : 'O'}</span>
+              </div>
+              {/* Player 2 */}
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <PlayerImage player={m.player2} align="right" isWinner={woP2Won} />
+                <div className="min-w-0 uppercase">
+                  <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
+                  <p className={`text-[15px] font-bold leading-snug ${woP2Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player2)}>{p2Name.last}</p>
+                  <CountryFlagChip code={m.player2?.country_code || 'PAK'} showLabel={false} size="sm" />
+                </div>
               </div>
             </div>
+            {m.umpire?.name && (
+              <div className="flex justify-center mt-1">
+                <span className="text-[11px] text-muted flex items-center gap-1">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-400">
+                    <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+                  </svg>
+                  {m.umpire.name}
+                </span>
+              </div>
+            )}
           </div>
           <ActionIcons match={m} onEdit={onEdit} navigate={navigate} />
         </div>
@@ -198,45 +210,58 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
         <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
 
         {/* Center — players + score */}
-        <div className="flex items-center gap-4 flex-1 min-w-0 justify-center">
-          {/* Player 1 — right-aligned name, then image */}
-          <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
-            <div className="text-right min-w-0 uppercase">
-              <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
-              <p className={`text-[15px] font-bold leading-snug ${p1Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player1)}>
-                {p1Name.last}
-              </p>
-              <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-4 justify-center">
+            {/* Player 1 — right-aligned name, then image */}
+            <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
+              <div className="text-right min-w-0 uppercase">
+                <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
+                <p className={`text-[15px] font-bold leading-snug ${p1Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player1)}>
+                  {p1Name.last}
+                </p>
+                <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
+              </div>
+              <PlayerImage player={m.player1} align="left" isWinner={p1Won} />
             </div>
-            <PlayerImage player={m.player1} align="left" isWinner={p1Won} />
-          </div>
 
-          {/* Score */}
-          {isScheduled ? (
-            <span className="font-display font-semibold text-[14px] text-muted px-3 shrink-0">vs</span>
-          ) : (
-            <div className="flex items-center border border-border-subtle rounded-lg overflow-hidden shrink-0">
-              <span className={`w-8 py-2 text-center font-display font-bold text-[18px] tabular-nums ${p1Won ? 'text-ink-900' : 'text-ink-400'}`}>
-                {m.player1_frames ?? 0}
-              </span>
-              <span className="w-px self-stretch bg-hairline" />
-              <span className={`w-8 py-2 text-center font-display font-bold text-[18px] tabular-nums ${p2Won ? 'text-ink-900' : 'text-ink-400'}`}>
-                {m.player2_frames ?? 0}
+            {/* Score */}
+            {isScheduled ? (
+              <span className="font-display font-semibold text-[14px] text-muted px-3 shrink-0">vs</span>
+            ) : (
+              <div className="flex items-center border border-border-subtle rounded-lg overflow-hidden shrink-0">
+                <span className={`w-8 py-2 text-center font-display font-bold text-[18px] tabular-nums ${p1Won ? 'text-ink-900' : 'text-ink-400'}`}>
+                  {m.player1_frames ?? 0}
+                </span>
+                <span className="w-px self-stretch bg-hairline" />
+                <span className={`w-8 py-2 text-center font-display font-bold text-[18px] tabular-nums ${p2Won ? 'text-ink-900' : 'text-ink-400'}`}>
+                  {m.player2_frames ?? 0}
+                </span>
+              </div>
+            )}
+
+            {/* Player 2 — image, then left-aligned name */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <PlayerImage player={m.player2} align="right" isWinner={p2Won} />
+              <div className="min-w-0 uppercase">
+                <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
+                <p className={`text-[15px] font-bold leading-snug ${p2Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player2)}>
+                  {p2Name.last}
+                </p>
+                <CountryFlagChip code={m.player2?.country_code || 'PAK'} showLabel={false} size="sm" />
+              </div>
+            </div>
+          </div>
+          {/* Umpire name — centered within players section */}
+          {m.umpire?.name && (
+            <div className="flex justify-center mt-1">
+              <span className="text-[11px] text-muted flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-400">
+                  <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+                </svg>
+                {m.umpire.name}
               </span>
             </div>
           )}
-
-          {/* Player 2 — image, then left-aligned name */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <PlayerImage player={m.player2} align="right" isWinner={p2Won} />
-            <div className="min-w-0 uppercase">
-              <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
-              <p className={`text-[15px] font-bold leading-snug ${p2Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player2)}>
-                {p2Name.last}
-              </p>
-              <CountryFlagChip code={m.player2?.country_code || 'PAK'} showLabel={false} size="sm" />
-            </div>
-          </div>
         </div>
 
         {/* Live badge */}

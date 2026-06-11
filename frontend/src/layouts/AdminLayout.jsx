@@ -14,7 +14,7 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-page flex">
       {/* Sidebar */}
-      <aside className="dark-ctx hidden lg:flex flex-col w-60 bg-night border-r border-divider shrink-0">
+      <aside className="dark-ctx hidden lg:flex flex-col w-60 bg-night border-r border-divider shrink-0 sticky top-0 h-screen">
         <div className="px-5 h-16 flex items-center border-b border-divider">
           <span className="font-display font-extrabold text-white uppercase tracking-tight">
             Snooker<span className="text-live">PK</span>
