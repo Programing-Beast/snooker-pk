@@ -27,7 +27,7 @@ const DEMO_CONFIG = {
   bestOf: 9,
   tournament: 'Karachi National Open \'26',
   round: 'Quarter-final',
-  redCount: 15,
+  redCount: 1, // TEMP: testing max break confetti (35 = red+black+colours)
 };
 
 export default function UmpireBoard({ config = DEMO_CONFIG, onEndTurn, onFrameEnd, onMatchEnd }) {
