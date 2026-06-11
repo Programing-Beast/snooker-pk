@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button';
 import Select from '../../components/ui/Select';
 import PlayerChip from '../../components/ui/PlayerChip';
 import DrawModeCard from '../../components/ui/DrawModeCard';
+import RoundHeader from '../../components/ui/RoundHeader';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 
 const BEST_OF_OPTIONS = [5, 7, 9, 11, 13, 17, 19, 35];
@@ -397,17 +398,13 @@ export default function DrawGeneratePage() {
 
             {hasMatches ? (
               <div className="card overflow-hidden">
-                <div className="dark-ctx px-5 py-3 bg-night text-white flex items-center gap-3">
-                  <span className="font-display font-bold uppercase tracking-[0.1em] text-[13px]">
-                    {selectedRound?.name}
-                  </span>
-                  <span className="seclabel !text-[10px]">
-                    Best of {bestOf} · first to {framesToWin(bestOf)}
-                  </span>
-                  <span className="ml-auto text-[11px] text-muted">
-                    {displayMatches.length} matches · {displayByes.length} byes
-                  </span>
-                </div>
+                <RoundHeader round={{
+                  name: selectedRound?.name,
+                  matches: displayMatches,
+                  frames_to_win: framesToWin(bestOf),
+                  reds_count: redsCount,
+                  elimination_prize: eliminationPrize,
+                }} />
 
                 {displayMatches.map((m, i) => (
                   <div

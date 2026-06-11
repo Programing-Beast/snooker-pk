@@ -123,15 +123,15 @@
 - [ ] Store page: dark felt hero styling
 
 ### Known Issues (from `docs/issues/issues.md`)
+- [x] ~~#1 Tournament status always shows "upcoming"~~
 - [x] ~~#2 Player section match design same as admin~~ — unified MatchRow with dog-ear frames
-- [x] ~~#6 Umpire dashboard~~ — UmpireDashboardPage, TopNav link, login redirect
-- [x] ~~#7 Match page player photos with back frame + winner highlighted~~ — dog-ear PlayerImage + winner-frame
-- [ ] #1 Tournament status always shows "upcoming"
-- [ ] #3 Entry request visible when tournament entries are full
+- [x] ~~#3 Entry request visible when tournament entries are full~~
 - [ ] #4 Umpire info not editable, needs photo column on users table
-- [ ] #5 Umpire name in middle of match screen (shared component for player/admin)
-- [ ] #8 Rankings board redesign (see `docs/issues/sc/` for reference screenshots)
-- [ ] #9 Configurable reds per round (10 or 15)
-- [ ] #10 Prize allocation per round
-- [ ] #11 Draw regeneration broken after first generation
-- [ ] #12 Public views requiring login when they shouldn't
+- [x] ~~#5 Umpire name in middle of match screen (shared component for player/admin)~~
+- [ ] #6 Umpire section/dashboard and single umpire display
+- [x] ~~#7 Match page player photos with back frame + winner highlighted~~ — dog-ear PlayerImage + winner-frame
+- [x] ~~#8 Rankings board redesign~~
+- [x] ~~#9 Configurable reds per round (10 or 15)~~
+- [x] ~~#10 Prize allocation per round~~
+- [x] ~~#11 Draw regeneration broken after first generation~~
+- [x] ~~#12 Public views requiring login when they shouldn't~~

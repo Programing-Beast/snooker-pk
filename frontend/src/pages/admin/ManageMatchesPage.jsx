@@ -181,7 +181,7 @@ export default function ManageMatchesPage() {
         <div className="space-y-6">
           {rounds.map(round => (
             <div key={round.id} className="card overflow-hidden">
-              <RoundHeader name={round.name} subtitle={round.frames_to_win ? `Best of ${round.frames_to_win * 2 - 1}` : undefined} detail={`${round.matches?.length || 0} matches`} />
+              <RoundHeader round={round} />
               {round.matches?.map((m, i) => {
                 const isCompleted = m.status === 'completed' || m.status === 'walkover';
                 const isActive = !isCompleted && m.player1 && m.player2;

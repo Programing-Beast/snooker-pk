@@ -312,7 +312,7 @@ function DrawTab({ data }) {
     <div className="space-y-6">
       {rounds.map(round => (
         <div key={round.id} className="card overflow-hidden">
-          <RoundHeader name={round.name} subtitle={round.sub_label} detail={`${round.matches?.length || 0} matches`} />
+          <RoundHeader round={round} />
           <div>
             {round.matches?.map((m, i) => <MatchRow key={m.id} match={m} index={i + 1} />)}
           </div>
