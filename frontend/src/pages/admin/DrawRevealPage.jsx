@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import * as drawsApi from '../../api/draws';
-import * as matchesApi from '../../api/matches';
+import { useGenerateDrawMutation, useConfirmDrawMutation } from '../../store/api/drawsApi';
 import * as roundsApi from '../../api/rounds';
 import * as tournamentsApi from '../../api/tournaments';
 import * as entriesApi from '../../api/entries';
@@ -108,6 +107,8 @@ export default function DrawRevealPage() {
   const [publishError, setPublishError] = useState(null);
   const [poolLoaded, setPoolLoaded] = useState(false);
   const spinTimer = useRef(null);
+  const [generateDraw] = useGenerateDrawMutation();
+  const [confirmDraw] = useConfirmDrawMutation();
 
   // Load tournament + rounds
   useEffect(() => {
@@ -180,6 +181,18 @@ export default function DrawRevealPage() {
 
   const drawNext = useCallback(() => {
     if (pool.length < 2) return;
+
+    // Only 2 players left — pairing is predetermined, auto-confirm
+    if (pool.length === 2) {
+      setPair([pool[0], pool[1]]);
+      setSlotA(pool[0]);
+      setSlotB(pool[1]);
+      setDrawn(prev => [...prev, [pool[0], pool[1]]]);
+      setPool([]);
+      setPhase('done');
+      return;
+    }
+
     setPhase('spinning');
 
     // Spin animation: rapidly cycle random names
@@ -234,16 +247,16 @@ export default function DrawRevealPage() {
         player1_id: p1.id,
         player2_id: p2.id,
       }));
-      await drawsApi.generate({
+      await generateDraw({
         tournament_id: Number(id),
         round_id: activeRoundId,
         pairings,
-      });
-      await drawsApi.confirm({ tournament_id: Number(id), round_id: activeRoundId });
+      }).unwrap();
+      await confirmDraw({ tournament_id: Number(id), round_id: activeRoundId }).unwrap();
       navigate(`/admin/tournaments/${id}/matches`);
     } catch (err) {
-      const msg = err?.response?.data?.message || err?.response?.data?.errors || 'Failed to publish draw';
-      console.error('Publish draw failed:', err?.response?.data || err);
+      const msg = err?.data?.message || err?.data?.errors || 'Failed to publish draw';
+      console.error('Publish draw failed:', err?.data || err);
       setPublishError(typeof msg === 'string' ? msg : JSON.stringify(msg));
     }
     setConfirming(false);

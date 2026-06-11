@@ -31,7 +31,7 @@ class UpdateTournamentRequest extends FormRequest
             'banner' => ['sometimes', 'image', 'max:5120'],
             'presented_by' => ['nullable', 'string', 'max:255'],
             'prize_pool' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['sometimes', 'in:upcoming,live,completed'],
+            'status' => ['sometimes', 'in:upcoming,awaiting,postponed,cancelled,live,completed'],
             'entry_status' => ['sometimes', 'in:open,closed'],
             'max_players' => ['nullable', 'integer', 'min:2'],
             'draw_size' => ['nullable', 'integer', 'min:2'],

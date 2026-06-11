@@ -1,6 +1,9 @@
 const STYLES = {
   live: 'bg-live-fill text-white',
   upcoming: 'bg-brass-tint text-brass-700',
+  awaiting: 'bg-warn-tint text-[#9A5B12]',
+  postponed: 'bg-ink-100 text-ink-600',
+  cancelled: 'bg-bad-tint text-[#9A2820]',
   completed: 'bg-ink-100 text-ink-600',
   pending: 'bg-warn-tint text-[#9A5B12]',
   approved: 'bg-ok-tint text-[#0C6B3C]',

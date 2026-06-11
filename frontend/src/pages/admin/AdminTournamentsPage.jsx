@@ -87,8 +87,11 @@ export default function AdminTournamentsPage() {
         <Select value={statusFilter} onChange={e => handleStatusChange(e.target.value)}>
           <option value="">All statuses</option>
           <option value="upcoming">Upcoming</option>
+          <option value="awaiting">Awaiting</option>
           <option value="live">Live</option>
           <option value="completed">Completed</option>
+          <option value="postponed">Postponed</option>
+          <option value="cancelled">Cancelled</option>
         </Select>
         <Select value={sort} onChange={e => handleSortChange(e.target.value)}>
           {SORT_OPTIONS.map(o => (

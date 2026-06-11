@@ -77,7 +77,7 @@ export default function DrawGeneratePage() {
 
   const selectedRound = rounds.find(r => r.id === selectedRoundId);
   const sortedRounds = [...rounds].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-  const isFirstRound = sortedRounds[0]?.id === selectedRoundId;
+  const isFirstRound = rounds.length === 0 || sortedRounds[0]?.id === selectedRoundId;
   const selectedRoundIdx = sortedRounds.findIndex(r => r.id === selectedRoundId);
   const prevRound = selectedRoundIdx > 0 ? sortedRounds[selectedRoundIdx - 1] : null;
 
@@ -134,9 +134,37 @@ export default function DrawGeneratePage() {
 
   async function handleGenerate() {
     if (drawMode === 'random') {
-      await persistSetting('draw_mode', 'random');
-      await persistSetting('frames_to_win', framesToWin(bestOf));
-      navigate(`/admin/tournaments/${id}/reveal?round=${selectedRoundId}`);
+      let roundId = selectedRoundId;
+
+      // No rounds yet — call generate to auto-create rounds first
+      if (!roundId) {
+        setGenerating(true);
+        setError('');
+        try {
+          await generateDraw({ tournament_id: Number(id) }).unwrap();
+          const { data: freshRounds } = await refetchRounds();
+          const sorted = [...(freshRounds || [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+          roundId = sorted[0]?.id;
+          if (!roundId) {
+            setError('Could not create rounds. Ensure there are approved entries.');
+            setGenerating(false);
+            return;
+          }
+        } catch (err) {
+          const msg = err.data?.message || Object.values(err.data?.errors || {}).flat()[0] || 'Failed to initialize draw.';
+          setError(msg);
+          setGenerating(false);
+          return;
+        }
+        setGenerating(false);
+      }
+
+      // Save round settings
+      try {
+        await updateRound({ id: roundId, data: { draw_mode: 'random', frames_to_win: framesToWin(bestOf) }, tournamentId: id }).unwrap();
+      } catch { /* ignore */ }
+
+      navigate(`/admin/tournaments/${id}/reveal?round=${roundId}`);
       return;
     }
 

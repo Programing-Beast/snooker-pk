@@ -41,31 +41,23 @@ class DrawService
 
     public function generateDraw(Tournament $tournament, ?Round $round = null, ?array $pairings = null): Tournament
     {
-        // Prevent regeneration when the bracket already has results
+        // Auto-create or fill in missing rounds
+        $this->ensureRoundsExist($tournament);
+
+        // Resolve to first round if not specified
+        if (! $round) {
+            $round = $tournament->rounds()->orderBy('sort_order')->first();
+        }
+
+        // Prevent regeneration when this round already has played matches
         $hasResults = Match_::where('tournament_id', $tournament->id)
+            ->where('round_id', $round->id)
             ->whereIn('status', ['completed', 'walkover', 'live'])
             ->exists();
 
         if ($hasResults) {
             throw ValidationException::withMessages([
-                'tournament' => ['Cannot regenerate draw — matches with results already exist in this tournament.'],
-            ]);
-        }
-
-        // Auto-create or fill in missing rounds
-        $this->ensureRoundsExist($tournament);
-
-        // Resolve to first round if not specified
-        $firstRound = $tournament->rounds()->orderBy('sort_order')->first();
-
-        if (! $round) {
-            $round = $firstRound;
-        }
-
-        // Only allow generation for the first round — subsequent rounds are created as placeholders
-        if ($firstRound && $firstRound->id !== $round->id) {
-            throw ValidationException::withMessages([
-                'round' => ['Draw can only be generated for the first round. Subsequent rounds are filled automatically as matches complete.'],
+                'tournament' => ['Cannot regenerate — this round has matches that are live or already completed.'],
             ]);
         }
 
@@ -196,44 +188,84 @@ class DrawService
 
     /**
      * Generate draw from seeded bracket placement (fixed mode).
+     * For the first round, uses approved entries with seed-based placement.
+     * For later rounds, shuffles winners from the previous round.
      */
     private function generateFromSeeds(Tournament $tournament, Round $round): Tournament
     {
-        $approvedEntries = $tournament->approvedEntries()->with('player')->get();
-        $playerCount = $approvedEntries->count();
+        $firstRound = $tournament->rounds()->orderBy('sort_order')->first();
+        $isFirstRound = $firstRound && $firstRound->id === $round->id;
 
-        if ($playerCount < 2) {
-            throw ValidationException::withMessages([
-                'tournament' => ['At least 2 approved players are required to generate a draw.'],
-            ]);
-        }
+        if ($isFirstRound) {
+            $approvedEntries = $tournament->approvedEntries()->with('player')->get();
+            $playerCount = $approvedEntries->count();
 
-        $drawSize = $tournament->draw_size ?? $this->nextPowerOfTwo($playerCount);
-
-        $seeded = $approvedEntries->whereNotNull('seed')->sortBy('seed')->values();
-        $unseeded = $approvedEntries->whereNull('seed')->shuffle();
-
-        // Build slots: place seeded players first, then fill with unseeded, then byes
-        $slots = array_fill(0, $drawSize, null);
-
-        // Place top seeded players in standard bracket positions
-        $seedPositions = $this->getSeedPositions($drawSize, $seeded->count());
-        $overflow = collect();
-        foreach ($seeded as $i => $entry) {
-            if (isset($seedPositions[$i])) {
-                $slots[$seedPositions[$i]] = $entry->player_id;
-            } else {
-                $overflow->push($entry);
+            if ($playerCount < 2) {
+                throw ValidationException::withMessages([
+                    'tournament' => ['At least 2 approved players are required to generate a draw.'],
+                ]);
             }
-        }
 
-        // Merge overflow seeded players with unseeded, then shuffle to fill remaining slots
-        $fillPool = $overflow->concat($unseeded)->shuffle();
-        $fillIndex = 0;
-        for ($i = 0; $i < $drawSize; $i++) {
-            if ($slots[$i] === null && $fillIndex < $fillPool->count()) {
-                $slots[$i] = $fillPool[$fillIndex]->player_id;
-                $fillIndex++;
+            $drawSize = $tournament->draw_size ?? $this->nextPowerOfTwo($playerCount);
+
+            $seeded = $approvedEntries->whereNotNull('seed')->sortBy('seed')->values();
+            $unseeded = $approvedEntries->whereNull('seed')->shuffle();
+
+            // Build slots: place seeded players first, then fill with unseeded, then byes
+            $slots = array_fill(0, $drawSize, null);
+
+            $seedPositions = $this->getSeedPositions($drawSize, $seeded->count());
+            $overflow = collect();
+            foreach ($seeded as $i => $entry) {
+                if (isset($seedPositions[$i])) {
+                    $slots[$seedPositions[$i]] = $entry->player_id;
+                } else {
+                    $overflow->push($entry);
+                }
+            }
+
+            $fillPool = $overflow->concat($unseeded)->shuffle();
+            $fillIndex = 0;
+            for ($i = 0; $i < $drawSize; $i++) {
+                if ($slots[$i] === null && $fillIndex < $fillPool->count()) {
+                    $slots[$i] = $fillPool[$fillIndex]->player_id;
+                    $fillIndex++;
+                }
+            }
+        } else {
+            // Later rounds: pool = winners from the previous round
+            $prevRound = $tournament->rounds()
+                ->where('sort_order', '<', $round->sort_order)
+                ->orderBy('sort_order', 'desc')
+                ->first();
+
+            if (! $prevRound) {
+                throw ValidationException::withMessages([
+                    'round' => ['No previous round found.'],
+                ]);
+            }
+
+            $winnerIds = Match_::where('tournament_id', $tournament->id)
+                ->where('round_id', $prevRound->id)
+                ->whereNotNull('winner_id')
+                ->orderBy('position')
+                ->pluck('winner_id')
+                ->toArray();
+
+            $playerCount = count($winnerIds);
+
+            if ($playerCount < 2) {
+                throw ValidationException::withMessages([
+                    'round' => ['The previous round needs at least 2 completed matches to generate this round.'],
+                ]);
+            }
+
+            $drawSize = $this->nextPowerOfTwo($playerCount);
+            $shuffled = collect($winnerIds)->shuffle()->values()->toArray();
+
+            $slots = array_fill(0, $drawSize, null);
+            for ($i = 0; $i < count($shuffled); $i++) {
+                $slots[$i] = $shuffled[$i];
             }
         }
 

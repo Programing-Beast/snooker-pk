@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useGetTournamentQuery, useGetTournamentDrawQuery } from '../../store/api/tournamentsApi';
+import { useGetTournamentQuery, useGetTournamentDrawQuery, useUpdateTournamentMutation } from '../../store/api/tournamentsApi';
 import { useGetEntriesQuery } from '../../store/api/entriesApi';
 import { useGetRoundsQuery } from '../../store/api/roundsApi';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
@@ -12,6 +13,8 @@ export default function AdminTournamentPage() {
   const { data: entries = [] } = useGetEntriesQuery({ tournamentId: id, params: { per_page: 200 } });
   const { data: rounds = [] } = useGetRoundsQuery(id);
   const { data: drawData = [] } = useGetTournamentDrawQuery(id);
+  const [updateTournament] = useUpdateTournamentMutation();
+  const [statusSaving, setStatusSaving] = useState(false);
 
   const loading = tLoading;
   const approved = entries.filter(e => e.status === 'approved');
@@ -106,7 +109,31 @@ export default function AdminTournamentPage() {
             <div className="p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-ink-500">Status</span>
-                <StatusBadge status={tournament?.status || 'upcoming'} />
+                {tournament?.status === 'completed' ? (
+                  <StatusBadge status={tournament.status} />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={tournament?.status || 'upcoming'} />
+                    <select
+                      value={tournament?.status || 'upcoming'}
+                      disabled={statusSaving}
+                      onChange={async (e) => {
+                        setStatusSaving(true);
+                        try {
+                          await updateTournament({ id, data: { status: e.target.value } }).unwrap();
+                        } catch { /* ignore */ }
+                        setStatusSaving(false);
+                      }}
+                      className="text-[12px] border border-ink-200 rounded px-1.5 py-0.5 bg-white text-ink-700 cursor-pointer"
+                    >
+                      <option value="upcoming">Upcoming</option>
+                      <option value="awaiting">Awaiting</option>
+                      <option value="live">Live</option>
+                      <option value="postponed">Postponed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                )}
               </div>
               {tournament?.city && (
                 <div className="flex items-center justify-between">

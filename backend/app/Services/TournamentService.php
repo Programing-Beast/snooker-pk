@@ -24,13 +24,23 @@ class TournamentService
         }
 
         if (! empty($filters['status'])) {
-            // Filter by computed status: use having-style logic
+            $noWinner = fn ($q) => $q->whereNull('winner_id');
+            $noActiveMatches = fn ($q) => $q->whereDoesntHave('matches', fn ($m) => $m->whereIn('status', ['live', 'completed']));
+
             match ($filters['status']) {
                 'completed' => $query->whereNotNull('winner_id'),
                 'live' => $query->whereNull('winner_id')
                     ->whereHas('matches', fn ($q) => $q->whereIn('status', ['live', 'completed'])),
                 'upcoming' => $query->whereNull('winner_id')
-                    ->whereDoesntHave('matches', fn ($q) => $q->whereIn('status', ['live', 'completed'])),
+                    ->whereDoesntHave('matches', fn ($q) => $q->whereIn('status', ['live', 'completed']))
+                    ->where('status', 'upcoming')
+                    ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '>=', now()->startOfDay())),
+                'awaiting' => $query->whereNull('winner_id')
+                    ->whereDoesntHave('matches', fn ($q) => $q->whereIn('status', ['live', 'completed']))
+                    ->where(fn ($q) => $q
+                        ->where('status', 'awaiting')
+                        ->orWhere(fn ($q2) => $q2->where('status', 'upcoming')->whereNotNull('start_date')->where('start_date', '<', now()->startOfDay()))
+                    ),
                 default => $query->where('status', $filters['status']),
             };
         }

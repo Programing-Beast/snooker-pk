@@ -24,6 +24,7 @@ const drawsApi = api.injectEndpoints({
       query: (data) => ({ url: '/draw/reroll', method: 'POST', data }),
       invalidatesTags: (result, error, { tournament_id }) => [
         { type: 'TournamentDraw', id: tournament_id },
+        { type: 'Round', id: tournament_id },
       ],
     }),
   }),

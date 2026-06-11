@@ -74,9 +74,13 @@ class Tournament extends Model
     /**
      * Derive tournament status from actual match state.
      *
-     * completed → winner has been determined
-     * live      → at least one match has been played/is live
-     * upcoming  → no matches played yet
+     * completed  → winner has been determined
+     * live       → at least one match has been played/is live
+     * awaiting   → start date has passed but no matches played yet
+     * upcoming   → tournament hasn't started
+     *
+     * Admin can override via the status column (e.g. postponed, cancelled).
+     * Overrides only apply when the tournament is not live/completed.
      */
     public function computedStatus(): string
     {
@@ -85,16 +89,30 @@ class Tournament extends Model
         }
 
         // Use pre-loaded count if available (set via withCount)
+        $isLive = false;
         if (isset($this->attributes['active_matches_count'])) {
-            return $this->attributes['active_matches_count'] > 0 ? 'live' : 'upcoming';
+            $isLive = $this->attributes['active_matches_count'] > 0;
+        } else {
+            $isLive = $this->matches()
+                ->whereIn('status', ['live', 'completed'])
+                ->exists();
         }
 
-        // Fallback: query directly
-        $hasActiveMatches = $this->matches()
-            ->whereIn('status', ['live', 'completed'])
-            ->exists();
+        if ($isLive) {
+            return 'live';
+        }
 
-        return $hasActiveMatches ? 'live' : 'upcoming';
+        // No winner, no active matches — check for admin override
+        if ($this->status && ! in_array($this->status, ['upcoming', 'live', 'completed'])) {
+            return $this->status;
+        }
+
+        // Auto-detect: start date is in the past → awaiting
+        if ($this->start_date && $this->start_date->isPast()) {
+            return 'awaiting';
+        }
+
+        return 'upcoming';
     }
 
     public function prizeAwards()
