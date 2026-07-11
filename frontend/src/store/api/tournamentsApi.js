@@ -54,6 +54,11 @@ const tournamentsApi = api.injectEndpoints({
       query: ({ id, data }) => ({ url: `/tournaments/${id}/max-players`, method: 'PUT', data }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Tournament', id }],
     }),
+    getQualifierPool: builder.query({
+      query: ({ tournamentId, roundId }) => ({ url: `/tournaments/${tournamentId}/rounds/${roundId}/pool` }),
+      transformResponse: (res) => res,
+      providesTags: (result, error, { tournamentId, roundId }) => [{ type: 'QualifierPool', id: `${tournamentId}-${roundId}` }],
+    }),
   }),
 });
 
@@ -67,4 +72,5 @@ export const {
   useDestroyTournamentMutation,
   useUpdateEntryStatusMutation,
   useUpdateMaxPlayersMutation,
+  useGetQualifierPoolQuery,
 } = tournamentsApi;

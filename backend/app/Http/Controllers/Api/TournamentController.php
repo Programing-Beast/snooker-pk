@@ -13,13 +13,19 @@ use App\Http\Resources\RoundResource;
 use App\Http\Resources\TournamentEntryResource;
 use App\Http\Resources\TournamentDetailResource;
 use App\Http\Resources\TournamentResource;
+use App\Models\Round;
 use App\Models\Tournament;
+use App\Services\DrawService;
 use App\Services\TournamentService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TournamentController extends Controller
 {
-    public function __construct(private TournamentService $tournamentService) {}
+    public function __construct(
+        private TournamentService $tournamentService,
+        private DrawService $drawService,
+    ) {}
 
     public function index(ListTournamentsRequest $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
@@ -86,5 +92,15 @@ class TournamentController extends Controller
         return new TournamentResource(
             $this->tournamentService->updateMaxPlayers($tournament, $request->validated()['max_players'])
         );
+    }
+
+    public function qualifierPool(Tournament $tournament, Round $round): JsonResponse
+    {
+        $pool = $this->drawService->getQualifierRoundPool($tournament, $round);
+
+        return response()->json([
+            'data' => PlayerResource::collection($pool),
+            'count' => $pool->count(),
+        ]);
     }
 }

@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGetTournamentQuery, useGetTournamentDrawQuery, useUpdateTournamentMutation } from '../../store/api/tournamentsApi';
 import { useGetEntriesQuery } from '../../store/api/entriesApi';
-import { useGetRoundsQuery } from '../../store/api/roundsApi';
+import { useGetRoundsQuery, useCreateRoundMutation, useDestroyRoundMutation } from '../../store/api/roundsApi';
 import TournamentSubNav from '../../components/admin/TournamentSubNav';
 import MatchResultHero from '../../components/ui/MatchResultHero';
 import StatusBadge from '../../components/ui/StatusBadge';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
 
 export default function AdminTournamentPage() {
   const { id } = useParams();
@@ -14,7 +16,12 @@ export default function AdminTournamentPage() {
   const { data: rounds = [] } = useGetRoundsQuery(id);
   const { data: drawData = [] } = useGetTournamentDrawQuery(id);
   const [updateTournament] = useUpdateTournamentMutation();
+  const [createRound] = useCreateRoundMutation();
+  const [destroyRound] = useDestroyRoundMutation();
   const [statusSaving, setStatusSaving] = useState(false);
+  const [newQRoundName, setNewQRoundName] = useState('');
+  const [newQRoundFtw, setNewQRoundFtw] = useState(3);
+  const [creatingQRound, setCreatingQRound] = useState(false);
 
   const loading = tLoading;
   const approved = entries.filter(e => e.status === 'approved');
@@ -26,6 +33,9 @@ export default function AdminTournamentPage() {
     (sum, r) => sum + (r.matches?.filter(m => m.status === 'live' || m.status === 'in_progress').length || 0),
     0,
   );
+
+  const qualifierRounds = sortedRounds.filter(r => r.is_qualifier);
+  const mainDrawRounds = sortedRounds.filter(r => !r.is_qualifier);
 
   const startDate = tournament?.start_date
     ? new Date(tournament.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -166,6 +176,109 @@ export default function AdminTournamentPage() {
             </div>
           </div>
 
+          {/* Qualifier rounds card */}
+          {tournament?.has_qualifiers && (
+            <div className="card overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-divider flex items-center gap-2">
+                <span className="badge bg-felt text-white text-[10px]">Qualifiers</span>
+                <span className="seclabel text-felt">Qualifier rounds</span>
+              </div>
+              {qualifierRounds.length > 0 ? (
+                <div className="divide-y divide-divider">
+                  {qualifierRounds.map(round => {
+                    const roundDraw = drawRounds.find(r => r.id === round.id);
+                    const matches = roundDraw?.matches || [];
+                    const matchCount = matches.length;
+                    const completedCount = matches.filter(m => m.status === 'completed' || m.status === 'walkover').length;
+
+                    return (
+                      <div key={round.id} className="flex items-center gap-3 px-5 py-3.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-[14px]">{round.name}</div>
+                          <div className="text-[11px] text-muted">
+                            {round.frames_to_win ? `Best of ${round.frames_to_win * 2 - 1}` : '—'}
+                            {matchCount > 0 ? ` · ${completedCount}/${matchCount} completed` : ' · No matches yet'}
+                          </div>
+                        </div>
+                        {matchCount > 0 && completedCount === matchCount ? (
+                          <span className="badge bg-ink-100 text-ink-600">Done</span>
+                        ) : completedCount > 0 ? (
+                          <span className="badge bg-ok-tint text-[#0C6B3C]">{completedCount}/{matchCount}</span>
+                        ) : (
+                          <span className="badge bg-ink-100 text-ink-400">Pending</span>
+                        )}
+                        {matchCount === 0 && (
+                          <button
+                            onClick={async () => {
+                              if (!confirm(`Delete "${round.name}"?`)) return;
+                              try { await destroyRound(round.id, { tournamentId: id }).unwrap(); } catch { /* ignore */ }
+                            }}
+                            className="text-[11px] text-bad hover:text-bad/80"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="p-5 text-center text-muted text-[13px]">No qualifier rounds yet. Create one below.</div>
+              )}
+              {/* Create qualifier round form */}
+              <div className="px-5 py-4 bg-card-alt border-t border-divider">
+                <div className="flex items-end gap-2 flex-wrap">
+                  <div className="flex-1 min-w-[140px]">
+                    <Input
+                      label="Round name"
+                      value={newQRoundName}
+                      onChange={e => setNewQRoundName(e.target.value)}
+                      placeholder={`Qualifier R${qualifierRounds.length + 1}`}
+                    />
+                  </div>
+                  <div className="w-28">
+                    <label className="lbl">Best of</label>
+                    <select
+                      value={newQRoundFtw * 2 - 1}
+                      onChange={e => setNewQRoundFtw(Math.ceil(Number(e.target.value) / 2))}
+                      className="input !py-2"
+                    >
+                      {[5, 7, 9, 11, 13].map(n => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button
+                    size="sm"
+                    disabled={creatingQRound}
+                    onClick={async () => {
+                      const name = newQRoundName.trim() || `Qualifier R${qualifierRounds.length + 1}`;
+                      setCreatingQRound(true);
+                      try {
+                        const maxSort = qualifierRounds.length > 0
+                          ? Math.max(...qualifierRounds.map(r => r.sort_order ?? 0))
+                          : -1;
+                        await createRound({
+                          tournamentId: Number(id),
+                          data: {
+                            name,
+                            sort_order: maxSort + 1,
+                            is_qualifier: true,
+                            frames_to_win: newQRoundFtw,
+                          },
+                        }).unwrap();
+                        setNewQRoundName('');
+                      } catch { /* ignore */ }
+                      setCreatingQRound(false);
+                    }}
+                  >
+                    {creatingQRound ? 'Creating...' : '+ Add qualifier round'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Round progression */}
           <div className="card overflow-hidden">
             <div className="px-5 py-3.5 border-b border-divider">
@@ -196,7 +309,10 @@ export default function AdminTournamentPage() {
                   return (
                     <div key={round.id} className="flex items-center gap-3 px-5 py-3.5">
                       <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-[14px]">{round.name}</div>
+                        <div className="font-semibold text-[14px] flex items-center gap-2">
+                          {round.name}
+                          {round.is_qualifier && <span className="badge bg-felt text-white text-[9px]">Qualifier</span>}
+                        </div>
                         <div className="text-[11px] text-muted">
                           {round.frames_to_win ? `Best of ${round.frames_to_win * 2 - 1}` : '—'}
                           {matchCount > 0 && ` · ${matchCount} matches`}

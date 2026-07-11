@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGetTournamentQuery, useGetTournamentDrawQuery } from '../../store/api/tournamentsApi';
+import { useGetTournamentQuery, useGetTournamentDrawQuery, useGetQualifierPoolQuery } from '../../store/api/tournamentsApi';
 import { useGetRoundsQuery, useUpdateRoundMutation } from '../../store/api/roundsApi';
 import { useGetEntriesQuery } from '../../store/api/entriesApi';
 import { useGenerateDrawMutation, useConfirmDrawMutation } from '../../store/api/drawsApi';
@@ -51,6 +51,13 @@ export default function DrawGeneratePage() {
   const [generateDraw] = useGenerateDrawMutation();
   const [confirmDraw] = useConfirmDrawMutation();
 
+  const allRounds = [...rounds].sort((a, b) => {
+    // Show qualifier rounds first, then main draw rounds
+    if (a.is_qualifier && !b.is_qualifier) return -1;
+    if (!a.is_qualifier && b.is_qualifier) return 1;
+    return (a.sort_order ?? 0) - (b.sort_order ?? 0);
+  });
+
   const [selectedRoundId, setSelectedRoundId] = useState(null);
   const [drawMode, setDrawMode] = useState('fixed');
   const [bestOf, setBestOf] = useState(7);
@@ -69,13 +76,13 @@ export default function DrawGeneratePage() {
     return 0;
   })();
 
-  // Initialize selected round when rounds load
+  // Initialize selected round when rounds load (only main draw rounds)
   useEffect(() => {
-    if (rounds.length && !selectedRoundId) {
-      setSelectedRoundId(rounds[0].id);
-      loadRoundSettings(rounds[0]);
+    if (allRounds.length && !selectedRoundId) {
+      setSelectedRoundId(allRounds[0].id);
+      loadRoundSettings(allRounds[0]);
     }
-  }, [rounds]);
+  }, [allRounds.length]);
 
   function loadRoundSettings(round) {
     setDrawMode(round.draw_mode || 'fixed');
@@ -86,19 +93,32 @@ export default function DrawGeneratePage() {
     setEliminationPrize(round.elimination_prize ?? '');
   }
 
-  const selectedRound = rounds.find(r => r.id === selectedRoundId);
-  const sortedRounds = [...rounds].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-  const isFirstRound = rounds.length === 0 || sortedRounds[0]?.id === selectedRoundId;
+  const selectedRound = allRounds.find(r => r.id === selectedRoundId);
+  const isSelectedQualifier = selectedRound?.is_qualifier;
+  const mainDrawRoundsSorted = rounds.filter(r => !r.is_qualifier).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  const isFirstMainRound = !isSelectedQualifier && (mainDrawRoundsSorted.length === 0 || mainDrawRoundsSorted[0]?.id === selectedRoundId);
+  const sortedRounds = [...allRounds].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
   const selectedRoundIdx = sortedRounds.findIndex(r => r.id === selectedRoundId);
   const prevRound = selectedRoundIdx > 0 ? sortedRounds[selectedRoundIdx - 1] : null;
+
+  // Fetch qualifier pool when a qualifier round is selected
+  const { data: qualifierPoolData } = useGetQualifierPoolQuery(
+    { tournamentId: id, roundId: selectedRoundId },
+    { skip: !isSelectedQualifier || !selectedRoundId }
+  );
+  const qualifierPoolSize = qualifierPoolData?.count ?? 0;
 
   const drawRoundsArr = Array.isArray(drawData) ? drawData : drawData?.rounds || [];
   const prevRoundDraw = prevRound ? drawRoundsArr.find(r => r.id === prevRound.id) : null;
   const prevRoundMatchCount = prevRoundDraw?.matches?.length || 0;
-  const poolSize = isFirstRound ? entryCount : prevRoundMatchCount;
-  const poolSource = isFirstRound
-    ? 'approved entrants'
-    : `winners of ${prevRound?.name || 'previous round'}`;
+  const poolSize = isSelectedQualifier
+    ? qualifierPoolSize
+    : isFirstMainRound ? entryCount : prevRoundMatchCount;
+  const poolSource = isSelectedQualifier
+    ? 'qualifier round pool'
+    : isFirstMainRound
+      ? (tournament?.has_qualifiers ? 'direct seeds + qualifier winners' : 'approved entrants')
+      : `winners of ${prevRound?.name || 'previous round'}`;
   const byes = poolSize > 0 ? nextPow2(poolSize) - poolSize : 0;
   const matchCount = poolSize > 0 ? Math.floor(poolSize / 2) : 0;
 
@@ -118,7 +138,7 @@ export default function DrawGeneratePage() {
   function handleRoundChange(roundId) {
     setSelectedRoundId(roundId);
     setGenerated(null);
-    const round = rounds.find(r => r.id === roundId);
+    const round = allRounds.find(r => r.id === roundId);
     if (round) loadRoundSettings(round);
   }
 
@@ -236,9 +256,11 @@ export default function DrawGeneratePage() {
           <h1 className="font-display font-extrabold uppercase text-[28px] leading-none">Generate draw</h1>
           <p className="text-ink-500 text-[14px] mt-1.5">
             Choose the draw mode <b>per round</b> at generation time.{' '}
-            {isFirstRound
-              ? 'Round 1 pairs the approved entrants.'
-              : 'Later rounds pair the winners of the previous round.'}
+            {isSelectedQualifier
+              ? 'Qualifier rounds pair the assigned players.'
+              : isFirstMainRound
+                ? 'Round 1 pairs the approved entrants.'
+                : 'Later rounds pair the winners of the previous round.'}
           </p>
         </div>
       </div>
@@ -257,9 +279,9 @@ export default function DrawGeneratePage() {
           {/* Card 1: Round selector */}
           <div className="card p-5">
             <div className="seclabel text-felt mb-3">1 · Round</div>
-            {rounds.length > 0 ? (
+            {allRounds.length > 0 ? (
               <div className="flex flex-wrap gap-2 mb-3">
-                {rounds.map(r => (
+                {allRounds.map(r => (
                   <button
                     key={r.id}
                     onClick={() => handleRoundChange(r.id)}
@@ -269,6 +291,7 @@ export default function DrawGeneratePage() {
                         : 'bg-card-alt text-ink-600 hover:text-ink-900'
                     }`}
                   >
+                    {r.is_qualifier && <span className={`text-[9px] font-bold uppercase tracking-wide ${r.id === selectedRoundId ? 'text-white/70' : 'text-felt'}`}>Q</span>}
                     {r.name}
                     {r.generated_at && (
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className={r.id === selectedRoundId ? 'text-white/70' : 'text-ok'}>
@@ -558,7 +581,7 @@ export default function DrawGeneratePage() {
               <Button
                 className="w-full"
                 onClick={handleGenerate}
-                disabled={generating || (rounds.length > 0 && !selectedRoundId)}
+                disabled={generating || (allRounds.length > 0 && !selectedRoundId)}
               >
                 {generating ? 'Generating...' : isAlreadyGenerated ? 'Re-generate pairing' : 'Generate pairing'}
               </Button>
@@ -567,7 +590,7 @@ export default function DrawGeneratePage() {
                 variant="brass"
                 className="w-full"
                 onClick={handleGenerate}
-                disabled={rounds.length > 0 && !selectedRoundId}
+                disabled={allRounds.length > 0 && !selectedRoundId}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
                   <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />

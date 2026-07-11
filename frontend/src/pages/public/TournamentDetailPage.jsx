@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useGetTournamentQuery, useGetTournamentDrawQuery, useGetTournamentPlayersQuery } from '../../store/api/tournamentsApi';
 import { useGetMyEntriesQuery, useRequestEntryMutation } from '../../store/api/entriesApi';
 import { useGetPrizeAwardsQuery } from '../../store/api/prizeAwardsApi';
@@ -61,7 +61,10 @@ export default function TournamentDetailPage() {
       <PageBanner bannerPath={t.banner_path}>
         <div className="px-6 sm:px-9 py-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <StatusBadge status={t.status || 'upcoming'} />
+            <div className="flex items-center gap-2">
+              <StatusBadge status={t.status || 'upcoming'} />
+              {t.has_qualifiers && <span className="badge bg-felt text-white text-[10px]">Has Qualifiers</span>}
+            </div>
             <h1 className="font-display font-extrabold text-white text-[28px] sm:text-[34px] uppercase leading-tight mt-3">{t.name}</h1>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-ink-200 text-[13px] mt-3">
               {t.venue && <span>⌂ {t.venue}{t.city ? `, ${t.city}` : ''}</span>}
@@ -312,7 +315,11 @@ function DrawTab({ data }) {
     <div className="space-y-6">
       {rounds.map(round => (
         <div key={round.id} className="card overflow-hidden">
-          <RoundHeader round={round} />
+          <RoundHeader round={round}>
+            {round.is_qualifier && (
+              <span className="badge bg-felt text-white text-[9px] ml-2">Qualifier</span>
+            )}
+          </RoundHeader>
           <div>
             {round.matches?.map((m, i) => <MatchRow key={m.id} match={m} index={i + 1} />)}
           </div>

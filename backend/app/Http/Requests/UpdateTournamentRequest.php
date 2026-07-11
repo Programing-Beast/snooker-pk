@@ -35,6 +35,8 @@ class UpdateTournamentRequest extends FormRequest
             'entry_status' => ['sometimes', 'in:open,closed'],
             'max_players' => ['nullable', 'integer', 'min:2'],
             'draw_size' => ['nullable', 'integer', 'min:2'],
+            'has_qualifiers' => ['sometimes', 'boolean'],
+            'qualifying_slots' => ['sometimes', 'nullable', 'integer', 'min:1'],
         ];
     }
 }

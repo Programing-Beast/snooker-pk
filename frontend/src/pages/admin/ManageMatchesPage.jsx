@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useGetTournamentQuery, useGetTournamentDrawQuery } from '../../store/api/tournamentsApi';
-import { useUpdateMatchMutation, useWalkoverMatchMutation, useCompleteMatchMutation, useDeclareWinnerMutation, useAssignUmpireMutation } from '../../store/api/matchesApi';
+import { useGetTournamentQuery, useGetTournamentDrawQuery, useGetQualifierPoolQuery } from '../../store/api/tournamentsApi';
+import { useUpdateMatchMutation, useWalkoverMatchMutation, useCompleteMatchMutation, useDeclareWinnerMutation, useAssignUmpireMutation, useCreateQualifierMatchMutation, useDeleteQualifierMatchMutation, useGenerateQualifierDrawMutation } from '../../store/api/matchesApi';
 import { useGetUmpireUsersQuery } from '../../store/api/usersApi';
 import MatchRow from '../../components/ui/MatchRow';
-import MatchResultHero from '../../components/ui/MatchResultHero';
 import StatusBadge from '../../components/ui/StatusBadge';
 import EmptyState from '../../components/ui/EmptyState';
 import Button from '../../components/ui/Button';
@@ -17,12 +16,15 @@ import TournamentSubNav from '../../components/admin/TournamentSubNav';
 export default function ManageMatchesPage() {
   const { id } = useParams();
   const { data: tournament } = useGetTournamentQuery(id);
-  const { data: drawData, isLoading } = useGetTournamentDrawQuery(id);
+  const { data: drawData, isLoading, refetch: refetchDraw } = useGetTournamentDrawQuery(id);
   const [updateMatch] = useUpdateMatchMutation();
   const [walkoverMatch] = useWalkoverMatchMutation();
   const [completeMatch] = useCompleteMatchMutation();
   const [declareWinner] = useDeclareWinnerMutation();
   const [assignUmpire] = useAssignUmpireMutation();
+  const [createQualifierMatch] = useCreateQualifierMatchMutation();
+  const [deleteQualifierMatch] = useDeleteQualifierMatchMutation();
+  const [generateQualifierDraw] = useGenerateQualifierDrawMutation();
   const { data: umpireUsers = [] } = useGetUmpireUsersQuery();
 
   const [editMatch, setEditMatch] = useState(null);
@@ -44,6 +46,12 @@ export default function ManageMatchesPage() {
   const [assignMatch, setAssignMatch] = useState(null);
   const [selectedUmpireId, setSelectedUmpireId] = useState('');
   const [assignSaving, setAssignSaving] = useState(false);
+
+  // Qualifier match creation state
+  const [qualifierRoundId, setQualifierRoundId] = useState(null);
+  const [qPlayer1, setQPlayer1] = useState('');
+  const [qPlayer2, setQPlayer2] = useState('');
+  const [qCreating, setQCreating] = useState(false);
 
   function openEdit(match) {
     setEditMatch(match);
@@ -164,6 +172,41 @@ export default function ManageMatchesPage() {
     setAssignSaving(false);
   }
 
+  // Qualifier match creation
+  async function handleCreateQualifierMatch(roundId) {
+    if (!qPlayer1 || !qPlayer2) return;
+    setQCreating(true);
+    try {
+      await createQualifierMatch({
+        tournament_id: Number(id),
+        round_id: roundId,
+        player1_id: Number(qPlayer1),
+        player2_id: Number(qPlayer2),
+      }).unwrap();
+      setQPlayer1('');
+      setQPlayer2('');
+      refetchDraw();
+    } catch { /* ignore */ }
+    setQCreating(false);
+  }
+
+  async function handleDeleteQualifierMatch(matchId) {
+    try {
+      await deleteQualifierMatch(matchId, { tournamentId: id }).unwrap();
+      refetchDraw();
+    } catch { /* ignore */ }
+  }
+
+  async function handleGenerateQualifierDraw(roundId) {
+    try {
+      await generateQualifierDraw({
+        tournament_id: Number(id),
+        round_id: roundId,
+      }).unwrap();
+      refetchDraw();
+    } catch { /* ignore */ }
+  }
+
   const rounds = Array.isArray(drawData) ? drawData : (drawData?.rounds || []);
 
   return (
@@ -181,7 +224,27 @@ export default function ManageMatchesPage() {
         <div className="space-y-6">
           {rounds.map(round => (
             <div key={round.id} className="card overflow-hidden">
-              <RoundHeader round={round} />
+              <RoundHeader round={round}>
+                {round.is_qualifier && (
+                  <span className="badge bg-felt text-white text-[9px] ml-2">Qualifier</span>
+                )}
+              </RoundHeader>
+
+              {/* Qualifier: add match UI */}
+              {round.is_qualifier && (
+                <QualifierAddMatch
+                  tournamentId={id}
+                  round={round}
+                  onCreateMatch={handleCreateQualifierMatch}
+                  onGenerateDraw={handleGenerateQualifierDraw}
+                  qPlayer1={qualifierRoundId === round.id ? qPlayer1 : ''}
+                  qPlayer2={qualifierRoundId === round.id ? qPlayer2 : ''}
+                  setQPlayer1={(v) => { setQualifierRoundId(round.id); setQPlayer1(v); }}
+                  setQPlayer2={(v) => { setQualifierRoundId(round.id); setQPlayer2(v); }}
+                  creating={qCreating && qualifierRoundId === round.id}
+                />
+              )}
+
               {round.matches?.map((m, i) => {
                 const isCompleted = m.status === 'completed' || m.status === 'walkover';
                 const isActive = !isCompleted && m.player1 && m.player2;
@@ -219,7 +282,22 @@ export default function ManageMatchesPage() {
                             <span className="text-muted">Assign Umpire</span>
                           )}
                         </button>
+                        {round.is_qualifier && m.status === 'scheduled' && (
+                          <button
+                            className="btn btn-ghost btn-sm text-[11px] text-bad"
+                            onClick={() => handleDeleteQualifierMatch(m.id)}
+                          >
+                            Delete
+                          </button>
+                        )}
                       </>
+                    ) : round.is_qualifier && m.status === 'scheduled' ? (
+                      <button
+                        className="btn btn-ghost btn-sm text-[11px] text-bad"
+                        onClick={() => handleDeleteQualifierMatch(m.id)}
+                      >
+                        Delete
+                      </button>
                     ) : null}
                   />
                 );
@@ -356,6 +434,80 @@ export default function ManageMatchesPage() {
           </Button>
         </ModalFooter>
       </Modal>
+    </div>
+  );
+}
+
+function QualifierAddMatch({ tournamentId, round, onCreateMatch, onGenerateDraw, qPlayer1, qPlayer2, setQPlayer1, setQPlayer2, creating }) {
+  const { data: poolData } = useGetQualifierPoolQuery(
+    { tournamentId, roundId: round.id },
+    { refetchOnMountOrArgChange: true }
+  );
+  const [generating, setGenerating] = useState(false);
+
+  const pool = poolData?.data || [];
+
+  async function handleAutoPair() {
+    setGenerating(true);
+    await onGenerateDraw(round.id);
+    setGenerating(false);
+  }
+
+  if (pool.length < 2 && !qPlayer1 && !qPlayer2) {
+    return (
+      <div className="px-5 py-3 bg-card-alt border-b border-divider text-[13px] text-ink-500">
+        {pool.length === 0 ? 'No players available in the pool.' : 'Need at least 2 players in the pool to create a match.'}
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-5 py-3 bg-card-alt border-b border-divider">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[12px] font-semibold text-ink-600">Available pool:</span>
+        <span className="font-display font-bold text-felt text-[13px]">{pool.length} players</span>
+        {pool.length >= 2 && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="ml-auto text-[11px]"
+            onClick={handleAutoPair}
+            disabled={generating}
+          >
+            {generating ? 'Pairing...' : `Auto-pair all (${Math.floor(pool.length / 2)} matches)`}
+          </Button>
+        )}
+      </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        <select
+          className="text-[13px] border border-ink-200 rounded px-2 py-1.5 bg-white text-ink-700 min-w-[160px]"
+          value={qPlayer1}
+          onChange={e => setQPlayer1(e.target.value)}
+        >
+          <option value="">Player 1...</option>
+          {pool.filter(p => String(p.id) !== String(qPlayer2)).map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+        <span className="text-[13px] font-bold text-ink-300">vs</span>
+        <select
+          className="text-[13px] border border-ink-200 rounded px-2 py-1.5 bg-white text-ink-700 min-w-[160px]"
+          value={qPlayer2}
+          onChange={e => setQPlayer2(e.target.value)}
+        >
+          <option value="">Player 2...</option>
+          {pool.filter(p => String(p.id) !== String(qPlayer1)).map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+        <Button
+          size="sm"
+          onClick={() => onCreateMatch(round.id)}
+          disabled={creating || !qPlayer1 || !qPlayer2}
+        >
+          {creating ? 'Creating...' : 'Create Match'}
+        </Button>
+      </div>
     </div>
   );
 }

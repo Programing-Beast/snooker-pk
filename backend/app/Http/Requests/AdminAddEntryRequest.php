@@ -18,6 +18,7 @@ class AdminAddEntryRequest extends FormRequest
             'player_id' => ['required_without:player_ids', 'exists:players,id'],
             'player_ids' => ['required_without:player_id', 'array', 'min:1'],
             'player_ids.*' => ['exists:players,id'],
+            'entry_round_id' => ['nullable', 'integer', 'exists:rounds,id'],
         ];
     }
 }

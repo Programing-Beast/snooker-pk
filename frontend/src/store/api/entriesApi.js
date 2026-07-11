@@ -34,10 +34,14 @@ const entriesApi = api.injectEndpoints({
       ],
     }),
     bulkAddEntries: builder.mutation({
-      query: ({ tournamentId, playerIds }) => ({
+      query: ({ tournamentId, playerIds, entryRoundId }) => ({
         url: '/entries/admin-add',
         method: 'POST',
-        data: { tournament_id: tournamentId, player_ids: playerIds },
+        data: {
+          tournament_id: tournamentId,
+          player_ids: playerIds,
+          ...(entryRoundId ? { entry_round_id: entryRoundId } : {}),
+        },
       }),
       invalidatesTags: (result, error, { tournamentId }) => [
         { type: 'Entry', id: tournamentId },
@@ -46,6 +50,12 @@ const entriesApi = api.injectEndpoints({
     }),
     setEntrySeed: builder.mutation({
       query: ({ id, data }) => ({ url: `/entries/${id}/seed`, method: 'PUT', data }),
+      invalidatesTags: (result, error, { tournamentId }) => [
+        { type: 'Entry', id: tournamentId },
+      ],
+    }),
+    setEntryRound: builder.mutation({
+      query: ({ id, data }) => ({ url: `/entries/${id}/entry-round`, method: 'PUT', data }),
       invalidatesTags: (result, error, { tournamentId }) => [
         { type: 'Entry', id: tournamentId },
       ],
@@ -61,4 +71,5 @@ export const {
   useRejectEntryMutation,
   useBulkAddEntriesMutation,
   useSetEntrySeedMutation,
+  useSetEntryRoundMutation,
 } = entriesApi;

@@ -49,12 +49,15 @@ class EntryController extends Controller
     {
         $data = $request->validated();
 
+        $entryRoundId = $data['entry_round_id'] ?? null;
+
         // Bulk add: player_ids array
         if (! empty($data['player_ids'])) {
             $added = $this->entryService->bulkAdminAdd(
                 $data['tournament_id'],
                 $data['player_ids'],
-                $request->user()
+                $request->user(),
+                $entryRoundId
             );
 
             return response()->json([
@@ -67,7 +70,8 @@ class EntryController extends Controller
         $entry = $this->entryService->adminAdd(
             $data['tournament_id'],
             $data['player_id'],
-            $request->user()
+            $request->user(),
+            $entryRoundId
         );
 
         return (new TournamentEntryResource($entry->load('player')))
@@ -93,6 +97,17 @@ class EntryController extends Controller
     {
         return TournamentEntryResource::collection(
             $this->entryService->summary($tournament, $request->validated())
+        );
+    }
+
+    public function setEntryRound(Request $request, TournamentEntry $entry): TournamentEntryResource
+    {
+        $data = $request->validate([
+            'entry_round_id' => ['nullable', 'integer', 'exists:rounds,id'],
+        ]);
+
+        return new TournamentEntryResource(
+            $this->entryService->setEntryRound($entry, $data['entry_round_id'] ?? null)
         );
     }
 }

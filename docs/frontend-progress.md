@@ -113,6 +113,15 @@
 - [x] Utility classes: ball, felt-grain, on-felt, text-caption
 - [x] Animations: pulse, bump, activeglow, dropin
 
+### Qualifier Tournaments
+- [x] tournamentsApi.js: `getQualifiers`, `getQualifiedPlayers`, `transferQualifiedPlayers` endpoints + hooks
+- [x] TournamentFormPage: type select (Regular/Qualifier), parent tournament dropdown, qualifying slots input; strips qualifier fields for regular tournaments
+- [x] ManageEntriesPage: qualifier info banner replaces capacity bar, `isFull` always false for qualifiers
+- [x] AdminTournamentPage: qualifier info card (parent link + slots), TransferQualifiedSection (survivor count, confirm dialog, transfer button), qualifiers list card on parent tournaments
+- [x] AdminTournamentsPage: "Qualifier" badge on list rows
+- [x] TournamentDetailPage: qualifier badge + "Qualifying for" parent link in header, qualifiers section in overview tab
+- [x] TournamentCard: small "Qualifier" badge in header
+
 ### Remaining
 - [ ] Umpire board mobile layout
 - [ ] Home page: featured live match banner

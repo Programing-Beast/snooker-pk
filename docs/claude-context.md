@@ -1,6 +1,6 @@
 # Claude Context — SnookerPK Project
 
-Last updated: 2026-06-11
+Last updated: 2026-06-15
 
 ## Project Overview
 
@@ -28,7 +28,7 @@ Request → FormRequest (validate) → Controller (thin) → Service (logic) →
 
 | Layer | Location | Count |
 |---|---|---|
-| Routes | `backend/routes/api.php` | 58+ endpoints |
+| Routes | `backend/routes/api.php` | 61+ endpoints |
 | Controllers | `backend/app/Http/Controllers/Api/` | 14 (Auth, Player, PlayerPhone, Tournament, TournamentOrganizer, Prize, Contact, Round, Entry, Draw, Match, Frame, Break, Ranking) |
 | Services | `backend/app/Services/` | 11 (Auth, Player, PlayerPhone, Tournament, TournamentOrganizer, Prize, Round, Entry, Draw, Match, Ranking) |
 | FormRequests | `backend/app/Http/Requests/` | 31 |
@@ -55,16 +55,17 @@ Request → FormRequest (validate) → Controller (thin) → Service (logic) →
 
 ### Route groups
 
-- **Public (8):** register, login, players list/show, tournaments list/show/draw/players, rankings, match show
+- **Public (9):** register, login, players list/show, tournaments list/show/draw/players/qualifiers, rankings, match show
 - **Auth (6):** logout, me, player update/history/upcoming, entry request/mine, player phones
 - **Umpire|Admin (5):** match board, frames CRUD, breaks CRUD
-- **Admin (39+):** full tournament/prize/contact/round CRUD, organizer CRUD, entry management, draw generation, match management, ranking adjust
+- **Admin (41+):** full tournament/prize/contact/round CRUD, organizer CRUD, entry management, draw generation, match management, ranking adjust, qualifier qualified-players + transfer-qualified
 
 ### Key business logic
 
 - **Score cascade** (MatchService): breaks → frame scores (auto-recalculated) → match scores → winner advancement
 - **Draw generation** (DrawService): seeded bracket placement, bye calculation, DB transaction, bye winner advancement
-- **Entry flow** (EntryService): capacity checks, duplicate checks, open/closed status, admin-add auto-approves
+- **Entry flow** (EntryService): capacity checks (skipped for qualifiers), duplicate checks, open/closed status, admin-add auto-approves
+- **Qualifier flow** (TournamentService): qualifier tournaments linked via `parent_tournament_id`, survivors determined by excluding losers from completed matches, `transferQualifiedPlayers` creates entries in parent with source `qualifier_transfer`
 - **Player stats** (PlayerService.show): computes matches_played, wins, win_rate from completed match data
 
 ### Remaining backend items
@@ -104,6 +105,10 @@ AuthContext provides auth state, login/logout/register, role checks
 
 Baize design tokens: felt greens, brass gold, live reds, ink neutrals, night/panel darks. Component classes: btn (8 variants), input, badge, card, seclabel, fg. Animations: pulse, bump, activeglow, dropin.
 
+### Recent additions
+
+- **Qualifier tournaments:** Type select in tournament form, parent tournament dropdown, qualifying slots, transfer UI on admin page, qualifier badges on list/card/detail pages, qualifiers section on parent tournaments
+
 ### Remaining frontend items
 
 - [ ] Umpire board mobile layout
@@ -138,7 +143,7 @@ php artisan serve         # runs on :8000
 
 cd /Users/haiderali/projects/snooker-pk/frontend
 npm run dev               # runs on :3000 (proxies /api + /storage to :8000)
-npm run build             # 186 modules, ~626 KB JS + ~67 KB CSS
+npm run build             # 186 modules, ~635 KB JS + ~68 KB CSS
 ```
 
 Next work: Umpire issues (#4 info/photo, #6 dashboard), then polish (home page live match banner, tournament form wizard, draw reveal animation, store hero).

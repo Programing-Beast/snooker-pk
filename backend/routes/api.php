@@ -112,6 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/tournaments/{tournament}', [TournamentController::class, 'destroy']);
         Route::put('/tournaments/{tournament}/entry-status', [TournamentController::class, 'updateEntryStatus']);
         Route::put('/tournaments/{tournament}/max-players', [TournamentController::class, 'updateMaxPlayers']);
+        Route::get('/tournaments/{tournament}/rounds/{round}/pool', [TournamentController::class, 'qualifierPool']);
 
         // Nested Resources — Prizes
         Route::get('/tournaments/{tournament}/prizes', [PrizeController::class, 'index']);
@@ -139,6 +140,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/entries/{entry}/approve', [EntryController::class, 'approve']);
         Route::put('/entries/{entry}/reject', [EntryController::class, 'reject']);
         Route::put('/entries/{entry}/seed', [EntryController::class, 'setSeed']);
+        Route::put('/entries/{entry}/entry-round', [EntryController::class, 'setEntryRound']);
 
         // Draw
         Route::get('/draw/{tournament}/preview', [DrawController::class, 'preview']);
@@ -147,6 +149,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/draw/reroll', [DrawController::class, 'reroll']);
 
         // Matches — admin management
+        Route::post('/matches/qualifier', [MatchController::class, 'storeQualifierMatch']);
+        Route::post('/matches/qualifier/generate', [MatchController::class, 'generateQualifierDraw']);
+        Route::delete('/matches/{match}/qualifier', [MatchController::class, 'destroyQualifierMatch']);
         Route::put('/matches/{match}', [MatchController::class, 'update']);
         Route::post('/matches/{match}/assign-umpire', [MatchController::class, 'assignUmpire']);
         Route::post('/matches/{match}/walkover', [MatchController::class, 'walkover']);

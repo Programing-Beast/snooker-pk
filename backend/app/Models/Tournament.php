@@ -17,6 +17,7 @@ class Tournament extends Model
         'cover_path', 'banner_path', 'description', 'qualifier_info',
         'presented_by', 'prize_pool',
         'status', 'entry_status', 'max_players', 'draw_size',
+        'has_qualifiers', 'qualifying_slots',
         'winner_id', 'runner_up_id',
     ];
 
@@ -28,7 +29,19 @@ class Tournament extends Model
             'prize_pool' => 'decimal:2',
             'max_players' => 'integer',
             'draw_size' => 'integer',
+            'has_qualifiers' => 'boolean',
+            'qualifying_slots' => 'integer',
         ];
+    }
+
+    public function qualifierRounds()
+    {
+        return $this->hasMany(Round::class)->where('is_qualifier', true)->orderBy('sort_order');
+    }
+
+    public function mainDrawRounds()
+    {
+        return $this->hasMany(Round::class)->where('is_qualifier', false)->orderBy('sort_order');
     }
 
     public function winner()

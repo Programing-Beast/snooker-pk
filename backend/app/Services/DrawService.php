@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\Match_;
+use App\Models\Player;
 use App\Models\Round;
 use App\Models\Tournament;
+use App\Models\TournamentEntry;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -41,8 +44,10 @@ class DrawService
 
     public function generateDraw(Tournament $tournament, ?Round $round = null, ?array $pairings = null): Tournament
     {
-        // Auto-create or fill in missing rounds
-        $this->ensureRoundsExist($tournament);
+        // Auto-create main draw rounds (skip for qualifier rounds)
+        if (! $round || ! $round->is_qualifier) {
+            $this->ensureRoundsExist($tournament);
+        }
 
         // Resolve to first round if not specified
         if (! $round) {
@@ -82,7 +87,7 @@ class DrawService
 
         $drawSize = $tournament->draw_size ?? $this->nextPowerOfTwo($playerCount);
         $requiredRounds = (int) log($drawSize, 2);
-        $existingCount = $tournament->rounds()->count();
+        $existingCount = $tournament->mainDrawRounds()->count();
 
         if ($existingCount >= $requiredRounds) {
             return;
@@ -193,20 +198,65 @@ class DrawService
      */
     private function generateFromSeeds(Tournament $tournament, Round $round): Tournament
     {
-        $firstRound = $tournament->rounds()->orderBy('sort_order')->first();
-        $isFirstRound = $firstRound && $firstRound->id === $round->id;
+        $isQualifier = $round->is_qualifier;
+        $firstMainRound = $tournament->mainDrawRounds()->first()
+            ?? $tournament->rounds()->orderBy('sort_order')->first();
+        $isFirstRound = ! $isQualifier && $firstMainRound && $firstMainRound->id === $round->id;
 
-        if ($isFirstRound) {
-            $approvedEntries = $tournament->approvedEntries()->with('player')->get();
+        if ($isQualifier || $isFirstRound) {
+            if ($isQualifier) {
+                // Qualifier round: pool from assigned entries + prev qualifier winners
+                $pool = $this->getQualifierRoundPool($tournament, $round);
+                $approvedEntries = TournamentEntry::where('tournament_id', $tournament->id)
+                    ->where('status', 'approved')
+                    ->whereIn('player_id', $pool->pluck('id'))
+                    ->with('player')
+                    ->get();
+            } elseif ($tournament->has_qualifiers) {
+                // First main draw round with qualifiers: direct seeds + qualifier survivors
+                $directEntries = $tournament->approvedEntries()
+                    ->whereNull('entry_round_id')
+                    ->with('player')
+                    ->get();
+
+                $lastQualifierRound = $tournament->qualifierRounds()
+                    ->orderBy('sort_order', 'desc')
+                    ->first();
+
+                $qualifierWinnerIds = [];
+                if ($lastQualifierRound) {
+                    $qualifierWinnerIds = Match_::where('tournament_id', $tournament->id)
+                        ->where('round_id', $lastQualifierRound->id)
+                        ->whereNotNull('winner_id')
+                        ->pluck('winner_id')
+                        ->toArray();
+                }
+
+                $qualifierEntries = collect();
+                if (! empty($qualifierWinnerIds)) {
+                    $qualifierEntries = TournamentEntry::where('tournament_id', $tournament->id)
+                        ->where('status', 'approved')
+                        ->whereIn('player_id', $qualifierWinnerIds)
+                        ->with('player')
+                        ->get();
+                }
+
+                $approvedEntries = $directEntries->concat($qualifierEntries)->unique('player_id');
+            } else {
+                $approvedEntries = $tournament->approvedEntries()->with('player')->get();
+            }
+
             $playerCount = $approvedEntries->count();
 
             if ($playerCount < 2) {
                 throw ValidationException::withMessages([
-                    'tournament' => ['At least 2 approved players are required to generate a draw.'],
+                    'tournament' => ['At least 2 players are required to generate a draw.'],
                 ]);
             }
 
-            $drawSize = $tournament->draw_size ?? $this->nextPowerOfTwo($playerCount);
+            $drawSize = $isQualifier
+                ? $this->nextPowerOfTwo($playerCount)
+                : ($tournament->draw_size ?? $this->nextPowerOfTwo($playerCount));
 
             $seeded = $approvedEntries->whereNotNull('seed')->sortBy('seed')->values();
             $unseeded = $approvedEntries->whereNull('seed')->shuffle();
@@ -269,7 +319,7 @@ class DrawService
             }
         }
 
-        DB::transaction(function () use ($tournament, $round, $slots, $drawSize) {
+        DB::transaction(function () use ($tournament, $round, $slots, $drawSize, $isQualifier) {
             // Clear existing matches for this round
             Match_::where('tournament_id', $tournament->id)
                 ->where('round_id', $round->id)
@@ -300,35 +350,38 @@ class DrawService
                 ]);
             }
 
-            // Create placeholder matches for subsequent rounds
-            $rounds = $tournament->rounds()->where('sort_order', '>', $round->sort_order)
-                ->orderBy('sort_order')->get();
-            $prevMatchCount = $matchCount;
+            // Qualifier rounds: no subsequent round placeholders or bye advancement
+            if (! $isQualifier) {
+                // Create placeholder matches for subsequent rounds
+                $rounds = $tournament->rounds()->where('sort_order', '>', $round->sort_order)
+                    ->orderBy('sort_order')->get();
+                $prevMatchCount = $matchCount;
 
-            foreach ($rounds as $nextRound) {
-                $currentMatchCount = intdiv($prevMatchCount, 2);
-                if ($currentMatchCount < 1) {
-                    break;
+                foreach ($rounds as $nextRound) {
+                    $currentMatchCount = intdiv($prevMatchCount, 2);
+                    if ($currentMatchCount < 1) {
+                        break;
+                    }
+
+                    Match_::where('tournament_id', $tournament->id)
+                        ->where('round_id', $nextRound->id)
+                        ->forceDelete();
+
+                    for ($i = 0; $i < $currentMatchCount; $i++) {
+                        Match_::create([
+                            'tournament_id' => $tournament->id,
+                            'round_id' => $nextRound->id,
+                            'position' => $i + 1,
+                            'status' => 'scheduled',
+                        ]);
+                    }
+
+                    $prevMatchCount = $currentMatchCount;
                 }
 
-                Match_::where('tournament_id', $tournament->id)
-                    ->where('round_id', $nextRound->id)
-                    ->forceDelete();
-
-                for ($i = 0; $i < $currentMatchCount; $i++) {
-                    Match_::create([
-                        'tournament_id' => $tournament->id,
-                        'round_id' => $nextRound->id,
-                        'position' => $i + 1,
-                        'status' => 'scheduled',
-                    ]);
-                }
-
-                $prevMatchCount = $currentMatchCount;
+                // Advance bye winners to the next round
+                $this->advanceByeWinners($tournament, $round);
             }
-
-            // Advance bye winners to the next round
-            $this->advanceByeWinners($tournament, $round);
         });
 
         return $tournament->fresh()->load(['rounds.matches.player1', 'rounds.matches.player2']);
@@ -344,6 +397,148 @@ class DrawService
     public function rerollDraw(Tournament $tournament, Round $round): Tournament
     {
         return $this->generateDraw($tournament, $round);
+    }
+
+    /**
+     * Get available players for a qualifier round's pool.
+     *
+     * Pool = (entries assigned to this round) + (winners from prev qualifier round) − (already paired in this round)
+     */
+    public function getQualifierRoundPool(Tournament $tournament, Round $round): Collection
+    {
+        // Direct entrants assigned to this round
+        $directEntrantIds = TournamentEntry::where('tournament_id', $tournament->id)
+            ->where('status', 'approved')
+            ->where('entry_round_id', $round->id)
+            ->pluck('player_id')
+            ->toArray();
+
+        // Winners from previous qualifier round
+        $prevQualifierRound = $tournament->qualifierRounds()
+            ->where('sort_order', '<', $round->sort_order)
+            ->orderBy('sort_order', 'desc')
+            ->first();
+
+        $advancedWinnerIds = [];
+        if ($prevQualifierRound) {
+            $advancedWinnerIds = Match_::where('tournament_id', $tournament->id)
+                ->where('round_id', $prevQualifierRound->id)
+                ->whereNotNull('winner_id')
+                ->pluck('winner_id')
+                ->toArray();
+        }
+
+        $poolIds = array_unique(array_merge($directEntrantIds, $advancedWinnerIds));
+
+        // Subtract already-paired players in this round
+        $pairedIds = Match_::where('tournament_id', $tournament->id)
+            ->where('round_id', $round->id)
+            ->get()
+            ->flatMap(fn ($m) => array_filter([$m->player1_id, $m->player2_id]))
+            ->unique()
+            ->toArray();
+
+        $availableIds = array_diff($poolIds, $pairedIds);
+
+        return Player::whereIn('id', $availableIds)->get();
+    }
+
+    /**
+     * Create a single qualifier match (manual pairing).
+     */
+    public function createQualifierMatch(Tournament $tournament, Round $round, int $player1Id, int $player2Id): Match_
+    {
+        if (! $round->is_qualifier) {
+            throw ValidationException::withMessages([
+                'round' => ['This round is not a qualifier round.'],
+            ]);
+        }
+
+        $pool = $this->getQualifierRoundPool($tournament, $round);
+        $poolIds = $pool->pluck('id')->toArray();
+
+        if (! in_array($player1Id, $poolIds) || ! in_array($player2Id, $poolIds)) {
+            throw ValidationException::withMessages([
+                'players' => ['One or both players are not in the available pool for this round.'],
+            ]);
+        }
+
+        $maxPosition = Match_::where('tournament_id', $tournament->id)
+            ->where('round_id', $round->id)
+            ->max('position') ?? 0;
+
+        return Match_::create([
+            'tournament_id' => $tournament->id,
+            'round_id' => $round->id,
+            'position' => $maxPosition + 1,
+            'player1_id' => $player1Id,
+            'player2_id' => $player2Id,
+            'status' => 'scheduled',
+        ]);
+    }
+
+    /**
+     * Auto-pair all available pool players in a qualifier round.
+     * Shuffles the pool and creates matches for each pair.
+     * Returns the number of matches created.
+     */
+    public function generateQualifierDraw(Tournament $tournament, Round $round): int
+    {
+        if (! $round->is_qualifier) {
+            throw ValidationException::withMessages([
+                'round' => ['This round is not a qualifier round.'],
+            ]);
+        }
+
+        $pool = $this->getQualifierRoundPool($tournament, $round);
+
+        if ($pool->count() < 2) {
+            throw ValidationException::withMessages([
+                'pool' => ['Need at least 2 available players in the pool to generate matches.'],
+            ]);
+        }
+
+        $shuffled = $pool->shuffle()->values();
+        $maxPosition = Match_::where('tournament_id', $tournament->id)
+            ->where('round_id', $round->id)
+            ->max('position') ?? 0;
+
+        $matchesCreated = 0;
+        for ($i = 0; $i + 1 < $shuffled->count(); $i += 2) {
+            Match_::create([
+                'tournament_id' => $tournament->id,
+                'round_id' => $round->id,
+                'position' => $maxPosition + $matchesCreated + 1,
+                'player1_id' => $shuffled[$i]->id,
+                'player2_id' => $shuffled[$i + 1]->id,
+                'status' => 'scheduled',
+            ]);
+            $matchesCreated++;
+        }
+
+        return $matchesCreated;
+    }
+
+    /**
+     * Delete a qualifier match (must not be played yet).
+     */
+    public function deleteQualifierMatch(Match_ $match): void
+    {
+        $round = $match->round;
+
+        if (! $round || ! $round->is_qualifier) {
+            throw ValidationException::withMessages([
+                'match' => ['This match is not in a qualifier round.'],
+            ]);
+        }
+
+        if (in_array($match->status, ['completed', 'walkover', 'live'])) {
+            throw ValidationException::withMessages([
+                'match' => ['Cannot delete a match that has already been played or is live.'],
+            ]);
+        }
+
+        $match->forceDelete();
     }
 
     private function nextPowerOfTwo(int $n): int

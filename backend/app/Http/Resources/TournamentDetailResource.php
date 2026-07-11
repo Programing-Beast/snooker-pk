@@ -33,6 +33,8 @@ class TournamentDetailResource extends JsonResource
             'max_players' => $this->max_players,
             'approved_entries_count' => $this->approved_entries_count ?? $this->approvedEntries()->count(),
             'draw_size' => $this->draw_size,
+            'has_qualifiers' => (bool) $this->has_qualifiers,
+            'qualifying_slots' => $this->qualifying_slots,
             'winner_id' => $this->winner_id,
             'runner_up_id' => $this->runner_up_id,
             'winner' => new PlayerResource($this->whenLoaded('winner')),

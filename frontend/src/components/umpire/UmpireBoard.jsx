@@ -30,6 +30,63 @@ const DEMO_CONFIG = {
   redCount: 1, // TEMP: testing max break confetti (35 = red+black+colours)
 };
 
+/* Compact mobile score bar — visible only below lg breakpoint */
+function MobileScoreBar({ state }) {
+  const p1 = state.players[0];
+  const p2 = state.players[1];
+  const active = state.activePlayerIndex;
+  const bt = breakTotal(state.currentBreak);
+
+  return (
+    <div className="lg:hidden rounded-xl bg-panel2 border border-hairline-d overflow-hidden">
+      <div className="grid grid-cols-[1fr_auto_1fr]">
+        {/* Player 1 */}
+        <div className={`px-3 py-2.5 text-center ${active === 0 ? 'bg-felt-900' : ''}`}>
+          <div className="flex items-center justify-center gap-1.5">
+            {active === 0 && <span className="w-1.5 h-1.5 rounded-full bg-felt pulse shrink-0" />}
+            <span className="font-display font-bold text-white text-[13px] truncate">{p1.name}</span>
+          </div>
+          <div className={`font-display font-extrabold tabular-nums leading-none mt-1 ${active === 0 ? 'text-brass' : 'text-white'}`} style={{ fontSize: 42 }}>
+            {p1.points}
+          </div>
+          <div className="flex items-center justify-center gap-3 mt-1.5">
+            <span className="text-[10px] text-ink-400 font-display uppercase tracking-wider">
+              Brk <b className={active === 0 && bt > 0 ? 'text-live' : 'text-white'}>{active === 0 ? bt : 0}</b>
+            </span>
+            <span className="text-[10px] text-ink-400 font-display uppercase tracking-wider">
+              Hi <b className="text-brass">{p1.frameHighBreak || 0}</b>
+            </span>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center px-1">
+          <span className="text-ink-600 font-display font-bold text-[14px]">vs</span>
+        </div>
+
+        {/* Player 2 */}
+        <div className={`px-3 py-2.5 text-center ${active === 1 ? 'bg-felt-900' : ''}`}>
+          <div className="flex items-center justify-center gap-1.5">
+            {active === 1 && <span className="w-1.5 h-1.5 rounded-full bg-felt pulse shrink-0" />}
+            <span className="font-display font-bold text-white text-[13px] truncate">{p2.name}</span>
+          </div>
+          <div className={`font-display font-extrabold tabular-nums leading-none mt-1 ${active === 1 ? 'text-brass' : 'text-white'}`} style={{ fontSize: 42 }}>
+            {p2.points}
+          </div>
+          <div className="flex items-center justify-center gap-3 mt-1.5">
+            <span className="text-[10px] text-ink-400 font-display uppercase tracking-wider">
+              Brk <b className={active === 1 && bt > 0 ? 'text-live' : 'text-white'}>{active === 1 ? bt : 0}</b>
+            </span>
+            <span className="text-[10px] text-ink-400 font-display uppercase tracking-wider">
+              Hi <b className="text-brass">{p2.frameHighBreak || 0}</b>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function UmpireBoard({ config = DEMO_CONFIG, onEndTurn, onFrameEnd, onMatchEnd }) {
   const { state, dispatch, undo } = useSnookerEngine(config);
   const need = framesToWin(state.bestOf);
@@ -107,61 +164,64 @@ export default function UmpireBoard({ config = DEMO_CONFIG, onEndTurn, onFrameEn
 
   return (
     <div className="relative h-full flex flex-col bg-night felt-grain">
-      {/* Top bar */}
-      <div className="flex items-center gap-4 px-6 h-[60px] bg-night border-b border-hairline-d shrink-0">
-        <Link to="/umpire/dashboard" className="text-ink-400 hover:text-white transition" title="Back to dashboard">
+      {/* Top bar — compact on mobile */}
+      <div className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 h-[44px] sm:h-[60px] bg-night border-b border-hairline-d shrink-0">
+        <Link to="/umpire/dashboard" className="text-ink-400 hover:text-white transition shrink-0" title="Back to dashboard">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </Link>
-        <span className="font-display font-extrabold text-white uppercase tracking-tight text-[15px]">
+        <span className="font-display font-extrabold text-white uppercase tracking-tight text-[13px] sm:text-[15px] shrink-0">
           Snooker<span className="text-live">PK</span>
         </span>
-        <span className="inline-flex items-center gap-1.5 font-display font-semibold uppercase px-2.5 py-1 rounded-full leading-none tracking-[0.08em] text-[9px] bg-brass/20 text-brass">
+        <span className="hidden sm:inline-flex items-center gap-1.5 font-display font-semibold uppercase px-2.5 py-1 rounded-full leading-none tracking-[0.08em] text-[9px] bg-brass/20 text-brass shrink-0">
           Umpire
         </span>
-        <div className="text-[12.5px] text-ink-400 hidden sm:block">
+        <div className="text-[12.5px] text-ink-400 hidden lg:block">
           {state.tournament} · <b className="text-ink-200">{state.round}</b> · best of {state.bestOf}
         </div>
 
         {/* Center scoreline */}
-        <div className="mx-auto flex items-center gap-3">
-          <span className="font-display font-bold text-white text-[15px]">{state.players[0].name}</span>
-          <span className="font-display font-extrabold text-white tabular-nums text-[22px] px-3 py-0.5 rounded-md bg-panel2">
+        <div className="mx-auto flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <span className="font-display font-bold text-white text-[12px] sm:text-[15px] hidden sm:inline">{state.players[0].name}</span>
+          <span className="font-display font-extrabold text-white tabular-nums text-[18px] sm:text-[22px] px-2 sm:px-3 py-0.5 rounded-md bg-panel2">
             {state.players[0].frames} <span className="text-ink-500">—</span> {state.players[1].frames}
           </span>
-          <span className="font-display font-bold text-white text-[15px]">{state.players[1].name}</span>
+          <span className="font-display font-bold text-white text-[12px] sm:text-[15px] hidden sm:inline">{state.players[1].name}</span>
         </div>
 
         {/* Frame + timer */}
-        <div className="ml-auto flex items-center gap-4">
-          <div className="text-right">
+        <div className="ml-auto flex items-center gap-2 sm:gap-4 shrink-0">
+          <div className="text-right hidden sm:block">
             <div className="font-display font-semibold uppercase tracking-[0.18em] text-ink-500 text-[9px]">Frame</div>
             <div className="font-display font-bold text-white text-[14px] leading-none">
               {state.frameNo} <span className="text-ink-500 font-medium">of {state.bestOf}</span>{' '}
               <span className="text-ink-600">· first to {need}</span>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-ink-300">
+          <div className="flex items-center gap-1 sm:gap-1.5 text-ink-300">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
             </svg>
-            <span className="font-display font-bold tabular-nums text-[15px] text-white">
+            <span className="font-display font-bold tabular-nums text-[13px] sm:text-[15px] text-white">
               {formatTime(state.timer)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Main 3-column layout */}
-      <div className="flex-1 grid grid-cols-[300px_1fr_300px] gap-4 p-4 min-h-0">
-        <PlayerPanel state={state} playerIndex={0} />
+      {/* Main layout — single column on mobile, 3-col on lg+ */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[300px_1fr_300px] gap-2 sm:gap-4 p-2 sm:p-4 min-h-0 overflow-y-auto lg:overflow-visible">
+        <div className="hidden lg:block"><PlayerPanel state={state} playerIndex={0} /></div>
 
         {/* Center column */}
-        <div className="flex flex-col gap-3.5 min-w-0">
+        <div className="flex flex-col gap-2.5 sm:gap-3.5 min-w-0">
+          {/* Mobile-only compact score section */}
+          <MobileScoreBar state={state} />
+
           <ExpectedBallIndicator state={state} />
 
-          <div className="flex items-center justify-center gap-3 flex-wrap py-1">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap py-1">
             {ALL_BALL_VALUES.map((v) => (
               <BallButton
                 key={v}
@@ -175,23 +235,24 @@ export default function UmpireBoard({ config = DEMO_CONFIG, onEndTurn, onFrameEn
           <BreakStrip currentBreak={state.currentBreak} />
 
           {/* Action buttons */}
-          <div className="grid grid-cols-3 gap-3 mt-auto">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-auto">
             <button
               onClick={() => handleDispatch({ type: ACTIONS.END_TURN })}
               disabled={disabled}
-              className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md px-5 py-4 text-[15px] leading-none transition active:translate-y-px bg-panel2 border border-hairline-d text-white hover:bg-panel disabled:opacity-30"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 font-display font-semibold rounded-md px-2 sm:px-5 py-3 sm:py-4 text-[13px] sm:text-[15px] leading-none transition active:translate-y-px bg-panel2 border border-hairline-d text-white hover:bg-panel disabled:opacity-30"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="w-4 h-4 sm:w-[18px] sm:h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4" />
               </svg>
-              End turn
+              <span className="hidden sm:inline">End turn</span>
+              <span className="sm:hidden">Turn</span>
             </button>
             <button
               onClick={() => handleDispatch({ type: ACTIONS.FOUL_OPEN })}
               disabled={disabled}
-              className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md px-5 py-4 text-[15px] leading-none transition active:translate-y-px bg-bad/90 text-white hover:bg-bad disabled:opacity-30"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 font-display font-semibold rounded-md px-2 sm:px-5 py-3 sm:py-4 text-[13px] sm:text-[15px] leading-none transition active:translate-y-px bg-bad/90 text-white hover:bg-bad disabled:opacity-30"
             >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="w-4 h-4 sm:w-[17px] sm:h-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 9v4M12 17h.01" />
                 <path d="M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z" />
               </svg>
@@ -199,9 +260,9 @@ export default function UmpireBoard({ config = DEMO_CONFIG, onEndTurn, onFrameEn
             </button>
             <button
               onClick={undo}
-              className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md px-5 py-4 text-[15px] leading-none transition active:translate-y-px bg-panel2 border border-hairline-d text-white hover:bg-panel"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 font-display font-semibold rounded-md px-2 sm:px-5 py-3 sm:py-4 text-[13px] sm:text-[15px] leading-none transition active:translate-y-px bg-panel2 border border-hairline-d text-white hover:bg-panel"
             >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="w-4 h-4 sm:w-[17px] sm:h-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 12a9 9 0 1015-6.7L21 8" /><path d="M21 3v5h-5" />
               </svg>
               Undo
@@ -211,13 +272,13 @@ export default function UmpireBoard({ config = DEMO_CONFIG, onEndTurn, onFrameEn
           <button
             onClick={() => handleDispatch({ type: ACTIONS.END_FRAME })}
             disabled={disabled}
-            className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md w-full px-5 py-3.5 text-[15px] leading-none transition active:translate-y-px bg-brass text-[#3a2c08] hover:brightness-105 disabled:opacity-30"
+            className="inline-flex items-center justify-center gap-2 font-display font-semibold rounded-md w-full px-3 sm:px-5 py-3 sm:py-3.5 text-[13px] sm:text-[15px] leading-none transition active:translate-y-px bg-brass text-[#3a2c08] hover:brightness-105 disabled:opacity-30"
           >
             End frame ▸ record winner &amp; high break
           </button>
         </div>
 
-        <PlayerPanel state={state} playerIndex={1} />
+        <div className="hidden lg:block"><PlayerPanel state={state} playerIndex={1} /></div>
       </div>
 
       {/* Bottom history rail */}

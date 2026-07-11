@@ -7,8 +7,8 @@ export default function BallButton({ state, value, onPot, size = 'lg' }) {
   const isOnly = legal && expected.balls.length === 1;
 
   const sizes = {
-    lg: 'w-[72px] h-[72px] text-[22px]',
-    md: 'w-[60px] h-[60px] text-[19px]',
+    lg: 'w-[52px] h-[52px] text-[18px] sm:w-[72px] sm:h-[72px] sm:text-[22px]',
+    md: 'w-[44px] h-[44px] text-[16px] sm:w-[60px] sm:h-[60px] sm:text-[19px]',
   };
 
   return (

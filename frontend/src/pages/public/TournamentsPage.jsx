@@ -53,17 +53,12 @@ export default function TournamentsPage() {
               </button>
             ))}
           </div>
-          <div className="relative ml-auto w-full sm:w-72">
-            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
-            </svg>
-            <input
-              className="input pl-10"
-              placeholder="Search by name, city or organizer..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
+          <input
+            className="input ml-auto w-full sm:w-72"
+            placeholder="Search by name, city or organizer..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
       </div>
 

@@ -16,6 +16,7 @@ class TournamentEntryResource extends JsonResource
             'status' => $this->status,
             'source' => $this->source,
             'seed' => $this->seed,
+            'entry_round_id' => $this->entry_round_id,
             'requested_at' => $this->requested_at,
             'decided_at' => $this->decided_at,
             'decided_by' => $this->decided_by,

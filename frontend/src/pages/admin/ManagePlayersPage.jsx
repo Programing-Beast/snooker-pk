@@ -51,12 +51,7 @@ export default function ManagePlayersPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
-        <div className="relative max-w-[260px] flex-1">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
-          </svg>
-          <input className="input pl-10" placeholder="Search players..." value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
+        <input className="input max-w-[260px] flex-1" placeholder="Search players..." value={search} onChange={e => setSearch(e.target.value)} />
         <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
           <option value="">All statuses</option>
           <option value="active">Active</option>

@@ -39,23 +39,23 @@ export default function ExpectedBallIndicator({ state }) {
   }
 
   return (
-    <div className="rounded-xl bg-gradient-to-r from-felt-900 to-panel2 border border-felt-700 px-5 py-3.5 flex items-center gap-4">
-      <div>
+    <div className="rounded-xl bg-gradient-to-r from-felt-900 to-panel2 border border-felt-700 px-3 sm:px-5 py-2.5 sm:py-3.5 flex items-center gap-2.5 sm:gap-4">
+      <div className="shrink-0">
         <div className="font-display font-semibold uppercase tracking-[0.18em] text-felt-400 text-[9px]">On</div>
-        <div className="font-display font-extrabold text-white uppercase leading-none mt-0.5" style={{ fontSize: 26, letterSpacing: '.02em' }}>
+        <div className="font-display font-extrabold text-white uppercase leading-none mt-0.5 text-[18px] sm:text-[26px]" style={{ letterSpacing: '.02em' }}>
           {expected.label}
         </div>
       </div>
-      <div className="flex items-center gap-1.5 ml-1">{glyphs}</div>
-      <div className="ml-auto text-right">
+      <div className="flex items-center gap-1 sm:gap-1.5 ml-1">{glyphs}</div>
+      <div className="ml-auto text-right shrink-0">
         <div className="font-display font-semibold uppercase tracking-[0.18em] text-ink-500 text-[9px]">{phaseLabel}</div>
-        <div className="flex items-center gap-2 justify-end mt-1">
+        <div className="flex items-center gap-1.5 sm:gap-2 justify-end mt-1">
           <span
             className="grid place-items-center rounded-full font-display font-bold text-[11px]"
             style={{ width: 22, height: 22, background: BALLS[1].color, color: '#fff' }}
           >●</span>
-          <span className="font-display font-extrabold text-white text-[22px] tabular-nums leading-none">{state.reds}</span>
-          <span className="text-ink-400 text-[12px]">reds left</span>
+          <span className="font-display font-extrabold text-white text-[18px] sm:text-[22px] tabular-nums leading-none">{state.reds}</span>
+          <span className="text-ink-400 text-[11px] sm:text-[12px] hidden sm:inline">reds left</span>
         </div>
       </div>
     </div>

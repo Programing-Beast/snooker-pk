@@ -12,7 +12,7 @@ class Round extends Model
 
     protected $fillable = [
         'tournament_id', 'name', 'sub_label',
-        'sort_order', 'frames_to_win', 'reds_count', 'draw_mode', 'generated_at',
+        'sort_order', 'is_qualifier', 'frames_to_win', 'reds_count', 'draw_mode', 'generated_at',
         'elimination_prize',
     ];
 
@@ -20,6 +20,7 @@ class Round extends Model
     {
         return [
             'sort_order' => 'integer',
+            'is_qualifier' => 'boolean',
             'frames_to_win' => 'integer',
             'reds_count' => 'integer',
             'generated_at' => 'datetime',

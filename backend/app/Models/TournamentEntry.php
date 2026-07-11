@@ -12,7 +12,7 @@ class TournamentEntry extends Model
 
     protected $fillable = [
         'tournament_id', 'player_id', 'status', 'source',
-        'seed', 'requested_at', 'decided_at', 'decided_by',
+        'seed', 'entry_round_id', 'requested_at', 'decided_at', 'decided_by',
     ];
 
     protected function casts(): array
@@ -37,5 +37,10 @@ class TournamentEntry extends Model
     public function decidedByUser()
     {
         return $this->belongsTo(User::class, 'decided_by');
+    }
+
+    public function entryRound()
+    {
+        return $this->belongsTo(Round::class, 'entry_round_id');
     }
 }

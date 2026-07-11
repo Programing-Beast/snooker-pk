@@ -17,8 +17,8 @@ export default function BreakStrip({ currentBreak }) {
   }
 
   return (
-    <div className="rounded-xl bg-panel2 border border-hairline-d px-4 py-3 flex items-center gap-3">
-      <span className="font-display font-semibold uppercase tracking-[0.18em] text-ink-400 text-[9px] shrink-0">
+    <div className="rounded-xl bg-panel2 border border-hairline-d px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
+      <span className="font-display font-semibold uppercase tracking-[0.18em] text-ink-400 text-[9px] shrink-0 hidden sm:block">
         This visit
       </span>
       <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto">
@@ -45,7 +45,7 @@ export default function BreakStrip({ currentBreak }) {
       </div>
       <div className="text-right shrink-0">
         <div className="font-display font-semibold uppercase tracking-[0.18em] text-ink-500 text-[9px]">Break</div>
-        <div className="font-display font-extrabold text-live text-[26px] leading-none tabular-nums">{total}</div>
+        <div className="font-display font-extrabold text-live text-[20px] sm:text-[26px] leading-none tabular-nums">{total}</div>
       </div>
     </div>
   );

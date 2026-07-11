@@ -34,8 +34,8 @@ class EntryService
         }
 
         if ($tournament->max_players) {
-            $approvedCount = $tournament->approvedEntries()->count();
-            if ($approvedCount >= $tournament->max_players) {
+            $mainDrawCount = $tournament->approvedEntries()->whereNull('entry_round_id')->count();
+            if ($mainDrawCount >= $tournament->max_players) {
                 throw ValidationException::withMessages([
                     'tournament' => ['This tournament has reached its maximum player capacity.'],
                 ]);
@@ -73,7 +73,7 @@ class EntryService
         return $entry->fresh()->load('player');
     }
 
-    public function adminAdd(int $tournamentId, int $playerId, User $decidedBy): TournamentEntry
+    public function adminAdd(int $tournamentId, int $playerId, User $decidedBy, ?int $entryRoundId = null): TournamentEntry
     {
         $tournament = Tournament::findOrFail($tournamentId);
 
@@ -88,9 +88,9 @@ class EntryService
             ]);
         }
 
-        if ($tournament->max_players) {
-            $approvedCount = $tournament->approvedEntries()->count();
-            if ($approvedCount >= $tournament->max_players) {
+        if ($tournament->max_players && ! $entryRoundId) {
+            $mainDrawCount = $tournament->approvedEntries()->whereNull('entry_round_id')->count();
+            if ($mainDrawCount >= $tournament->max_players) {
                 throw ValidationException::withMessages([
                     'tournament' => ["This tournament has reached its maximum capacity of {$tournament->max_players} players."],
                 ]);
@@ -102,13 +102,14 @@ class EntryService
             'player_id' => $playerId,
             'status' => 'approved',
             'source' => 'admin_added',
+            'entry_round_id' => $entryRoundId,
             'requested_at' => now(),
             'decided_at' => now(),
             'decided_by' => $decidedBy->id,
         ]);
     }
 
-    public function bulkAdminAdd(int $tournamentId, array $playerIds, User $decidedBy): int
+    public function bulkAdminAdd(int $tournamentId, array $playerIds, User $decidedBy, ?int $entryRoundId = null): int
     {
         $tournament = Tournament::findOrFail($tournamentId);
 
@@ -120,10 +121,10 @@ class EntryService
 
         $newIds = array_values(array_diff($playerIds, $existing));
 
-        // Enforce max_players capacity
-        if ($tournament->max_players) {
-            $approvedCount = $tournament->approvedEntries()->count();
-            $available = $tournament->max_players - $approvedCount;
+        // Enforce max_players capacity (only for main draw entries)
+        if ($tournament->max_players && ! $entryRoundId) {
+            $mainDrawCount = $tournament->approvedEntries()->whereNull('entry_round_id')->count();
+            $available = $tournament->max_players - $mainDrawCount;
 
             if ($available <= 0) {
                 throw ValidationException::withMessages([
@@ -146,6 +147,7 @@ class EntryService
             'player_id' => $pid,
             'status' => 'approved',
             'source' => 'admin_added',
+            'entry_round_id' => $entryRoundId,
             'requested_at' => $now,
             'decided_at' => $now,
             'decided_by' => $decidedBy->id,
@@ -161,6 +163,13 @@ class EntryService
     public function setSeed(TournamentEntry $entry, ?int $seed): TournamentEntry
     {
         $entry->update(['seed' => $seed]);
+
+        return $entry->fresh();
+    }
+
+    public function setEntryRound(TournamentEntry $entry, ?int $roundId): TournamentEntry
+    {
+        $entry->update(['entry_round_id' => $roundId]);
 
         return $entry->fresh();
     }

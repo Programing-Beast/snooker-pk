@@ -13,7 +13,10 @@ export default function TournamentCard({ tournament }) {
         <span className="relative font-display font-extrabold text-white text-[12px] tracking-[0.14em] uppercase max-w-[60%]">
           {t.name}
         </span>
-        <span className="relative"><StatusBadge status={status} /></span>
+        <span className="relative flex items-center gap-1.5">
+          {t.has_qualifiers && <span className="badge bg-white/20 text-white text-[9px] backdrop-blur-sm">Has Qualifiers</span>}
+          <StatusBadge status={status} />
+        </span>
         <div className="absolute bottom-3.5 right-3.5 flex gap-1.5">
           {['#c0392b', '#f2c200', '#1e7a3d', '#7a4a1e', '#1f5fa8', '#e86a92', '#161616'].map(c => (
             <span key={c} className="ball w-3.5 h-3.5" style={{ background: c }} />

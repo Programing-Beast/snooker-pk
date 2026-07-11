@@ -78,12 +78,7 @@ export default function AdminTournamentsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
-        <div className="relative max-w-[280px] flex-1">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
-          </svg>
-          <input className="input pl-10" placeholder="Search tournaments..." value={search} onChange={e => handleSearch(e.target.value)} />
-        </div>
+        <input className="input max-w-[280px] flex-1" placeholder="Search tournaments..." value={search} onChange={e => handleSearch(e.target.value)} />
         <Select value={statusFilter} onChange={e => handleStatusChange(e.target.value)}>
           <option value="">All statuses</option>
           <option value="upcoming">Upcoming</option>
@@ -116,6 +111,7 @@ export default function AdminTournamentsPage() {
                     {' '}· {t.max_players || '—'} players
                   </div>
                 </Link>
+                {t.has_qualifiers && <span className="badge bg-felt text-white text-[10px]">Has Qualifiers</span>}
                 <StatusBadge status={t.status || 'upcoming'} />
                 <div className="flex gap-1.5 shrink-0">
                   <Link to={`/admin/tournaments/${t.id}/entries`} className="btn btn-ghost btn-sm text-[11px]">Entries</Link>

@@ -1,4 +1,4 @@
-export default function RoundHeader({ name, subtitle, detail, round }) {
+export default function RoundHeader({ name, subtitle, detail, round, children }) {
   // When a round prop is provided, auto-build name + rich metadata subtitle
   if (round) {
     const metaParts = [];
@@ -13,7 +13,7 @@ export default function RoundHeader({ name, subtitle, detail, round }) {
 
     return (
       <div className="dark-ctx px-[18px] py-3 bg-night text-white font-display font-semibold text-[12px] tracking-[0.12em] uppercase flex flex-col items-center text-center">
-        <span>{round.name}</span>
+        <span className="flex items-center">{round.name}{children}</span>
         {metaSubtitle && (
           <span className="text-muted font-medium normal-case tracking-normal text-[11px] mt-0.5">
             ({metaSubtitle})

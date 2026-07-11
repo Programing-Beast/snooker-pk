@@ -89,6 +89,18 @@
 - [x] TestMatchDataSeeder — creates completed matches with scores, live match, proper scheduled_at dates across tournaments
 - [x] Storage symlink (`php artisan storage:link`)
 
+## Phase 11 — Qualifier Tournaments
+- [x] Migration: `parent_tournament_id` (FK nullable) + `qualifying_slots` (unsigned int nullable) on tournaments
+- [x] Migration: `qualifier_transfer` added to `tournament_entries.source` enum
+- [x] Tournament model: `parentTournament()` belongsTo, `qualifiers()` hasMany, `isQualifier()` helper
+- [x] EntryService: capacity checks skipped for qualifiers in `requestEntry()`, `adminAdd()`, `bulkAdminAdd()`
+- [x] TournamentService: `showBySlug()` eager loads `qualifiers` + `parentTournament`; new `getQualifiedPlayers()` (survivors = approved entries minus losers); new `transferQualifiedPlayers()` (creates entries in parent with source `qualifier_transfer`)
+- [x] StoreTournamentRequest + UpdateTournamentRequest: `parent_tournament_id` + `qualifying_slots` validation rules
+- [x] TournamentResource: `parent_tournament_id`, `qualifying_slots`, `is_qualifier`, `parent_tournament` fields
+- [x] TournamentDetailResource: same fields + `qualifiers` collection
+- [x] TournamentController: `qualifiers()`, `qualifiedPlayers()`, `transferQualifiedPlayers()` methods
+- [x] Routes: `GET /tournaments/{tournament}/qualifiers` (public), `GET /tournaments/{tournament}/qualified-players` + `POST /tournaments/{tournament}/transfer-qualified` (admin)
+
 ## Summary
 
 | Layer        | Count |
@@ -97,7 +109,7 @@
 | Services     | 11    |
 | FormRequests | 31    |
 | Resources    | 14    |
-| Routes       | 58+   |
+| Routes       | 61+   |
 | Models       | 11    |
 | Events       | 1 (MatchCompleted)                |
 | Listeners    | 2 (AdvanceWinner, CompleteTournament) |

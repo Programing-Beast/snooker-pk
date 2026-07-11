@@ -60,6 +60,24 @@ const matchesApi = api.injectEndpoints({
       transformResponse: (res) => res.data ?? res ?? [],
       providesTags: [{ type: 'Match', id: 'UMPIRE_LIST' }],
     }),
+    createQualifierMatch: builder.mutation({
+      query: (data) => ({ url: '/matches/qualifier', method: 'POST', data }),
+      invalidatesTags: (result, error, { tournament_id }) => [
+        ...(tournament_id ? [{ type: 'TournamentDraw', id: tournament_id }, { type: 'QualifierPool', id: undefined }] : []),
+      ],
+    }),
+    deleteQualifierMatch: builder.mutation({
+      query: (id) => ({ url: `/matches/${id}/qualifier`, method: 'DELETE' }),
+      invalidatesTags: (result, error, id, { tournamentId } = {}) => [
+        ...(tournamentId ? [{ type: 'TournamentDraw', id: tournamentId }, { type: 'QualifierPool', id: undefined }] : []),
+      ],
+    }),
+    generateQualifierDraw: builder.mutation({
+      query: (data) => ({ url: '/matches/qualifier/generate', method: 'POST', data }),
+      invalidatesTags: (result, error, { tournament_id }) => [
+        ...(tournament_id ? [{ type: 'TournamentDraw', id: tournament_id }, { type: 'QualifierPool', id: undefined }] : []),
+      ],
+    }),
   }),
 });
 
@@ -72,4 +90,7 @@ export const {
   useDeclareWinnerMutation,
   useAssignUmpireMutation,
   useGetUmpireMatchesQuery,
+  useCreateQualifierMatchMutation,
+  useDeleteQualifierMatchMutation,
+  useGenerateQualifierDrawMutation,
 } = matchesApi;

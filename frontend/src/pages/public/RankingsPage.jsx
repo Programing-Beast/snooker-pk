@@ -29,6 +29,19 @@ function rankBadgeBg(rank) {
   return 'bg-ink-500';
 }
 
+const PODIUM_COLORS = {
+  1: { ring: 'ring-[#C2A14D]', ordinal: 'text-[#C2A14D]', accent: 'bg-[#C2A14D]' },
+  2: { ring: 'ring-[#A8B5C0]', ordinal: 'text-[#A8B5C0]', accent: 'bg-[#A8B5C0]' },
+  3: { ring: 'ring-[#B08D57]', ordinal: 'text-[#B08D57]', accent: 'bg-[#B08D57]' },
+};
+
+function ordinalSuffix(n) {
+  if (n === 1) return 'st';
+  if (n === 2) return 'nd';
+  if (n === 3) return 'rd';
+  return 'th';
+}
+
 function RankRow({ player, isFirst }) {
   const { first, last } = splitName(player.name);
   const photo = resolvePhoto(player.photo_path);
@@ -81,6 +94,69 @@ function RankRow({ player, isFirst }) {
   );
 }
 
+function PodiumCard({ player, place }) {
+  const colors = PODIUM_COLORS[place];
+  const photo = resolvePhoto(player.photo_path);
+  const tier = (player.tier || 'Amateur').toLowerCase();
+  const tierLabel = tier === 'pro' || tier === 'professional' ? 'Pro' : 'Amateur';
+  const isFirst = place === 1;
+
+  const photoSize = isFirst
+    ? 'w-20 h-20 sm:w-24 sm:h-24'
+    : 'w-16 h-16 sm:w-20 sm:h-20';
+  const ordinalSize = isFirst ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl';
+  const nameSize = isFirst ? 'text-base sm:text-lg' : 'text-sm sm:text-base';
+
+  return (
+    <Link
+      to={`/players/${player.id}`}
+      className="group relative flex flex-col items-center text-center rounded-2xl bg-card border border-border-subtle p-4 sm:p-6 hover:shadow-e2 transition-shadow no-underline text-heading"
+    >
+      {/* Ordinal badge */}
+      <span
+        className={`absolute top-3 right-3 font-extrabold ${ordinalSize} ${colors.ordinal} opacity-30`}
+        style={{ fontFamily: 'var(--font-display)' }}
+      >
+        {place}<sup className="text-[0.5em]">{ordinalSuffix(place)}</sup>
+      </span>
+
+      {/* Photo */}
+      <div className={`${photoSize} rounded-full ring-4 ${colors.ring} overflow-hidden mb-3`}>
+        <img src={photo} alt={player.name} className="w-full h-full object-cover object-top" />
+      </div>
+
+      {/* Name */}
+      <h3
+        className={`${nameSize} font-extrabold uppercase tracking-wide leading-tight`}
+        style={{ fontFamily: 'var(--font-display)' }}
+      >
+        {player.name}
+      </h3>
+
+      {/* Tier badge */}
+      <span className={`mt-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full ${tierLabel === 'Pro' ? 'bg-felt/10 text-felt' : 'bg-ink-100 text-ink-500'}`}>
+        {tierLabel}
+      </span>
+
+      {/* Stats row */}
+      <div className="flex items-center gap-2 mt-3 text-xs text-muted">
+        <span className="font-bold tabular-nums">{Number(player.ranking_points || 0).toLocaleString()} pts</span>
+        {player.city && (
+          <>
+            <span className="w-px h-3 bg-border-subtle" />
+            <span className="truncate max-w-[100px]">{player.city}</span>
+          </>
+        )}
+      </div>
+
+      {/* Profile link */}
+      <span className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-muted group-hover:text-felt transition-colors">
+        Profile →
+      </span>
+    </Link>
+  );
+}
+
 export default function RankingsPage() {
   const { data: rankings = [], isLoading } = useGetRankingsQuery({ per_page: 100 });
   const [tierFilter, setTierFilter] = useState('');
@@ -112,11 +188,16 @@ export default function RankingsPage() {
     return data;
   }, [rankings, tierFilter, search]);
 
+  // Podium: only when no filters/search and at least 3 players
+  const showPodium = !tierFilter && !search.trim();
+  const podiumPlayers = showPodium && filtered.length >= 3 ? filtered.slice(0, 3) : [];
+  const listPlayers = podiumPlayers.length === 3 ? filtered.slice(3) : filtered;
+
   // Split into 3 columns for desktop
-  const colSize = Math.ceil(filtered.length / 3);
-  const col1 = filtered.slice(0, colSize);
-  const col2 = filtered.slice(colSize, colSize * 2);
-  const col3 = filtered.slice(colSize * 2);
+  const colSize = Math.ceil(listPlayers.length / 3);
+  const col1 = listPlayers.slice(0, colSize);
+  const col2 = listPlayers.slice(colSize, colSize * 2);
+  const col3 = listPlayers.slice(colSize * 2);
 
   return (
     <div className="max-w-[1200px] mx-auto px-6 sm:px-9 py-8">
@@ -142,34 +223,66 @@ export default function RankingsPage() {
           <option value="pro">Pro only</option>
           <option value="amateur">Amateur only</option>
         </select>
-        <div className="relative w-64">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
-          </svg>
-          <input
-            className="input pl-9"
-            placeholder="Search players..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
+        <input
+          className="input w-64"
+          placeholder="Search players..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
       {isLoading ? (
         <div className="text-center py-16 text-muted">Loading rankings...</div>
       ) : filtered.length > 0 ? (
         <>
-          {/* Mobile: single column */}
-          <div className="lg:hidden">
-            {filtered.map((p, i) => <RankRow key={p.id} player={p} isFirst={i === 0} />)}
-          </div>
+          {/* Champions podium */}
+          {podiumPlayers.length === 3 && (
+            <div className="relative mb-10 overflow-hidden">
+              {/* "Champions" watermark */}
+              <div
+                className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+                aria-hidden="true"
+              >
+                <span
+                  className="text-[4rem] sm:text-[6rem] lg:text-[8rem] font-extrabold uppercase tracking-tight text-heading opacity-[0.03]"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  Champions
+                </span>
+              </div>
 
-          {/* Desktop: 3-column grid */}
-          <div className="hidden lg:grid lg:grid-cols-3 gap-x-4">
-            <div>{col1.map((p, i) => <RankRow key={p.id} player={p} isFirst={i === 0} />)}</div>
-            <div>{col2.map(p => <RankRow key={p.id} player={p} />)}</div>
-            <div>{col3.map(p => <RankRow key={p.id} player={p} />)}</div>
-          </div>
+              {/* Podium grid: 2nd — 1st — 3rd */}
+              <div className="relative grid grid-cols-3 gap-3 sm:gap-5 items-end max-w-2xl mx-auto">
+                <div className="pt-6 sm:pt-10">
+                  <PodiumCard player={podiumPlayers[1]} place={2} />
+                </div>
+                <div>
+                  <PodiumCard player={podiumPlayers[0]} place={1} />
+                </div>
+                <div className="pt-8 sm:pt-14">
+                  <PodiumCard player={podiumPlayers[2]} place={3} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {listPlayers.length > 0 && (
+            <>
+              {/* Mobile: single column */}
+              <div className="lg:hidden">
+                {listPlayers.map((p, i) => (
+                  <RankRow key={p.id} player={p} isFirst={!showPodium && i === 0} />
+                ))}
+              </div>
+
+              {/* Desktop: 3-column grid */}
+              <div className="hidden lg:grid lg:grid-cols-3 gap-x-4">
+                <div>{col1.map((p, i) => <RankRow key={p.id} player={p} isFirst={!showPodium && i === 0} />)}</div>
+                <div>{col2.map(p => <RankRow key={p.id} player={p} />)}</div>
+                <div>{col3.map(p => <RankRow key={p.id} player={p} />)}</div>
+              </div>
+            </>
+          )}
         </>
       ) : (
         <EmptyState title="No rankings yet" message="Rankings will be populated once tournaments conclude." />

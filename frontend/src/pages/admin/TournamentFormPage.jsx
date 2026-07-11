@@ -42,7 +42,7 @@ export default function TournamentFormPage() {
   const [form, setForm] = useState({
     name: '', slug: '', venue: '', city: '', country_code: 'PAK',
     start_date: '', end_date: '', description: '', max_players: 32,
-    entry_status: 'open',
+    entry_status: 'open', has_qualifiers: false, qualifying_slots: 4,
   });
   const [banner, setBanner] = useState(null);
 
@@ -77,6 +77,8 @@ export default function TournamentFormPage() {
         country_code: t.country_code || 'PAK', start_date: t.start_date?.slice(0, 10) || '',
         end_date: t.end_date?.slice(0, 10) || '', description: t.description || '',
         max_players: t.max_players || 32, entry_status: t.entry_status || 'open',
+        has_qualifiers: t.has_qualifiers || false,
+        qualifying_slots: t.qualifying_slots || 4,
       });
       if (t.prizes?.length) setPrizes(t.prizes.map(p => ({ ...p })));
       if (t.organizers?.length) setExistingOrganizers(t.organizers);
@@ -179,7 +181,14 @@ export default function TournamentFormPage() {
     setErrors({});
     try {
       const data = new FormData();
-      Object.entries(form).forEach(([k, v]) => {
+      const submitForm = { ...form };
+      // Strip qualifying_slots when not has_qualifiers
+      if (!submitForm.has_qualifiers) {
+        delete submitForm.qualifying_slots;
+      }
+      // Convert boolean to "1"/"0" for FormData compatibility
+      submitForm.has_qualifiers = submitForm.has_qualifiers ? '1' : '0';
+      Object.entries(submitForm).forEach(([k, v]) => {
         if (v !== '' && v !== null && v !== undefined) data.append(k, v);
       });
       if (banner) data.append('banner', banner);
@@ -278,6 +287,36 @@ export default function TournamentFormPage() {
             <option value="open">Open</option>
             <option value="closed">Closed</option>
           </Select>
+
+          {/* Has qualifiers toggle */}
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <span className="lbl !mb-0">Has qualifiers?</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.has_qualifiers}
+                onClick={() => setForm(prev => ({ ...prev, has_qualifiers: !prev.has_qualifiers }))}
+                className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${form.has_qualifiers ? 'bg-felt' : 'bg-ink-200'}`}
+              >
+                <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform mt-0.5 ${form.has_qualifiers ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
+              </button>
+            </label>
+          </div>
+          {form.has_qualifiers && (
+            <div className="p-4 bg-card-alt rounded-lg space-y-3 border border-border-subtle">
+              <div className="text-[13px] font-semibold text-felt">Qualifier settings</div>
+              <Input
+                label="Qualifying slots"
+                type="number"
+                value={form.qualifying_slots}
+                onChange={set('qualifying_slots')}
+                min="1"
+              />
+              <p className="text-[11px] text-ink-500">Number of players who advance from qualifiers to the main draw.</p>
+            </div>
+          )}
+
           <div>
             <label className="lbl">Description</label>
             <textarea className="input min-h-[100px]" value={form.description} onChange={set('description')} />

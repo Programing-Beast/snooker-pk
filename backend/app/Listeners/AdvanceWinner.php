@@ -26,14 +26,23 @@ class AdvanceWinner
             return;
         }
 
-        // Final round — leave to CompleteTournament listener
-        if ($currentRoundIndex >= $rounds->count() - 1) {
-            return;
-        }
+        $currentRound = $rounds[$currentRoundIndex];
 
         $loserId = $match->winner_id === $match->player1_id
             ? $match->player2_id
             : $match->player1_id;
+
+        // Qualifier rounds: award elimination prize, but don't advance to bracket
+        if ($currentRound->is_qualifier) {
+            $this->prizeAwardService->awardEliminationPrize($match, $loserId);
+
+            return;
+        }
+
+        // Final round — leave to CompleteTournament listener
+        if ($currentRoundIndex >= $rounds->count() - 1) {
+            return;
+        }
 
         // Award elimination prize for the loser
         $this->prizeAwardService->awardEliminationPrize($match, $loserId);
