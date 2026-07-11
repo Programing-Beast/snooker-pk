@@ -17,26 +17,24 @@ function splitName(name) {
   return { first: parts.slice(0, -1).join(' '), last: parts[parts.length - 1] };
 }
 
-function HeroPortrait({ src, alt, won, compact = false, dark = false }) {
+function HeroPortrait({ src, alt, won, compact = false }) {
   const outerClass = compact
-    ? 'w-[68px] h-[82px]'
-    : 'w-24 h-[120px] sm:w-32 sm:h-[160px]';
-  const imgClass = compact
-    ? 'w-[54px] h-[72px]'
-    : 'w-[76px] h-[100px] sm:w-[104px] sm:h-[136px]';
-  const frameClass = [
-    'player-card-frame absolute inset-x-0 bottom-0 h-[75%]',
-    won ? 'winner-frame' : '',
-    dark ? 'frame-on-dark' : '',
-  ].filter(Boolean).join(' ');
+    ? 'w-[54px] h-[72px] rounded-lg'
+    : 'w-[76px] h-[100px] sm:w-[104px] sm:h-[136px] rounded-xl';
+  const ringClass = won
+    ? 'ring-2 ring-brass shadow-[0_0_20px_rgba(240,180,40,0.5)]'
+    : 'ring-1 ring-white/15';
 
   return (
-    <div className={`relative shrink-0 ${outerClass}`}>
-      <div className={frameClass} />
+    <div className={`relative shrink-0 overflow-hidden ${outerClass} ${ringClass}`}>
       <img
         src={src}
         alt={alt || 'Player'}
-        className={`relative z-[1] ${imgClass} mx-auto object-cover object-top`}
+        className="w-full h-full object-cover object-top"
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }}
       />
     </div>
   );
@@ -102,7 +100,7 @@ export default function MatchResultHero({
             <CountryFlagChip code={player1?.country_code || 'PAK'} showLabel={false} size="sm" />
           </div>
         </div>
-        <HeroPortrait src={p1Photo} alt={player1?.name} won={p1Won} compact={compact} dark={dark} />
+        <HeroPortrait src={p1Photo} alt={player1?.name} won={p1Won} compact={compact} />
       </div>
 
       {/* Score center */}
@@ -116,7 +114,7 @@ export default function MatchResultHero({
 
       {/* Player 2 — left-aligned */}
       <div className={`flex items-center ${innerGap}`}>
-        <HeroPortrait src={p2Photo} alt={player2?.name} won={p2Won} compact={compact} dark={dark} />
+        <HeroPortrait src={p2Photo} alt={player2?.name} won={p2Won} compact={compact} />
         <div className="uppercase">
           <p className={firstNameClass}>{p2Name.first}</p>
           <Link to={player2?.id ? `/players/${player2.id}` : '#'} className={nameClass}>

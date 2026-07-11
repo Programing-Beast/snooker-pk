@@ -26,27 +26,26 @@ export default function PlayerCard({ player, to, overlay, seed }) {
 
   const card = (
     <div className="group flex flex-col items-center text-center w-full">
-      {/* Photo + frame wrapper */}
-      <div className="relative w-full pt-[15%]">
-        {/* Dog-ear background frame — wider than photo, behind it */}
-        <div className="player-card-frame absolute left-1/2 -translate-x-1/2 bottom-0 w-[95%] h-[80%]" />
-
-        {/* Player photo — sits inside the frame, top extends above */}
-        <div className="relative z-[1] mx-auto w-[72%]">
-          <img
-            src={photo}
-            alt={player.name || 'Player'}
-            className="w-full aspect-[3/4] object-cover object-top pointer-events-none select-none"
-          />
-          {/* Admin hover actions — buttons at bottom, no dark overlay */}
-          {overlay && (
-            <div className="absolute inset-x-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-              <div className="bg-gradient-to-t from-night/80 to-transparent pt-6 pb-2 flex items-center justify-center gap-2">
-                {overlay}
-              </div>
+      {/* Photo card — rounded with gradient fade */}
+      <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-panel2 ring-1 ring-hairline-d transition group-hover:ring-brass/60">
+        <img
+          src={photo}
+          alt={player.name || 'Player'}
+          className="w-full h-full object-cover object-top pointer-events-none select-none"
+        />
+        {/* Bottom gradient fade */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-2/5 pointer-events-none"
+          style={{ background: 'linear-gradient(to top, var(--color-canvas), transparent)' }}
+        />
+        {/* Admin hover actions */}
+        {overlay && (
+          <div className="absolute inset-x-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+            <div className="bg-gradient-to-t from-night/90 to-transparent pt-8 pb-2 flex items-center justify-center gap-2">
+              {overlay}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Text */}
@@ -74,11 +73,11 @@ export default function PlayerCard({ player, to, overlay, seed }) {
 
   if (href) {
     return (
-      <Link to={href} className="mt-8 flex flex-col items-center no-underline text-heading hover:text-heading">
+      <Link to={href} className="mt-2 flex flex-col items-center no-underline text-heading hover:text-heading">
         {card}
       </Link>
     );
   }
 
-  return <div className="mt-8 flex flex-col items-center">{card}</div>;
+  return <div className="mt-2 flex flex-col items-center">{card}</div>;
 }

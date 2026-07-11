@@ -21,14 +21,15 @@ function splitName(name) {
 function PlayerImage({ player, align = 'left', isWinner = false }) {
   const src = resolvePhoto(player?.photo_path || player?.photo);
   return (
-    <div className="relative shrink-0 w-[68px] h-[82px]">
-      {/* Dog-ear back frame */}
-      <div className={`player-card-frame absolute inset-x-0 bottom-0 h-[75%] ${isWinner ? 'winner-frame' : ''}`} />
-      {/* Player photo */}
+    <div className={`relative shrink-0 w-[54px] h-[72px] rounded-lg overflow-hidden ${isWinner ? 'ring-2 ring-brass shadow-[0_0_18px_rgba(240,180,40,0.45)]' : 'ring-1 ring-hairline-d'}`}>
       <img
         src={src}
         alt={player?.name || 'Player'}
-        className="relative z-[1] w-[54px] h-[72px] mx-auto object-cover object-top"
+        className="w-full h-full object-cover object-top"
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }}
       />
     </div>
   );

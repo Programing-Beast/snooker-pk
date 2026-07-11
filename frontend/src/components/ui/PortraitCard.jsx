@@ -16,7 +16,7 @@ export default function PortraitCard({ src, alt, won, compact = false }) {
     ? {
         background:
           'radial-gradient(130% 100% at 50% 20%, #ffd24a, #f7b81e 55%, #e09a10)',
-        boxShadow: '0 12px 45px -8px rgba(240,180,40,0.55)',
+        boxShadow: '0 0 20px rgba(240,180,40,0.5), 0 12px 45px -8px rgba(240,180,40,0.55)',
       }
     : {
         background:
