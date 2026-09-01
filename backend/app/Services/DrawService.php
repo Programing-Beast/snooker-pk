@@ -220,7 +220,7 @@ class DrawService
                     ->get();
 
                 $lastQualifierRound = $tournament->qualifierRounds()
-                    ->orderBy('sort_order', 'desc')
+                    ->reorder('sort_order', 'desc')
                     ->first();
 
                 $qualifierWinnerIds = [];
@@ -286,7 +286,7 @@ class DrawService
             // Later rounds: pool = winners from the previous round
             $prevRound = $tournament->rounds()
                 ->where('sort_order', '<', $round->sort_order)
-                ->orderBy('sort_order', 'desc')
+                ->reorder('sort_order', 'desc')
                 ->first();
 
             if (! $prevRound) {
@@ -416,7 +416,7 @@ class DrawService
         // Winners from previous qualifier round
         $prevQualifierRound = $tournament->qualifierRounds()
             ->where('sort_order', '<', $round->sort_order)
-            ->orderBy('sort_order', 'desc')
+            ->reorder('sort_order', 'desc')
             ->first();
 
         $advancedWinnerIds = [];

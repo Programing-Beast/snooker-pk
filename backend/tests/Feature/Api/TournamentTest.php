@@ -16,8 +16,8 @@ class TournamentTest extends ApiTestCase
         return Tournament::create(array_merge([
             'name' => 'National Championship',
             'slug' => 'national-championship-2026',
-            'start_date' => '2026-07-01',
-            'end_date' => '2026-07-05',
+            'start_date' => now()->addDays(30)->toDateString(),
+            'end_date' => now()->addDays(34)->toDateString(),
             'status' => 'upcoming',
             'entry_status' => 'open',
         ], $overrides));

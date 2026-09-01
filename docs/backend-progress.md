@@ -45,6 +45,9 @@
 - [x] TournamentOrganizerResource (includes nested user.player for name/photo)
 
 ## Phase 5 — Nested Resources (Prizes, Contacts, Rounds)
+
+> Contacts were later dropped (migration `2026_06_04_100005_drop_contacts_and_organizer_column`);
+> `tournament_organizers` replaced them. The Contact entries below are historical.
 - [x] PrizeService, ContactService, RoundService (CRUD under tournaments)
 - [x] Store/UpdatePrizeRequest, Store/UpdateContactRequest, Store/UpdateRoundRequest
 - [x] PrizeResource, ContactResource, RoundResource
@@ -89,33 +92,61 @@
 - [x] TestMatchDataSeeder — creates completed matches with scores, live match, proper scheduled_at dates across tournaments
 - [x] Storage symlink (`php artisan storage:link`)
 
-## Phase 11 — Qualifier Tournaments
-- [x] Migration: `parent_tournament_id` (FK nullable) + `qualifying_slots` (unsigned int nullable) on tournaments
-- [x] Migration: `qualifier_transfer` added to `tournament_entries.source` enum
-- [x] Tournament model: `parentTournament()` belongsTo, `qualifiers()` hasMany, `isQualifier()` helper
-- [x] EntryService: capacity checks skipped for qualifiers in `requestEntry()`, `adminAdd()`, `bulkAdminAdd()`
-- [x] TournamentService: `showBySlug()` eager loads `qualifiers` + `parentTournament`; new `getQualifiedPlayers()` (survivors = approved entries minus losers); new `transferQualifiedPlayers()` (creates entries in parent with source `qualifier_transfer`)
-- [x] StoreTournamentRequest + UpdateTournamentRequest: `parent_tournament_id` + `qualifying_slots` validation rules
-- [x] TournamentResource: `parent_tournament_id`, `qualifying_slots`, `is_qualifier`, `parent_tournament` fields
-- [x] TournamentDetailResource: same fields + `qualifiers` collection
-- [x] TournamentController: `qualifiers()`, `qualifiedPlayers()`, `transferQualifiedPlayers()` methods
-- [x] Routes: `GET /tournaments/{tournament}/qualifiers` (public), `GET /tournaments/{tournament}/qualified-players` + `POST /tournaments/{tournament}/transfer-qualified` (admin)
+## Phase 11 — Qualifier Rounds
+
+Qualifier rounds live *inside* a tournament. A tournament flagged `has_qualifiers`
+carries one or more rounds with `is_qualifier = true`, ordered ahead of the main
+draw by `sort_order`. Players are assigned to a specific qualifier round via
+`tournament_entries.entry_round_id`; a null `entry_round_id` means a direct
+main-draw entrant.
+
+Winners of the **last** qualifier round join the direct entrants when the first
+main-draw round is generated.
+
+- [x] Migration: `has_qualifiers` (bool) on tournaments, `is_qualifier` (bool) on rounds, `entry_round_id` (FK nullable → rounds) on tournament_entries
+- [x] Tournament model: `qualifierRounds()` and `mainDrawRounds()` scoped hasMany relations
+- [x] Round model: `is_qualifier` fillable + bool cast
+- [x] TournamentEntry model: `entry_round_id` fillable, `entryRound()` belongsTo
+- [x] DrawService: `getQualifierRoundPool()` — pool = entries assigned to the round + winners of the previous qualifier round − players already paired in the round
+- [x] DrawService: `createQualifierMatch()` (manual pairing, validates pool membership), `generateQualifierDraw()` (shuffles the pool and auto-pairs), `deleteQualifierMatch()` (force-deletes; refuses live/played matches)
+- [x] DrawService `generateFromSeeds()`: qualifier rounds draw from the round pool; the first main-draw round of a `has_qualifiers` tournament combines direct entrants with last-qualifier-round winners
+- [x] DrawService: qualifier rounds get no next-round placeholders and no bye advancement
+- [x] EntryService: `max_players` capacity applies only to main-draw entries (`entry_round_id` null) in `requestEntry()`, `adminAdd()`, `bulkAdminAdd()`; new `setEntryRound()`
+- [x] AdvanceWinner listener: qualifier-round wins award the elimination prize but do **not** advance into the bracket
+- [x] Resources: `has_qualifiers` + `qualifying_slots` on Tournament/TournamentDetail, `is_qualifier` on Round, `entry_round_id` on TournamentEntry
+- [x] Routes: `GET /tournaments/{tournament}/rounds/{round}/pool`, `POST /matches/qualifier`, `POST /matches/qualifier/generate`, `DELETE /matches/{match}/qualifier`, `PUT /entries/{entry}/entry-round` (all admin)
+- [x] Feature tests: `QualifierTest` (25 tests — pool composition, manual pairing, auto-generation, deletion guards, capacity rules, advancement)
+
+### Superseded: cross-tournament qualifiers
+
+An earlier design (2026-06-15) modelled qualifiers as *separate tournaments*
+linked by `parent_tournament_id`, with a `transferQualifiedPlayers()` step that
+copied survivors into the parent. It was replaced by the in-tournament rounds
+above on 2026-07-11. None of that code remains.
+
+Left behind by the swap:
+
+- `tournaments.parent_tournament_id` — orphaned column + FK, no app code reads it
+- `tournament_entries.source` still permits `qualifier_transfer`, now unused
+- `tournaments.qualifying_slots` — still stored, validated, exposed, and editable in the admin form, but purely descriptive; no draw logic reads it
 
 ## Summary
 
 | Layer        | Count |
 |--------------|-------|
 | Controllers  | 14    |
-| Services     | 11    |
-| FormRequests | 31    |
+| Services     | 12    |
+| FormRequests | 37    |
 | Resources    | 14    |
 | Routes       | 61+   |
-| Models       | 11    |
+| Models       | 12    |
 | Events       | 1 (MatchCompleted)                |
 | Listeners    | 2 (AdvanceWinner, CompleteTournament) |
-| Feature Tests| 144 (370 assertions, all passing) |
+| Feature Tests| 198 (514 assertions, all passing) — 15 files |
 
 ### Remaining
 - [ ] Factories for all models
 - [ ] Store coming-soon stub endpoint (`GET /products`)
-- [ ] Contact model/routes (currently in spec but tournament_organizers may replace contacts)
+- [ ] Drop the orphaned `parent_tournament_id` column and the unused `qualifier_transfer` source value
+- [ ] `ensureRoundsExist()` counts *all* approved entries, including qualifier-assigned ones, so it can over-create main-draw rounds for a qualifier tournament
+- [x] ~~Contact model/routes~~ — dropped; `tournament_organizers` replaced contacts
