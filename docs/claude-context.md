@@ -1,6 +1,6 @@
 # Claude Context — SnookerPK Project
 
-Last updated: 2026-06-15
+Last updated: 2026-09-01
 
 ## Project Overview
 
@@ -16,7 +16,7 @@ Last updated: 2026-06-15
 
 ## Backend — COMPLETE
 
-All 9 API phases implemented and tested. 58+ routes, 136 tests (all passing).
+All API phases implemented and tested. 61 routes, 198 tests (514 assertions, all passing).
 
 ### Architecture
 
@@ -28,13 +28,13 @@ Request → FormRequest (validate) → Controller (thin) → Service (logic) →
 
 | Layer | Location | Count |
 |---|---|---|
-| Routes | `backend/routes/api.php` | 61+ endpoints |
-| Controllers | `backend/app/Http/Controllers/Api/` | 14 (Auth, Player, PlayerPhone, Tournament, TournamentOrganizer, Prize, Contact, Round, Entry, Draw, Match, Frame, Break, Ranking) |
-| Services | `backend/app/Services/` | 11 (Auth, Player, PlayerPhone, Tournament, TournamentOrganizer, Prize, Round, Entry, Draw, Match, Ranking) |
-| FormRequests | `backend/app/Http/Requests/` | 31 |
-| Resources | `backend/app/Http/Resources/` | 14 (User, Player, PlayerPhone, Tournament, TournamentDetail, TournamentOrganizer, Prize, Contact, Round, TournamentEntry, Match, Frame, Break, Ranking) |
-| Tests | `backend/tests/Feature/Api/` | 12 test files, 136 tests, 339 assertions |
-| Models | `backend/app/Models/` | 11 (User, Player, PlayerPhone, Tournament, TournamentOrganizer, Prize, TournamentEntry, Round, Match_, Frame, Break_) |
+| Routes | `backend/routes/api.php` | 61 endpoints |
+| Controllers | `backend/app/Http/Controllers/Api/` | 14 (Auth, Player, PlayerPhone, Tournament, TournamentOrganizer, Prize, PrizeAward, Round, Entry, Draw, Match, Frame, Break, Ranking) |
+| Services | `backend/app/Services/` | 12 (Auth, Player, PlayerPhone, Tournament, TournamentOrganizer, Prize, PrizeAward, Round, Entry, Draw, Match, Ranking) |
+| FormRequests | `backend/app/Http/Requests/` | 37 |
+| Resources | `backend/app/Http/Resources/` | 14 (User, Player, PlayerPhone, Tournament, TournamentDetail, TournamentOrganizer, Prize, PrizeAward, Round, TournamentEntry, Match, Frame, Break, Ranking) |
+| Tests | `backend/tests/Feature/Api/` | 15 test files, 198 tests, 514 assertions |
+| Models | `backend/app/Models/` | 12 (User, Player, PlayerPhone, Tournament, TournamentOrganizer, Prize, PrizeAward, TournamentEntry, Round, Match_, Frame, Break_) |
 | Seeders | `backend/database/seeders/` | DatabaseSeeder (roles + 32 players), TestMatchDataSeeder (completed matches + scores) |
 
 ### Modified foundation files
@@ -55,23 +55,27 @@ Request → FormRequest (validate) → Controller (thin) → Service (logic) →
 
 ### Route groups
 
-- **Public (9):** register, login, players list/show, tournaments list/show/draw/players/qualifiers, rankings, match show
+- **Public (9):** register, login, players list/show, tournaments list/show/draw/players, rankings, match show
 - **Auth (6):** logout, me, player update/history/upcoming, entry request/mine, player phones
 - **Umpire|Admin (5):** match board, frames CRUD, breaks CRUD
-- **Admin (41+):** full tournament/prize/contact/round CRUD, organizer CRUD, entry management, draw generation, match management, ranking adjust, qualifier qualified-players + transfer-qualified
+- **Admin (41+):** full tournament/prize/round CRUD, organizer CRUD, entry management, draw generation, match management, ranking adjust, qualifier round pool + pairing + entry-round assignment
 
 ### Key business logic
 
 - **Score cascade** (MatchService): breaks → frame scores (auto-recalculated) → match scores → winner advancement
 - **Draw generation** (DrawService): seeded bracket placement, bye calculation, DB transaction, bye winner advancement
-- **Entry flow** (EntryService): capacity checks (skipped for qualifiers), duplicate checks, open/closed status, admin-add auto-approves
-- **Qualifier flow** (TournamentService): qualifier tournaments linked via `parent_tournament_id`, survivors determined by excluding losers from completed matches, `transferQualifiedPlayers` creates entries in parent with source `qualifier_transfer`
+- **Entry flow** (EntryService): `max_players` capacity applies only to main-draw entries (`entry_round_id` null), duplicate checks, open/closed status, admin-add auto-approves
+- **Qualifier rounds** (DrawService): rounds *within* a tournament — `has_qualifiers` on the tournament, `is_qualifier` on the round, `entry_round_id` on the entry (null = direct main-draw entrant). Pool for a qualifier round = assigned entries + previous qualifier round's winners − already-paired players. Winners of the **last** qualifier round join the direct entrants when the first main-draw round is generated. Qualifier wins award the elimination prize but do not advance into the bracket.
+
+  > Superseded: the earlier cross-tournament design (`parent_tournament_id`, `transferQualifiedPlayers`) was replaced on 2026-07-11 and no longer exists in code. `parent_tournament_id` survives as an orphaned column; `qualifying_slots` is descriptive only.
 - **Player stats** (PlayerService.show): computes matches_played, wins, win_rate from completed match data
 
 ### Remaining backend items
 
 - [ ] Factories for all models
 - [ ] Store coming-soon stub endpoint (`GET /products`)
+- [ ] Drop orphaned `parent_tournament_id` column + unused `qualifier_transfer` source value
+- [ ] `ensureRoundsExist()` counts qualifier-assigned entries, so it can over-create main-draw rounds
 
 ---
 
@@ -107,11 +111,10 @@ Baize design tokens: felt greens, brass gold, live reds, ink neutrals, night/pan
 
 ### Recent additions
 
-- **Qualifier tournaments:** Type select in tournament form, parent tournament dropdown, qualifying slots, transfer UI on admin page, qualifier badges on list/card/detail pages, qualifiers section on parent tournaments
+- **Qualifier rounds:** "Has qualifiers?" toggle in the tournament form, qualifier rounds card with inline create on the admin tournament page, round filter tabs + per-entry round assignment on manage entries, per-round pairing UI (pool dropdowns, auto-generate, delete) on manage matches, pool-aware draw generate page, "Has Qualifiers" badges across list/card/detail
 
 ### Remaining frontend items
 
-- [ ] Umpire board mobile layout
 - [ ] Home page: featured live match banner
 - [ ] Tournament form: review step, success page, preview sidebar
 - [ ] Draw reveal: slot-machine style reveal animation
@@ -138,7 +141,7 @@ Baize design tokens: felt greens, brass gold, live reds, ink neutrals, night/pan
 
 ```bash
 cd /Users/haiderali/projects/snooker-pk/backend
-php artisan test          # should show 136 passing
+php artisan test          # should show 198 passing
 php artisan serve         # runs on :8000
 
 cd /Users/haiderali/projects/snooker-pk/frontend
@@ -146,4 +149,4 @@ npm run dev               # runs on :3000 (proxies /api + /storage to :8000)
 npm run build             # 186 modules, ~635 KB JS + ~68 KB CSS
 ```
 
-Next work: Umpire issues (#4 info/photo, #6 dashboard), then polish (home page live match banner, tournament form wizard, draw reveal animation, store hero).
+Next work: Umpire issues (#4 info/photo, #6 dashboard), frontend lint errors (29, incl. ref-during-render bugs in UmpireBoardPage), then polish (home page live match banner, tournament form wizard, draw reveal animation, store hero).

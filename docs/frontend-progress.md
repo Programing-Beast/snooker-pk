@@ -30,7 +30,7 @@
 - [x] MatchEndOverlay (winner, frame history, submit button)
 - [x] API integration (persist breaks, complete frame/match)
 - [x] Frame state resume on page refresh (replays saved breaks to restore scores, reds, high breaks)
-- [ ] UmpireBoard mobile layout
+- [x] UmpireBoard mobile layout (MobileScoreBar, responsive balls/overlays/strip/history)
 
 ### Shared Components (from Design System)
 - [x] Button (variants: primary, ghost, outline, brass, danger, live; sizes: sm, md, lg)
@@ -113,17 +113,25 @@
 - [x] Utility classes: ball, felt-grain, on-felt, text-caption
 - [x] Animations: pulse, bump, activeglow, dropin
 
-### Qualifier Tournaments
-- [x] tournamentsApi.js: `getQualifiers`, `getQualifiedPlayers`, `transferQualifiedPlayers` endpoints + hooks
-- [x] TournamentFormPage: type select (Regular/Qualifier), parent tournament dropdown, qualifying slots input; strips qualifier fields for regular tournaments
-- [x] ManageEntriesPage: qualifier info banner replaces capacity bar, `isFull` always false for qualifiers
-- [x] AdminTournamentPage: qualifier info card (parent link + slots), TransferQualifiedSection (survivor count, confirm dialog, transfer button), qualifiers list card on parent tournaments
-- [x] AdminTournamentsPage: "Qualifier" badge on list rows
-- [x] TournamentDetailPage: qualifier badge + "Qualifying for" parent link in header, qualifiers section in overview tab
-- [x] TournamentCard: small "Qualifier" badge in header
+### Qualifier Rounds
+
+Qualifier rounds are rounds *within* a tournament (`has_qualifiers` on the
+tournament, `is_qualifier` on the round), not separate tournaments. Entries are
+assigned to a qualifier round via `entry_round_id`; null means direct main-draw.
+
+- [x] tournamentsApi.js: `getQualifierPool` query (`/tournaments/{id}/rounds/{roundId}/pool`) + `QualifierPool` cache tag
+- [x] matchesApi.js: `createQualifierMatch`, `generateQualifierDraw`, `deleteQualifierMatch` mutations, invalidating `TournamentDraw` + `QualifierPool`
+- [x] entriesApi.js: bulk add passes `entry_round_id` to place players in a qualifier round
+- [x] TournamentFormPage: "Has qualifiers?" toggle + qualifying-slots input; strips slots when the toggle is off
+- [x] AdminTournamentPage: qualifier rounds card listing each round with an inline create-qualifier-round form
+- [x] ManageEntriesPage: round filter tabs (Main Draw + each qualifier round), per-entry round assignment, "create & add to round" action, counts split between main draw and qualifier rounds
+- [x] ManageMatchesPage: per-qualifier-round pairing UI — pool dropdowns, add match, auto-generate, delete match, "Qualifier" round badge
+- [x] DrawGeneratePage: qualifier rounds sorted ahead of main draw, live pool size from `getQualifierPool`, pool-source label ("qualifier round pool" vs "direct seeds + qualifier winners")
+- [x] TournamentDetailPage: "Has Qualifiers" badge in header, "Qualifier" badge per round
+- [x] AdminTournamentsPage + TournamentCard: "Has Qualifiers" badge
 
 ### Remaining
-- [ ] Umpire board mobile layout
+- [x] ~~Umpire board mobile layout~~ — responsive MobileScoreBar, ball buttons, overlays, break strip, frame history
 - [ ] Home page: featured live match banner
 - [ ] Tournament form wizard: review step, success page, preview sidebar
 - [x] Draw generation: mode selector UI, summary sidebar, RoundHeader with metadata
