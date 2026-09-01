@@ -1,17 +1,26 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE tournament_entries MODIFY COLUMN source ENUM('self_request','admin_added','qualifier_transfer') NOT NULL DEFAULT 'self_request'");
+        Schema::table('tournament_entries', function (Blueprint $table) {
+            $table->enum('source', ['self_request', 'admin_added', 'qualifier_transfer'])
+                ->default('self_request')
+                ->change();
+        });
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE tournament_entries MODIFY COLUMN source ENUM('self_request','admin_added') NOT NULL DEFAULT 'self_request'");
+        Schema::table('tournament_entries', function (Blueprint $table) {
+            $table->enum('source', ['self_request', 'admin_added'])
+                ->default('self_request')
+                ->change();
+        });
     }
 };

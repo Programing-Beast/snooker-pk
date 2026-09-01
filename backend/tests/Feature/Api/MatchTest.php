@@ -356,7 +356,7 @@ class MatchTest extends ApiTestCase
             'player_id' => $this->player->id,
             'category' => 'tournament_winner',
             'amount' => '50000.00',
-            'status' => 'awarded',
+            'status' => 'pending',
         ]);
 
         $this->assertDatabaseHas('prize_awards', [
@@ -364,7 +364,7 @@ class MatchTest extends ApiTestCase
             'player_id' => $this->player2->id,
             'category' => 'tournament_runner_up',
             'amount' => '25000.00',
-            'status' => 'awarded',
+            'status' => 'pending',
         ]);
     }
 
