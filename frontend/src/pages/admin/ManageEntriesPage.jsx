@@ -381,7 +381,7 @@ export default function ManageEntriesPage() {
           <div className="card divide-y divide-divider overflow-hidden">
             {pending.map(entry => (
               <div key={entry.id} className="flex items-center gap-4 px-4 py-3">
-                <PlayerListItem player={entry.player}>
+                <PlayerListItem player={entry.player} className="flex-1">
                   <StatusBadge status="pending" />
                   <Button size="sm" onClick={() => approve(entry.id)}>Approve</Button>
                   <Button variant="danger" size="sm" onClick={() => reject(entry.id)}>Reject</Button>
@@ -398,7 +398,7 @@ export default function ManageEntriesPage() {
         <div className="card divide-y divide-divider overflow-hidden">
           {filteredApproved.map((entry, i) => (
             <div key={entry.id} className="flex items-center gap-4 px-4 py-3">
-              <PlayerListItem player={entry.player} index={i + 1}>
+              <PlayerListItem player={entry.player} index={i + 1} className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[12px] text-ink-500">Seed:</span>
                   <input
@@ -412,7 +412,7 @@ export default function ManageEntriesPage() {
                 </div>
                 {hasQualifiers && qualifierRounds.length > 0 && (
                   <select
-                    className="text-[12px] border border-ink-200 rounded px-1.5 py-1 bg-white text-ink-700 cursor-pointer"
+                    className="text-[12px] border border-ink-200 rounded px-1.5 py-1 bg-white text-ink-700 cursor-pointer max-w-full min-w-0"
                     value={entry.entry_round_id || ''}
                     onChange={e => handleSetEntryRound(entry.id, e.target.value)}
                   >
@@ -437,7 +437,7 @@ export default function ManageEntriesPage() {
           <div className="card divide-y divide-divider overflow-hidden">
             {rejected.map(entry => (
               <div key={entry.id} className="flex items-center gap-4 px-4 py-3">
-                <PlayerListItem player={entry.player}>
+                <PlayerListItem player={entry.player} className="flex-1">
                   <StatusBadge status="rejected" />
                   <Button variant="ghost" size="sm" onClick={() => approve(entry.id)}>Re-approve</Button>
                 </PlayerListItem>

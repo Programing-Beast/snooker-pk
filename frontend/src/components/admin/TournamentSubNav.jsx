@@ -32,7 +32,7 @@ export default function TournamentSubNav({ tournament }) {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 border-b border-divider">
+      <div className="flex gap-1 border-b border-divider overflow-x-auto no-scrollbar">
         {TABS.map(tab => {
           const to = base + tab.to;
           const isActive = tab.matchSuffixes.some(suffix =>
@@ -42,7 +42,7 @@ export default function TournamentSubNav({ tournament }) {
             <Link
               key={tab.label}
               to={to}
-              className={`px-4 py-2.5 text-[13px] font-semibold border-b-2 transition -mb-px ${
+              className={`px-3 sm:px-4 py-2.5 text-[13px] font-semibold border-b-2 transition -mb-px shrink-0 whitespace-nowrap ${
                 isActive
                   ? 'border-felt text-felt'
                   : 'border-transparent text-muted hover:text-ink-700'

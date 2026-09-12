@@ -297,3 +297,7 @@ body {
 /* Caption text */
 .text-caption { font-size: 0.72rem; line-height: 1.3; }
 
+
+/* Horizontal scroll without a visible scrollbar (mobile tab strips) */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
