@@ -193,7 +193,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
           <ActionIcons match={m} onEdit={onEdit} navigate={navigate} />
         </div>
         {adminActions && (
-          <div className="flex items-center gap-2 px-6 pb-3">
+          <div className="flex flex-wrap items-center gap-2 px-6 pb-3">
             {adminActions}
           </div>
         )}
@@ -274,7 +274,7 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
 
       {/* Admin actions (below match row, no grey background) */}
       {adminActions && (
-        <div className="flex items-center gap-2 px-6 pb-3">
+        <div className="flex flex-wrap items-center gap-2 px-6 pb-3">
           {adminActions}
         </div>
       )}

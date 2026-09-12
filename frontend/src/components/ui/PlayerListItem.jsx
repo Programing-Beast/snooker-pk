@@ -4,7 +4,7 @@ import CountryFlagChip from './CountryFlagChip';
 
 const TIER_LABEL = { pro: 'Professional', amateur: 'Amateur' };
 
-export default function PlayerListItem({ player, index, size = 'sm', showFlag = true, showTier = true, to, children }) {
+export default function PlayerListItem({ player, index, size = 'sm', showFlag = true, showTier = true, to, className = '', children }) {
   if (!player) return null;
 
   const tierLabel = TIER_LABEL[player.tier?.toLowerCase()] || player.tier;
@@ -12,7 +12,7 @@ export default function PlayerListItem({ player, index, size = 'sm', showFlag = 
   const rootProps = to ? { to } : {};
 
   return (
-    <Root {...rootProps} className="flex items-center gap-3">
+    <Root {...rootProps} className={`flex flex-wrap items-center gap-x-3 gap-y-2 min-w-0 ${className}`}>
       {index != null && (
         <span className="w-6 text-center text-[12px] text-muted tabular-nums shrink-0">{index}</span>
       )}
