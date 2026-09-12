@@ -21,7 +21,7 @@ function splitName(name) {
 function PlayerImage({ player, align = 'left', isWinner = false }) {
   const src = resolvePhoto(player?.photo_path || player?.photo);
   return (
-    <div className={`relative shrink-0 w-[54px] h-[72px] rounded-lg overflow-hidden ${isWinner ? 'ring-2 ring-brass shadow-[0_0_18px_rgba(240,180,40,0.45)]' : 'ring-1 ring-hairline-d'}`}>
+    <div className={`relative shrink-0 w-[42px] h-[56px] sm:w-[54px] sm:h-[72px] rounded-lg overflow-hidden ${isWinner ? 'ring-2 ring-brass shadow-[0_0_18px_rgba(240,180,40,0.45)]' : 'ring-1 ring-hairline-d'}`}>
       <img
         src={src}
         alt={player?.name || 'Player'}
@@ -38,22 +38,22 @@ function PlayerImage({ player, align = 'left', isWinner = false }) {
 function MatchInfo({ index, date, tableNo }) {
   const d = date ? new Date(date) : null;
   return (
-    <div className="shrink-0 flex flex-col items-center lg:items-start">
+    <div className="shrink-0 flex flex-row sm:flex-col items-center gap-x-2 sm:gap-x-0 lg:items-start">
       {d && (
         <>
           <h4 className="text-xl font-bold font-display text-heading leading-5 tabular-nums">
             {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
           </h4>
-          <p className="text-xs text-muted mt-0.5">
+          <p className="text-xs text-muted sm:mt-0.5">
             {d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
           </p>
         </>
       )}
       {index != null && (
-        <p className="text-sm font-bold text-ink-700 mt-0.5">Match {index}</p>
+        <p className="text-sm font-bold text-ink-700 sm:mt-0.5">Match {index}</p>
       )}
       {tableNo && (
-        <p className="text-xs text-muted mt-0.5">Table {tableNo}</p>
+        <p className="text-xs text-muted sm:mt-0.5">Table {tableNo}</p>
       )}
     </div>
   );
@@ -124,14 +124,14 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
   /* ── Bye ─────────────────────────────────────────────── */
   if (isBye) {
     return (
-      <div className="flex items-center gap-6 px-6 py-5 border-b border-divider">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 px-4 sm:px-6 py-4 sm:py-5 border-b border-divider">
         <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
-        <div className="flex items-center gap-4 flex-1 min-w-0 justify-center">
+        <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0 justify-center">
           {/* Player 1 */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="text-right min-w-0 uppercase">
-              <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
-              <p className="text-[15px] font-bold text-heading leading-snug" {...playerClick(m.player1)}>{p1Name.last}</p>
+              <p className="text-[10px] text-muted leading-tight truncate">{p1Name.first}</p>
+              <p className="text-[15px] font-bold text-heading leading-snug truncate" {...playerClick(m.player1)}>{p1Name.last}</p>
               <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
             </div>
             <PlayerImage player={m.player1} align="left" />
@@ -150,15 +150,15 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
     const woP2Won = !woP1Won;
     return (
       <div className="border-b border-divider">
-        <div className="flex items-center gap-6 px-6 py-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 px-4 sm:px-6 py-4 sm:py-5">
           <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-4 justify-center">
+            <div className="flex items-center gap-2 sm:gap-4 justify-center">
               {/* Player 1 */}
-              <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
                 <div className="text-right min-w-0 uppercase">
-                  <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
-                  <p className={`text-[15px] font-bold leading-snug ${woP1Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player1)}>{p1Name.last}</p>
+                  <p className="text-[10px] text-muted leading-tight truncate">{p1Name.first}</p>
+                  <p className={`text-[15px] font-bold leading-snug truncate ${woP1Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player1)}>{p1Name.last}</p>
                   <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
                 </div>
                 <PlayerImage player={m.player1} align="left" isWinner={woP1Won} />
@@ -170,11 +170,11 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
                 <span className={`w-8 py-2 text-center font-display font-bold text-[16px] ${woP2Won ? 'text-ink-900' : 'text-ink-400'}`}>{woP2Won ? 'W' : 'O'}</span>
               </div>
               {/* Player 2 */}
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 <PlayerImage player={m.player2} align="right" isWinner={woP2Won} />
                 <div className="min-w-0 uppercase">
-                  <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
-                  <p className={`text-[15px] font-bold leading-snug ${woP2Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player2)}>{p2Name.last}</p>
+                  <p className="text-[10px] text-muted leading-tight truncate">{p2Name.first}</p>
+                  <p className={`text-[15px] font-bold leading-snug truncate ${woP2Won ? 'text-heading' : 'text-ink-400 line-through'}`} {...playerClick(m.player2)}>{p2Name.last}</p>
                   <CountryFlagChip code={m.player2?.country_code || 'PAK'} showLabel={false} size="sm" />
                 </div>
               </div>
@@ -206,18 +206,18 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
 
   return (
     <div className={`border-b border-divider ${rowBg}`}>
-      <div className="flex items-center gap-6 px-6 py-5">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 px-4 sm:px-6 py-4 sm:py-5">
         {/* Left — match info */}
         <MatchInfo index={matchIndex} date={resultDate} tableNo={m.table_no} />
 
         {/* Center — players + score */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-4 justify-center">
+          <div className="flex items-center gap-2 sm:gap-4 justify-center">
             {/* Player 1 — right-aligned name, then image */}
-            <div className="flex items-center gap-3 flex-1 justify-end min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
               <div className="text-right min-w-0 uppercase">
-                <p className="text-[10px] text-muted leading-tight">{p1Name.first}</p>
-                <p className={`text-[15px] font-bold leading-snug ${p1Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player1)}>
+                <p className="text-[10px] text-muted leading-tight truncate">{p1Name.first}</p>
+                <p className={`text-[15px] font-bold leading-snug truncate ${p1Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player1)}>
                   {p1Name.last}
                 </p>
                 <CountryFlagChip code={m.player1?.country_code || 'PAK'} showLabel={false} size="sm" />
@@ -241,11 +241,11 @@ export default function MatchRow({ match, index, onEdit, adminActions }) {
             )}
 
             {/* Player 2 — image, then left-aligned name */}
-            <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
               <PlayerImage player={m.player2} align="right" isWinner={p2Won} />
               <div className="min-w-0 uppercase">
-                <p className="text-[10px] text-muted leading-tight">{p2Name.first}</p>
-                <p className={`text-[15px] font-bold leading-snug ${p2Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player2)}>
+                <p className="text-[10px] text-muted leading-tight truncate">{p2Name.first}</p>
+                <p className={`text-[15px] font-bold leading-snug truncate ${p2Won ? 'text-ink-900' : 'text-ink-400'}`} {...playerClick(m.player2)}>
                   {p2Name.last}
                 </p>
                 <CountryFlagChip code={m.player2?.country_code || 'PAK'} showLabel={false} size="sm" />
