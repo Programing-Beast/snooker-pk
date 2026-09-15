@@ -1,0 +1,30 @@
+# SPA routing: serve index.html for any path that is not a real file/directory.
+# Without this, a direct visit or refresh on /rankings, /tournaments/x or
+# /admin/... returns 404, because React Router resolves those client-side.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Leave real files and directories alone (assets, favicon, icons).
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Everything else falls through to the SPA entry point.
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+# Hashed asset filenames change on every build, so they are safe to cache hard.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+</IfModule>
+
+# index.html must never be cached, or users keep booting the old bundle.
+<IfModule mod_headers.c>
+    <FilesMatch "index\.html$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+    </FilesMatch>
+</IfModule>
