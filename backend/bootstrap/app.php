@@ -13,8 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->statefulApi();
-
+        // No statefulApi(): the SPA authenticates with Sanctum bearer tokens, not
+        // session cookies. Enabling it makes Sanctum attach the `web` group (session
+        // + CSRF) to /api/* whenever the request Origin matches sanctum.stateful --
+        // which includes localhost:3000 and the APP_URL host -- so same-origin or
+        // local-dev requests would fail with "CSRF token mismatch."
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
